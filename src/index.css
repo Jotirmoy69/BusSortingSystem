@@ -1,0 +1,27 @@
+@import "tailwindcss";
+@font-face {
+  font-family: 'clash';
+  src: url('./assets/fonts/ClashDisplay-Variable.ttf') format('truetype');
+  font-weight: 550;
+  font-style: normal;
+}
+
+/* Hide scrollbar background (track) */
+.no-scrollbar::-webkit-scrollbar {
+  width: 8px; /* or 0 if you want it hidden */
+}
+
+.no-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.no-scrollbar::-webkit-scrollbar-thumb {
+  background-color: gray; /* optional: sky-400 color */
+  border-radius: 9999px;
+}
+
+/* Firefox */
+.no-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #38bdf8 transparent;
+}
