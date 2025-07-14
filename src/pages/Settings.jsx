@@ -49,14 +49,8 @@ const Settings = () => {
   const [showDeleteConfirm2, setShowDeleteConfirm2] = useState(false);
   const [itemToDelete2, setItemToDelete2] = useState(null);
   const {
-    activeBuses,
+    
     setActiveBuses,
-    stands,
-    setStands,
-    stands2,
-    setStands2,
-    assignedBuses,
-    setassignedBuses,
   } = useAppContext();
   
   // Tab configuration for animation
@@ -1695,7 +1689,7 @@ const Settings = () => {
                 onClick={() => setDummy(!dummy)}
                 className="bg-[#673DE5] cursor-pointer  duration-200 text-white px-6 py-3 rounded-md font-bold hover:bg-[#5025D1] transition-colors"
               >
-                Add Dummy
+                Add From Excel
               </motion.button>
             </div>
 

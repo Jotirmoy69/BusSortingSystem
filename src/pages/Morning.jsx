@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { HiPencil } from "react-icons/hi2";
+import { HiPencil, HiOutlineTrash, HiOutlineX } from "react-icons/hi";
 import { useAppContext } from "../context/context";
-import { FaArrowLeftLong } from "react-icons/fa6";
+import { FaArrowLeftLong, FaPlus } from "react-icons/fa6";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Link } from "react-router-dom";
@@ -11,8 +11,6 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function Morning() {
   const [selected, setSelected] = useState({});
   const [tempSelect, setTempSelect] = useState([]);
-  const [hoveredStand, setHoveredStand] = useState({ routeIdx: null, standIdx: null });
-  const [hoveredSelectedStand, setHoveredSelectedStand] = useState(null);
   const [saving, setSaving] = useState(false);
 
   const {
@@ -50,8 +48,7 @@ export default function Morning() {
 
     setTempSelect(prev => [...prev, {
       name: stand.name,
-      boys: stand.boys || 0,
-      girls: stand.girls || 0
+      students: (stand.boys || 0) + (stand.girls || 0)
     }]);
   };
 
@@ -62,8 +59,7 @@ export default function Morning() {
   const handleEditBus = (bus) => {
     const standsToReturn = bus.stands.map(stand => ({
       name: stand.stand || stand.name,
-      boys: stand.boys || 0,
-      girls: stand.girls || 0
+      students: (stand.boys || 0) + (stand.girls || 0)
     }));
     setAssignedBuses(prev => prev.filter(b => b.id !== bus.id));
     setSelected(bus);
@@ -83,19 +79,15 @@ export default function Morning() {
     if (!isBusSelected) return toast.error("Please select a bus first!");
     if (tempSelect.length === 0) return toast.error("Please select at least one stand!");
 
-    const boys = tempSelect.reduce((sum, s) => sum + (s.boys || 0), 0);
-    const girls = tempSelect.reduce((sum, s) => sum + (s.girls || 0), 0);
-    const total = boys + girls;
+    const totalStudents = tempSelect.reduce((sum, s) => sum + s.students, 0);
 
     const newAssignment = {
       id: selected.id || selected.number,
       capacity: selected.capacity,
-      assigned: total,
-      boys,
-      girls,
+      assigned: totalStudents,
       stands: tempSelect.map(stand => ({
-        ...stand,
-        total: (stand.boys || 0) + (stand.girls || 0),
+        name: stand.name,
+        total: stand.students,
       })),
       route: "Manual Assignment",
     };
@@ -128,141 +120,296 @@ export default function Morning() {
     )
   })) || [];
 
+  // Calculate occupancy percentage
+  const totalSelectedStudents = tempSelect.reduce((sum, s) => sum + s.students, 0);
+  const occupancyPercentage = isBusSelected ? 
+    Math.min(100, (totalSelectedStudents / selected.capacity) * 100) : 0;
+
   return (
-    <div className="bg-white min-h-screen font-bold text-black space-y-4 font-[clash] p-10">
-      <div className="flex justify-between items-center pr-16">
-        <h1 className="text-3xl">Manual Selection</h1>
-        <div className="flex gap-3">
-          <button onClick={handleSave} disabled={saving}
-            className={`text-gray-900 font-bold cursor-pointer bg-gradient-to-r transition-all duration-150 from-teal-200 to-lime-200 hover:bg-gradient-to-l hover:from-teal-200 hover:to-lime-200 focus:ring-4 focus:outline-none focus:ring-lime-200 dark:focus:ring-teal-700 rounded-lg text-sm px-5 py-2.5 text-center ${saving ? "opacity-50 cursor-not-allowed" : ""}`}>
-            {saving ? "Saving..." : "Save the bus"}
-          </button>
-          <button onClick={handleReassign}
-            className="text-white font-bold cursor-pointer bg-gradient-to-r from-red-500 to-pink-600 hover:from-pink-600 hover:to-red-500 rounded-lg text-sm px-5 py-2">
-            Reset
-          </button>
+    <div className="min-h-screen bg-gray-50 font-sans p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Manual Bus Assignment</h1>
+            <p className="text-gray-500 text-sm">Assign stands to buses manually</p>
+          </div>
+          
+          <div className="flex flex-wrap gap-3">
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleSave}
+              disabled={saving}
+              className={`px-5 py-2.5 rounded-lg font-medium text-sm flex items-center gap-2
+                ${saving ? "bg-purple-400 cursor-not-allowed" : 
+                  "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md hover:shadow-lg"}`}
+            >
+              {saving ? "Saving..." : "Save Assignment"}
+            </motion.button>
+            
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleReassign}
+              className="px-5 py-2.5 rounded-lg font-medium text-sm flex items-center gap-2
+                bg-white text-red-600 border border-red-200 hover:bg-red-50 shadow hover:shadow-md"
+            >
+              <HiOutlineTrash className="text-lg" />
+              <span>Reset All</span>
+            </motion.button>
+          </div>
         </div>
-      </div>
 
-      <div className="flex gap-5 h-64 justify-end">
-        {!isBusSelected && availableBuses.length > 0 && (
-          <motion.select
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
-            onChange={(e) => {
-              const bus = activeBuses.find(b => b.number === e.target.value);
-              setSelected(bus || {});
-            }}
-            className="bg-gray-200 px-6 rounded-2xl shadow-md text-2xl text-center h-16 w-1/2"
-            value={selected.number || ""}
-          >
-            <option value="">Select a bus</option>
-            {availableBuses.map(bus => (
-              <option key={bus.number} value={bus.number}>
-                {bus.number} ({bus.capacity} seats)
-              </option>
-            ))}
-          </motion.select>
-        )}
-
-        {isBusSelected && (
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.4 }}
-            className="bg-lime-200 p-6 rounded-2xl shadow-md text-center w-1/2 mx-auto relative"
-          >
-            <div className="text-3xl absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 font-bold">
-              Bus NO. {selected.number}
-            </div>
-            <div className="absolute bottom-4 left-0 right-0 flex items-center px-6">
-              <span className="flex-1 text-left text-sm lg:text-xl">
-                Filled: {tempSelect.reduce((sum, s) => sum + (s.boys || 0) + (s.girls || 0), 0)} / {selected.capacity}
+        {/* Bus Selection Area */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Bus Selection Card */}
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold text-gray-800">Bus Selection</h2>
+              <span className="text-xs font-medium px-2 py-1 bg-purple-100 text-purple-800 rounded-full">
+                {availableBuses.length} available
               </span>
-              {tempSelect.reduce((sum, s) => sum + (s.boys || 0) + (s.girls || 0), 0) > selected.capacity && (
-                <span className="absolute left-1/2 transform -translate-x-1/2 text-red-600 font-semibold text-sm lg:text-xl">
-                  Overloaded
-                </span>
+            </div>
+
+            <AnimatePresence mode="wait">
+              {!isBusSelected ? (
+                <motion.div
+                  key="bus-select"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-4"
+                >
+                  <motion.select
+                    whileFocus={{ scale: 1.02 }}
+                    onChange={(e) => {
+                      const bus = activeBuses.find(b => b.number === e.target.value);
+                      setSelected(bus || {});
+                    }}
+                    className="w-full p-3 rounded-lg border border-gray-200 bg-gray-50 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                  >
+                    <option value="">Select a bus</option>
+                    {availableBuses.map(bus => (
+                      <option key={bus.number} value={bus.number}>
+                        Bus #{bus.number} • {bus.capacity} seats
+                      </option>
+                    ))}
+                  </motion.select>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="bus-selected"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-5 border border-purple-100"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                        <span className="bg-purple-600 text-white p-1 px-2.5 rounded-lg">#{selected.number}</span>
+                        <span>{selected.capacity} Seats</span>
+                      </h3>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {tempSelect.length} stand{tempSelect.length !== 1 ? 's' : ''} selected
+                      </p>
+                    </div>
+                    
+                    <button 
+                      onClick={() => { setSelected({}); setTempSelect([]); }}
+                      className="p-2 rounded-full hover:bg-purple-100 text-gray-500 hover:text-purple-700"
+                    >
+                      <HiPencil className="text-lg" />
+                    </button>
+                  </div>
+                  
+                  {/* Occupancy bar */}
+                  <div className="mt-5">
+                    <div className="flex justify-between text-sm font-medium mb-1">
+                      <span className="text-gray-600">Occupancy</span>
+                      <span className={`${totalSelectedStudents > selected.capacity ? "text-red-600" : "text-gray-600"}`}>
+                        {totalSelectedStudents}/{selected.capacity} students
+                      </span>
+                    </div>
+                    
+                    <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                      <motion.div 
+                        className={`h-full ${totalSelectedStudents > selected.capacity ? "bg-red-500" : "bg-gradient-to-r from-purple-500 to-indigo-600"}`}
+                        initial={{ width: "0%" }}
+                        animate={{ width: `${occupancyPercentage}%` }}
+                        transition={{ duration: 0.6, ease: "easeOut" }}
+                      />
+                    </div>
+                    
+                    {totalSelectedStudents > selected.capacity && (
+                      <p className="text-red-600 text-xs font-medium mt-2">
+                        Warning: Over capacity by {totalSelectedStudents - selected.capacity} students
+                      </p>
+                    )}
+                  </div>
+                </motion.div>
               )}
-              <span className="cursor-pointer text-gray-700 hover:text-gray-900" onClick={() => { setSelected({}); setTempSelect([]); }}>
-                <HiPencil size={24} />
+            </AnimatePresence>
+          </div>
+          
+          {/* Selected Stands Card */}
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold text-gray-800">Selected Stands</h2>
+              <span className="text-xs font-medium px-2 py-1 bg-purple-100 text-purple-800 rounded-full">
+                {tempSelect.length} selected
               </span>
             </div>
-          </motion.div>
-        )}
-
-        <motion.div layout className="bg-sky-200 py-5 px-7 rounded-2xl shadow-md w-full">
-          <div className="text-xl mb-2">Selected Stands</div>
-          <div className="overflow-x-hidden flex flex-wrap gap-3 overflow-y-scroll h-44 no-scrollbar">
-            {tempSelect.length === 0 ? (
-              <div className="text-gray-500 w-full flex items-center justify-center h-full">
-                No stands selected
+            
+            <div className="h-48 z-99 overflow-y-auto pr-2 custom-scrollbar">
+              <AnimatePresence>
+                {tempSelect.length === 0 ? (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="h-full flex flex-col items-center justify-center text-gray-400"
+                  >
+                    <div className="bg-gray-100 p-4 rounded-full mb-3">
+                      <FaPlus className="text-xl" />
+                    </div>
+                    <p className="text-gray-500">No stands selected</p>
+                    <p className="text-sm mt-1 text-gray-400">Select stands from the list below</p>
+                  </motion.div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {tempSelect.map((stand, idx) => (
+                      <motion.div
+                        key={idx}
+                        layout
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        whileHover={{ y: -3 }}
+                        className="bg-gray-50 border border-gray-200 rounded-lg p-3 relative group"
+                      >
+                        <div className="flex justify-between items-center">
+                          <h4 className="font-medium text-gray-800">{stand.name}</h4>
+                          <span className="text-sm font-semibold bg-purple-600 text-white px-2 py-0.5 rounded">
+                            {stand.students} students
+                          </span>
+                        </div>
+                        
+                        <button 
+                          onClick={() => handleRemoveSelected(stand.name)}
+                          className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-md border border-gray-200 hover:bg-red-50 z-10"
+                        >
+                          <HiOutlineX className="text-red-500 text-lg" />
+                        </button>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+        
+        {/* Available Stands Section */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-100">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold text-gray-800">Available Stands</h2>
+            <span className="text-xs font-medium px-2 py-1 bg-purple-100 text-purple-800 rounded-full">
+              {availableStands.reduce((acc, route) => acc + route.stands.length, 0)} available
+            </span>
+          </div>
+          
+          <div className="max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+            {availableStands.length === 0 ? (
+              <div className="py-10 text-center text-gray-500">
+                <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <FaPlus className="text-2xl text-gray-400" />
+                </div>
+                <p className="text-lg font-medium">All stands have been assigned</p>
+                <p className="text-sm mt-1">Reset assignments to free up stands</p>
               </div>
             ) : (
-              tempSelect.map((stand, idx) => (
-                <motion.div
+              availableStands.map((route, idx) => (
+                <motion.div 
                   key={idx}
-                  layout
-                  initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                  className="bg-sky-100 w-64 flex max-h-12 justify-between items-center px-4 py-3 rounded-lg relative"
-                  onMouseEnter={() => setHoveredSelectedStand(stand.name)}
-                  onMouseLeave={() => setHoveredSelectedStand(null)}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="mb-8 last:mb-0"
                 >
-                  <div>{stand.name}</div>
-                  <div>{(stand.boys || 0) + (stand.girls || 0)}</div>
-                  {hoveredSelectedStand === stand.name && (
-                    <button onClick={() => handleRemoveSelected(stand.name)} className="absolute bottom-3 bg-red-500 text-white right-2 px-3 rounded-md">
-                      Deselect
-                    </button>
-                  )}
+                  <div className="flex items-center gap-3 mb-4">
+                    <h3 className="text-md font-semibold text-gray-800">{route.name}</h3>
+                    {route.stands.length === 0 && (
+                      <span className="text-xs font-medium px-2 py-1 bg-green-100 text-green-800 rounded-full">
+                        All assigned
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                    {route.stands.map((stand, sidx) => (
+                      <motion.div
+                        key={sidx}
+                        whileHover={{ y: -5 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="bg-gray-50 border border-gray-200 rounded-lg p-3 relative overflow-hidden group cursor-pointer"
+                        onClick={() => handleStandSelect(stand)}
+                      >
+                        <div className="flex justify-between items-center">
+                          <h4 className="font-medium text-gray-800">{stand.name}</h4>
+                          <span className="text-sm font-semibold bg-purple-600 text-white px-2 py-0.5 rounded">
+                            {(stand.boys || 0) + (stand.girls || 0)} students
+                          </span>
+                        </div>
+                        
+                        <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 flex items-center justify-center text-white font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span>Select Stand</span>
+                          <FaPlus className="ml-2" />
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
                 </motion.div>
               ))
             )}
           </div>
-        </motion.div>
+        </div>
+        
+        {/* Assignment Table */}
+        <AssignmentTable assignedBuses={assignedBuses} mode="manual" onEdit={handleEditBus} onRemove={handleRemoveBus} />
+        
+        {/* Navigation Button */}
+        <Link to="/" className="fixed top-6 right-6 z-50">
+          <motion.div
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg"
+          >
+            <FaArrowLeftLong className="text-xl" />
+          </motion.div>
+        </Link>
+        
+        <ToastContainer 
+          autoClose={3000}
+        />
       </div>
-
-      <motion.div layout className="bg-[#F4A1FF] p-6 rounded-2xl shadow-md w-full min-h-[44vh]">
-        {availableStands.length === 0 ? (
-          <div className="text-2xl text-center h-full flex items-center justify-center text-gray-500">
-            {stands2?.length === 0 ? "No stands loaded" : "All stands have been assigned"}
-          </div>
-        ) : (
-          availableStands.map((route, idx) => (
-            <div key={idx} className="mb-6">
-              <div className="text-2xl mb-4">{route.name}
-                {route.stands.length === 0 && (
-                  <span className="text-green-800 ml-3 text-base font-semibold">(all assigned)</span>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-4">
-                {route.stands.map((stand, sidx) => (
-                  <motion.div
-                    layout
-                    key={sidx}
-                    onMouseOver={() => setHoveredStand({ routeIdx: idx, standIdx: sidx })}
-                    onMouseOut={() => setHoveredStand({ routeIdx: null, standIdx: null })}
-                    className="bg-[#F8C1FF] relative min-w-64 flex justify-between items-center px-4 py-3 rounded-lg max-h-12"
-                  >
-                    <div>{stand.name}</div>
-                    <div>{(stand.boys || 0) + (stand.girls || 0)}</div>
-                    {hoveredStand.routeIdx === idx && hoveredStand.standIdx === sidx && (
-                      <button onClick={() => handleStandSelect(stand)} className="absolute bottom-3 right-2 px-3 rounded-md bg-lime-200">
-                        Select
-                      </button>
-                    )}
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          ))
-        )}
-      </motion.div>
-
-      <AssignmentTable assignedBuses={assignedBuses} mode="manual" onEdit={handleEditBus} onRemove={handleRemoveBus} />
-
-      <Link to="/" className="fixed top-5 right-5 z-50 bg-blue-500 text-white rounded-full w-11 h-11 flex items-center justify-center shadow-md hover:bg-blue-600 transition-colors">
-        <FaArrowLeftLong />
-      </Link>
-
-      <ToastContainer />
+      
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #c7c7d1;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #a5a5b3;
+        }
+      `}</style>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import Automation from './pages/Automation.jsx';
 import Selection from './pages/Selection.jsx';
 import Morning from './pages/Morning.jsx';
 import Print from './pages/Print.jsx';
+import Day from './pages/Day.jsx';
 function App() {
   return (
     <HashRouter>
@@ -15,6 +16,9 @@ function App() {
         <Route path="/automation" element={<Automation />} />
         <Route path="/selection" element={<Selection />} />
         <Route path="/morning" element={<Morning />} />
+        <Route path="/day" element={<Day />} />
+
+        
         <Route path="/new" element={<Print />} />
 
         

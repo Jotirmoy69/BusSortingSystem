@@ -31,9 +31,9 @@ const Selection = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.97 }}
         >
-          <div className="h-60 w-96 flex items-center rounded-2xl justify-center font-semibold text-2xl hover:shadow-2xl transition-all duration-150 hover:translate-y-1 bg-gradient-to-r from-indigo-400 to-cyan-400">
+          <Link to="/day" className="h-60 w-96 flex items-center rounded-2xl justify-center font-semibold text-2xl hover:shadow-2xl transition-all duration-150 hover:translate-y-1 bg-gradient-to-r from-indigo-400 to-cyan-400">
             Day Shift
-          </div>
+          </Link>
         </motion.div>
       </div>
 

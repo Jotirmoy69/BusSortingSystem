@@ -69,7 +69,7 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="p-6 bg-[##F5F5FF] min-h-screen px-40">
+    <div className="p-6 bg-[#FFFFFF] min-h-screen px-40">
       <nav className="flex justify-between mt-10">
         <div className="flex items-center gap-5">
         <img src="./bcpsc.png" className="w-30 h-30" alt="" />

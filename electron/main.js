@@ -5,14 +5,16 @@ import { fileURLToPath } from "url";
 import { MongoClient } from "mongodb";
 import { spawn } from "child_process";
 import fs from "fs";
+import os from "os"; // <-- added
 import { MongoMemoryServer } from "mongodb-memory-server";
+
 initialize(); // Initializes the remote module
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const DB_NAME = "BusSortingDB";
-const DB_PORT = 10258;
+const DB_PORT = 27017;
 const DB_HOST = "127.0.0.1";
 
 let mainWindow;
@@ -47,11 +49,27 @@ async function startMongoDB() {
         throw new Error(`mongod binary not found at: ${mongodPath}`);
       }
 
-      const dbPath = app.getPath("userData");
+      // Try userData path first
+      let dbPath = app.getPath("userData");
 
+      try {
+        fs.accessSync(dbPath, fs.constants.W_OK);
+      } catch (err) {
+        // Fallback to OS temp directory if userData is not writable
+        const fallbackPath = path.join(os.tmpdir(), "BusSortingDBData");
+        if (!fs.existsSync(fallbackPath)) {
+          fs.mkdirSync(fallbackPath, { recursive: true });
+        }
+        console.warn(
+          `UserData path not writable (${dbPath}). Falling back to temp directory: ${fallbackPath}`
+        );
+        dbPath = fallbackPath;
+      }
+
+      // Make sure dbPath exists
       if (!fs.existsSync(dbPath)) {
         fs.mkdirSync(dbPath, { recursive: true });
-        console.log(`Created persistent DB directory at: ${dbPath}`);
+        console.log(`Created DB directory at: ${dbPath}`);
       }
 
       mongodProcess = spawn(mongodPath, [
@@ -80,6 +98,8 @@ async function startMongoDB() {
         console.log(`MongoDB process exited with code ${code}`);
       });
 
+      console.log(`MongoDB started with DB path: ${dbPath}`);
+
       return `mongodb://${DB_HOST}:${DB_PORT}`;
     }
   } catch (err) {
@@ -101,8 +121,10 @@ async function connectDB() {
     console.log(`Connected to database "${DB_NAME}" at ${uri}`);
 
     // Create collections if they don't exist
-    await db.createCollection("routes");
-    await db.createCollection("buses");
+    await db.createCollection("routes").catch(() => {}); // ignore if exists
+    await db.createCollection("buses").catch(() => {});
+    await db.createCollection("morningShift").catch(() => {});
+    await db.createCollection("dayShift").catch(() => {});
     console.log("Collections created/verified");
 
     return true;
@@ -119,6 +141,7 @@ function createWindow() {
       focusedWindow.webContents.toggleDevTools();
     }
   });
+
   const win = new BrowserWindow({
     width: 1920,
     height: 1080,
@@ -171,20 +194,17 @@ app.whenReady().then(async () => {
     const dbConnected = await connectDB();
     if (!dbConnected) throw new Error("Database connection failed");
 
-    // 🔄 REGISTER ALL IPC HANDLERS AFTER DB CONNECTION
-    // Route handlers
+    // Register IPC handlers (routes, buses, updates, deletes etc.)
+    ipcMain.handle("fetch-routes-morning", async () => {
+      try {
+        const routes = await db.collection("morningShift").find({}).toArray();
+        return { data: routes };
+      } catch (err) {
+        console.error("Error fetching morning routes:", err);
+        return { data: [], error: err.message };
+      }
+    });
 
-    // ipcMain.handle("fetch-routes-morning", async () => {
-    //   try {
-    //     const routes = await db.collection("morningShift").find({}).toArray();
-    //     return { data: routes };
-    //   } catch (err) {
-    //     console.error("Error fetching routes:", err);
-    //     return { data: [] };
-    //   }
-    // });
-    // Update morning route
-    // Update morning route - CORRECTED
     ipcMain.handle("update-route-morning", async (event, data) => {
       try {
         const result = await db.collection("morningShift").updateOne(
@@ -203,18 +223,6 @@ app.whenReady().then(async () => {
       }
     });
 
-    // Fetch morning routes - CORRECTED
-    ipcMain.handle("fetch-routes-morning", async () => {
-      try {
-        const routes = await db.collection("morningShift").find({}).toArray();
-        return { data: routes };
-      } catch (err) {
-        console.error("Error fetching morning routes:", err);
-        return { data: [], error: err.message };
-      }
-    });
-
-    // Delete morning route - CORRECTED
     ipcMain.handle("delete-route-morning", async (event, routeName) => {
       try {
         const result = await db
@@ -227,7 +235,6 @@ app.whenReady().then(async () => {
       }
     });
 
-    // Insert morning route - CORRECTED (already exists but included for completeness)
     ipcMain.handle("insert-route-morning", async (event, newRoute) => {
       try {
         const result = await db.collection("morningShift").insertOne(newRoute);
@@ -251,7 +258,6 @@ app.whenReady().then(async () => {
 
     ipcMain.handle("insert-bus-dummy", async (event, busData) => {
       try {
-        // Add default active status
         await db.collection("buses").deleteMany({});
         const result = await db.collection("buses").insertMany(busData);
         return { success: true, insertedCount: result.insertedCount };
@@ -261,17 +267,6 @@ app.whenReady().then(async () => {
       }
     });
 
-    // ipcMain.handle("delete-route-morning", async (event, routeName) => {
-    //   try {
-    //     const result = await db
-    //       .collection("morningShift")
-    //       .deleteOne({ name: routeName });
-    //     return { success: result.deletedCount > 0 };
-    //   } catch (err) {
-    //     console.error("Error deleting route:", err);
-    //     throw err;
-    //   }
-    // });
     ipcMain.handle("fetch-routes", async () => {
       try {
         const routes = await db.collection("dayShift").find({}).toArray();
@@ -304,7 +299,6 @@ app.whenReady().then(async () => {
       }
     });
 
-    // Bus handlers
     ipcMain.handle("fetch-buses", async () => {
       try {
         const buses = await db.collection("buses").find({}).toArray();
@@ -318,7 +312,6 @@ app.whenReady().then(async () => {
 
     ipcMain.handle("insert-bus", async (event, busData) => {
       try {
-        // Add default active status
         const busWithStatus = { ...busData, isActive: true };
         console.log("Inserting bus:", busWithStatus);
         const result = await db.collection("buses").insertOne(busWithStatus);
@@ -342,7 +335,6 @@ app.whenReady().then(async () => {
       }
     });
 
-    // NEW: Update bus status handler
     ipcMain.handle("update-bus-status", async (event, { number, isActive }) => {
       try {
         console.log(
@@ -360,19 +352,8 @@ app.whenReady().then(async () => {
       }
     });
 
-    //update handler
+    global.sharedData = {};
 
-    global.sharedData = {}; // Add this at the top of your main.js file
-
-    // ipcMain.on("open-new-window", (event, assignedBuses) => {
-    //   global.sharedData.assignedBuses = assignedBuses; // keep this for backup
-    //   createNewWindow(); // this will now send data via IPC
-    // });
-
-    // Add these new handlers in the "🟢 App ready" section after the existing handlers
-
-    // Update route handler
-    // Update route handler
     ipcMain.handle(
       "update-route",
       async (event, { name, stands, totalBoys, totalGirls }) => {
@@ -405,7 +386,6 @@ app.whenReady().then(async () => {
       }
     );
 
-    // Reset all data handler
     ipcMain.handle("reset-database", async () => {
       try {
         await db.collection("dayShift").deleteMany({});
@@ -419,15 +399,13 @@ app.whenReady().then(async () => {
     });
 
     ipcMain.on("request-assigned-buses", (event) => {
-      const win = BrowserWindow.getAllWindows().find(
-        (w) => w.webContents === event.sender
-      );
-      if (win && global.sharedData) {
+      if (global.sharedData) {
         event.sender.send("assigned-buses-data", global.sharedData);
       }
     });
 
     console.log("All IPC handlers registered");
+
     mainWindow = createWindow();
   } catch (err) {
     console.error("Application startup failed:", err);
@@ -438,8 +416,9 @@ app.whenReady().then(async () => {
     await cleanup();
     app.quit();
   }
+
   ipcMain.on("open-new-window", (event, data) => {
-    global.sharedData = data; // ✅ Store latest data globally
+    global.sharedData = data;
     createNewWindow(data);
   });
 });
@@ -472,7 +451,6 @@ function createNewWindow(data) {
 
   enable(newWin.webContents);
 
-  // Add safety checks and debug output
   console.log("Data being sent to new window:", JSON.stringify(data, null, 2));
 
   if (process.env.NODE_ENV === "development") {
@@ -483,12 +461,9 @@ function createNewWindow(data) {
     });
   }
 
-  // Send assignedBuses data when the window finishes loading
   newWin.webContents.once("did-finish-load", () => {
     setTimeout(() => {
       newWin.webContents.send("assigned-buses-data", data);
-    }, 200); // slight delay can fix timing issues
+    }, 200);
   });
 }
-
-// In open-new-window handler:

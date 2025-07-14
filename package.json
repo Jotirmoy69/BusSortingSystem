@@ -36,7 +36,10 @@
     "extraResources": [
       {
         "from": "electron/mongodb",
-        "to": "mongodb"
+        "to": "mongodb",
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "win": {
