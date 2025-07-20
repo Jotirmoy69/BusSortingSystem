@@ -75,7 +75,7 @@ const AssignmentTable = ({
       </h2>
       <div className="overflow-x-auto">
         <motion.table 
-          className="w-full shadow-lg rounded-2xl overflow-hidden"
+          className="w-full shadow-lg rounded-md overflow-hidden"
           initial="hidden"
           animate="visible"
           variants={tableVariants}

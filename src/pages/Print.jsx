@@ -27,7 +27,7 @@ function Print() {
       setVoices(availableVoices);
 
       // Auto-select Bengali voice if available
-      const bnVoice = availableVoices.find(v =>
+      const bnVoice = availableVoices.find((v) =>
         v.lang.toLowerCase().includes("bn")
       );
       if (bnVoice) {
@@ -57,22 +57,33 @@ function Print() {
               size: A4;
               margin: 20mm;
             }
-            body {
+            html, body {
               font-family: Arial, sans-serif;
               margin: 0;
               padding: 10px;
+              height: 100%;
+            }
+            body {
+              box-sizing: border-box;
+              overflow: hidden;
+              /* Approx. 2 pages of content */
+              max-height: calc(2 * 297mm - 40mm);
             }
             table {
               width: 100%;
               border-collapse: collapse;
+              font-size: 12px; /* Make table compact */
             }
             th, td {
               border: 1px solid #333;
-              padding: 8px;
+              padding: 6px;
               text-align: left;
             }
             th {
               background-color: #f0f0f0;
+            }
+            tr {
+              page-break-inside: avoid;
             }
           </style>
         </head>
@@ -100,11 +111,11 @@ function Print() {
       if (i >= assignedBuses.length) return;
 
       const bus = assignedBuses[i];
-      const standNames = bus.stands.map(s => s.stand).join(", ");
+      const standNames = bus.stands.map((s) => s.stand).join(", ");
       const message = `Bus ${bus.id} is assigned to route ${bus.route}, with ${bus.assigned} students. The stands are: ${standNames}.`;
 
       const utter = new SpeechSynthesisUtterance(message);
-      utter.voice = voices.find(v => v.name === selectedVoice);
+      utter.voice = voices.find((v) => v.name === selectedVoice);
 
       utter.onend = () => {
         i++;
