@@ -55,12 +55,12 @@ const Settings = () => {
   
   // Tab configuration for animation
   const tabs = [
-    { id: 0, label: "Day Shift", icon: "🌞" },
-    { id: 4, label: "Morning Shift", icon: "🌅" },
-    { id: 1, label: "Bus Management", icon: "🚌" },
-    { id: 2, label: "Update Route (Day)", icon: "🔄" },
-    { id: 5, label: "Update Route(Mor)", icon: "🔄" },
-    { id: 3, label: "Clear Database", icon: "⚠️" },
+    { id: 0, label: "দিবা শাখা", icon: "" },
+    { id: 4, label: "প্রভাতি শাখা", icon: "" },
+    { id: 1, label: "বাস ব্যাবস্থাপনা", icon: "" },
+    { id: 2, label: "পরিবর্তন - দিবা", icon: "" },
+    { id: 5, label: "পরিবর্তন - প্রভাতি", icon: "" },
+    { id: 3, label: "ফ্যাক্টরি রিসেট", icon: "" },
   ];
   
   // Helper functions
@@ -247,7 +247,7 @@ const Settings = () => {
       setRoutes(res.data || []);
     } catch (err) {
       console.error("Error fetching routes:", err);
-      toast.error("রুট লোড করতে সমস্যা হয়েছে");
+      toast.error("রাস্তা লোড করতে সমস্যা হয়েছে");
     }
   };
 
@@ -258,7 +258,7 @@ const Settings = () => {
       setRoutes2(res.data || []);
     } catch (err) {
       console.error("Error fetching routes:", err);
-      toast.error("রুট লোড করতে সমস্যা হয়েছে");
+      toast.error("রাস্তা লোড করতে সমস্যা হয়েছে");
     }
   };
 
@@ -334,7 +334,7 @@ const Settings = () => {
       );
 
       if (isDuplicateInRoutes) {
-        toast.error("এই স্ট্যান্ড নাম ইতোমধ্যে অন্য একটি রুটে রয়েছে");
+        toast.error("এই স্ট্যান্ডের নাম ইতোমধ্যে অন্য একটি রাস্তার রয়েছে");
         return;
       }
 
@@ -389,7 +389,7 @@ const Settings = () => {
       );
 
       if (isDuplicateInRoutes) {
-        toast.error("এই স্ট্যান্ড নাম ইতোমধ্যে অন্য একটি রুটে রয়েছে");
+        toast.error("এই স্ট্যান্ডের নাম ইতোমধ্যে অন্য একটি রাস্তার রয়েছে");
         return;
       }
 
@@ -421,7 +421,7 @@ const Settings = () => {
     const routeNameValue = routeName.trim().toLowerCase();
 
     if (!routeNameValue) {
-      toast.error("রুটের নাম লিখুন");
+      toast.error("রাস্তার নাম লিখুন");
       return;
     }
 
@@ -431,7 +431,7 @@ const Settings = () => {
     }
 
     if (routes.some((route) => route.name.toLowerCase() === routeNameValue)) {
-      toast.error("এই রুট নাম ইতিমধ্যে রয়েছে");
+      toast.error("এই রাস্তা নাম ইতিমধ্যে রয়েছে");
       return;
     }
 
@@ -452,10 +452,10 @@ const Settings = () => {
       setStandName([]);
       setBoysCount("");
       setGirlsCount("");
-      toast.success("রুট যোগ করা হয়েছে");
+      toast.success("রাস্তা যোগ করা হয়েছে");
     } catch (err) {
       console.error("Error inserting route:", err);
-      toast.error("রুট যোগ করতে সমস্যা হয়েছে");
+      toast.error("রাস্তা যোগ করতে সমস্যা হয়েছে");
     }
   };
 
@@ -463,7 +463,7 @@ const Settings = () => {
     const routeNameValue = routeName2.trim().toLowerCase();
 
     if (!routeNameValue) {
-      toast.error("রুটের নাম লিখুন");
+      toast.error("রাস্তার নাম লিখুন");
       return;
     }
 
@@ -473,7 +473,7 @@ const Settings = () => {
     }
 
     if (routes2.some((route) => route.name.toLowerCase() === routeNameValue)) {
-      toast.error("এই রুট নাম ইতিমধ্যে রয়েছে");
+      toast.error("এই রাস্তা নাম ইতিমধ্যে রয়েছে");
       return;
     }
 
@@ -491,10 +491,10 @@ const Settings = () => {
       setRouteName2("");
       setStandName2([]);
       setBoysCount2("");
-      toast.success("রুট যোগ করা হয়েছে");
+      toast.success("রাস্তা যোগ করা হয়েছে");
     } catch (err) {
       console.error("Error inserting route:", err);
-      toast.error("রুট যোগ করতে সমস্যা হয়েছে");
+      toast.error("রাস্তা যোগ করতে সমস্যা হয়েছে");
     }
   };
 
@@ -567,9 +567,9 @@ const Settings = () => {
 
         if (result?.success) {
           await fetchRoutes();
-          toast.success("রুটটি মুছে ফেলা হয়েছে");
+          toast.success("রাস্তাটি মুছে ফেলা হয়েছে");
         } else {
-          toast.error("রুট মুছে ফেলতে ব্যর্থ");
+          toast.error("রাস্তা মুছে ফেলতে ব্যর্থ");
         }
       } else if (itemToDelete.type === "bus") {
         const result = await ipcRenderer.invoke(
@@ -588,7 +588,7 @@ const Settings = () => {
       console.error("Error deleting:", err);
       toast.error(
         itemToDelete.type === "route"
-          ? "রুট মুছে ফেলতে সমস্যা হয়েছে"
+          ? "রাস্তা মুছে ফেলতে সমস্যা হয়েছে"
           : "বাস মুছে ফেলতে সমস্যা হয়েছে"
       );
     }
@@ -614,14 +614,14 @@ const Settings = () => {
 
         if (result?.success) {
           await fetchRoutes2();
-          toast.success("রুটটি মুছে ফেলা হয়েছে");
+          toast.success("রাস্তাটি মুছে ফেলা হয়েছে");
         } else {
-          toast.error("রুট মুছে ফেলতে ব্যর্থ");
+          toast.error("রাস্তা মুছে ফেলতে ব্যর্থ");
         }
       }
     } catch (err) {
       console.error("Error deleting:", err);
-      toast.error("রুট মুছে ফেলতে সমস্যা হয়েছে");
+      toast.error("রাস্তা মুছে ফেলতে সমস্যা হয়েছে");
     }
 
     setShowDeleteConfirm2(false);
@@ -693,7 +693,7 @@ const Settings = () => {
 
   const handleUpdateRoute = async () => {
     if (!selectedRoute) {
-      toast.error("রুট নির্বাচন করুন");
+      toast.error("রাস্তা নির্বাচন করুন");
       return;
     }
 
@@ -705,7 +705,7 @@ const Settings = () => {
     try {
       const routeData = routes.find((route) => route.name === selectedRoute);
       if (!routeData) {
-        toast.error("রুট পাওয়া যায়নি");
+        toast.error("রাস্তা পাওয়া যায়নি");
         return;
       }
 
@@ -730,13 +730,13 @@ const Settings = () => {
       if (result?.success) {
         await fetchRoutes(); // Refresh context or state
         resetForm();
-        toast.success("রুট আপডেট করা হয়েছে");
+        toast.success("রাস্তা আপডেট করা হয়েছে");
       } else {
-        toast.error("রুট আপডেট করতে ব্যর্থ");
+        toast.error("রাস্তা আপডেট করতে ব্যর্থ");
       }
     } catch (err) {
       console.error("Error updating route:", err);
-      toast.error("রুট আপডেট করতে সমস্যা হয়েছে");
+      toast.error("রাস্তা আপডেট করতে সমস্যা হয়েছে");
     }
   };
 
@@ -782,7 +782,7 @@ const Settings = () => {
     );
 
     if (isDuplicateInOtherRoutes) {
-      toast.error("এই স্ট্যান্ড নাম ইতিমধ্যে অন্য একটি রুটে রয়েছে");
+      toast.error("এই স্ট্যান্ডের নাম ইতিমধ্যে অন্য একটি রাস্তার রয়েছে");
       return;
     }
 
@@ -818,7 +818,7 @@ const Settings = () => {
   // Morning shift update handlers
   const handleUpdateRouteMorning = async () => {
     if (!selectedRouteMorning) {
-      toast.error("রুট নির্বাচন করুন");
+      toast.error("রাস্তা নির্বাচন করুন");
       return;
     }
 
@@ -846,13 +846,13 @@ const Settings = () => {
         setUpdatedStandsMorning([]);
         setNewStandNameMorning("");
         setNewBoysCountMorning("");
-        toast.success("মর্নিং শিফট রুট আপডেট করা হয়েছে");
+        toast.success("মর্নিং শিফট রাস্তা আপডেট করা হয়েছে");
       } else {
-        toast.error("রুট আপডেট করতে ব্যর্থ");
+        toast.error("রাস্তা আপডেট করতে ব্যর্থ");
       }
     } catch (err) {
       console.error("Error updating morning route:", err);
-      toast.error("রুট আপডেট করতে সমস্যা হয়েছে");
+      toast.error("রাস্তা আপডেট করতে সমস্যা হয়েছে");
     }
   };
 
@@ -885,7 +885,7 @@ const Settings = () => {
     );
 
     if (isDuplicateInOtherRoutes) {
-      toast.error("এই স্ট্যান্ড নাম ইতিমধ্যে অন্য একটি রুটে রয়েছে");
+      toast.error("এই স্ট্যান্ডের নাম ইতিমধ্যে অন্য একটি রাস্তার রয়েছে");
       return;
     }
 
@@ -955,11 +955,11 @@ const Settings = () => {
             className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full"
           >
             <h3 className="text-xl font-bold mb-4">
-              {deleteType === "route" ? "রুট মুছে ফেলুন" : "বাস মুছে ফেলুন"}
+              {deleteType === "route" ? "রাস্তা মুছে ফেলুন" : "বাস মুছে ফেলুন"}
             </h3>
             <p className="mb-6">
               আপনি কি "{itemToDelete.name}"{" "}
-              {deleteType === "route" ? "রুটটি" : "বাসটি"} মুছে ফেলতে চান?
+              {deleteType === "route" ? "রাস্তাটি" : "বাসটি"} মুছে ফেলতে চান?
             </p>
             <div className="flex justify-end space-x-3">
               <motion.button
@@ -995,9 +995,9 @@ const Settings = () => {
             animate={{ scale: 1 }}
             className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full"
           >
-            <h3 className="text-xl font-bold mb-4">রুট মুছে ফেলুন</h3>
+            <h3 className="text-xl font-bold mb-4">রাস্তা মুছে ফেলুন</h3>
             <p className="mb-6">
-              আপনি কি "{itemToDelete2.name}" রুটটি মুছে ফেলতে চান?
+              আপনি কি "{itemToDelete2.name}" রাস্তাটি মুছে ফেলতে চান?
             </p>
             <div className="flex justify-end space-x-3">
               <motion.button
@@ -1108,7 +1108,7 @@ const Settings = () => {
         >
           <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-200">
             <h1 className="text-2xl font-bold text-[#2F1C6A] -800">
-              Day Shift
+              দিবা শাখা
             </h1>
             <div className="text-lg font-semibold">
               Total Students: {totalDayStudents}
@@ -1134,7 +1134,7 @@ const Settings = () => {
                   onChange={handleChangeRouteName}
                   type="text"
                   className="w-full p-3 border border-gray-300 rounded focus:outline-none"
-                  placeholder="যেমন: রুট ১"
+                  placeholder="যেমন: রাস্তা ১"
                 />
               </div>
             </div>
@@ -1211,15 +1211,15 @@ const Settings = () => {
               onClick={handleAddRoute}
               className="bg-[#673DE5] cursor-pointer  duration-200 text-white px-6 py-3 rounded font-bold hover:bg-[#5025D1] transition-colors"
             >
-              রুট যুক্ত করুন
+              রাস্তা যুক্ত করুন
             </motion.button>
 
             <div className="w-full mt-8">
-              <h3 className="mb-4">সকল রুটের তালিকা</h3>
+              <h3 className="mb-4">সকল রাস্তার তালিকা</h3>
               <table className="w-full mt-5">
                 <thead className="bg-[#8B5DFF]">
                   <tr className="text-white  rounded-tl-lg  text-left">
-                    <th className="p-3 border-b-2 border-gray-200">রুট নাম</th>
+                    <th className="p-3 border-b-2 border-gray-200">রাস্তা নাম</th>
                     <th className="p-3 border-b-2 border-gray-200">
                       স্ট্যান্ডসমূহ
                     </th>
@@ -1262,7 +1262,7 @@ const Settings = () => {
                         colSpan="5"
                         className="p-3 text-center text-[#2F1C6A] -500"
                       >
-                        কোনো রুট পাওয়া যায়নি
+                        কোনো রাস্তা পাওয়া যায়নি
                       </td>
                     </tr>
                   )}
@@ -1341,7 +1341,7 @@ const Settings = () => {
                 onClick={() => setDummy2(true)}
                 className="bg-purple-500 chutiya hover:bg-purple-600 text-white font-bold py-3 px-6 rounded transition-all hover:translate-y-[-2px] shadow hover:shadow-md"
               >
-                Add Bus from Excel
+                স্প্রেডশিট ইমপোর্ট
               </motion.button>
             </div>
 
@@ -1349,10 +1349,10 @@ const Settings = () => {
           <h1>সকল বাসের তালিকা</h1>
           <div className="flex gap-4">
             <div className="bg-purple-5 shadow-2xl border-3 border-[#673DE6] px-3 py-1 rounded">
-              Active Capacity: {activeBusCapacity}
+              সক্রিয় ধারণক্ষমতাঃ {activeBusCapacity}
             </div>
             <div className="bg-purple-500 drop-shadow-2xl text-white px-3 py-2 rounded">
-              Total Capacity: {totalBusCapacity}
+              মোট ধারণক্ষমতাঃ {totalBusCapacity}
             </div>
           </div>
         </div>
@@ -1445,23 +1445,23 @@ const Settings = () => {
         >
           <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-200">
             <h1 className="text-2xl font-bold text-[#2F1C6A] -800">
-              রুট আপডেট করুন (ডে শিফট)
+              রাস্তা আপডেট করুন (ডে শিফট)
             </h1>
           </div>
 
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
             <h2 className="text-xl font-bold mb-5 flex items-center">
-              <span className="mr-2">🔄</span> রুট আপডেট করুন
+              <span className="mr-2">🔄</span> রাস্তা আপডেট করুন
             </h2>
 
             <div className="mb-5">
-              <label className="block mb-2 font-bold">রুট নির্বাচন করুন</label>
+              <label className="block mb-2 font-bold">রাস্তা নির্বাচন করুন</label>
               <select
                 value={selectedRoute}
                 onChange={(e) => setSelectedRoute(e.target.value)}
                 className="w-full p-3 border border-gray-300 rounded focus:outline-none"
               >
-                <option value="">রুট নির্বাচন করুন</option>
+                <option value="">রাস্তা নির্বাচন করুন</option>
                 {routes.map((route) => (
                   <option key={route.name} value={route.name}>
                     {route.name}
@@ -1628,7 +1628,7 @@ const Settings = () => {
 
             <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-6">
               <p className="text-yellow-700">
-                সতর্কতা: এই অপারেশনটি সমস্ত রুট এবং বাস ডাটা মুছে ফেলবে। এটি
+                সতর্কতা: এই অপারেশনটি সমস্ত রাস্তা এবং বাস ডাটা মুছে ফেলবে। এটি
                 শুধুমাত্র তখন ব্যবহার করুন যখন আপনি নিশ্চিত যে আপনি সমস্ত ডাটা
                 রিসেট করতে চান।
               </p>
@@ -1638,7 +1638,7 @@ const Settings = () => {
               <div className="text-5xl mb-6">🔄</div>
               <h3 className="text-2xl font-bold mb-4">ডাটাবেস রিসেট করুন</h3>
               <p className="text-[#2F1C6A] -600 mb-8 text-center max-w-md">
-                এই বোতাম টিপলে সমস্ত রুট এবং বাস ডাটা স্থায়ীভাবে মুছে যাবে।
+                এই বোতাম টিপলে সমস্ত রাস্তা এবং বাস ডাটা স্থায়ীভাবে মুছে যাবে।
                 পূর্বে সংরক্ষিত কোনো ডাটা পুনরুদ্ধার করা যাবে না।
               </p>
 
@@ -1667,7 +1667,7 @@ const Settings = () => {
         >
           <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-200">
             <h1 className="text-2xl font-bold text-[#2F1C6A] -800">
-              Morning Shift
+              প্রভাতি শাখা
             </h1>
             <div className="text-lg font-semibold">
               Total Students: {totalMorningStudents}
@@ -1689,7 +1689,7 @@ const Settings = () => {
                 onClick={() => setDummy(!dummy)}
                 className="bg-[#673DE5] cursor-pointer  duration-200 text-white px-6 py-3 rounded-md font-bold hover:bg-[#5025D1] transition-colors"
               >
-                Add From Excel
+                স্প্রেডশিট ইমপোর্ট
               </motion.button>
             </div>
 
@@ -1701,7 +1701,7 @@ const Settings = () => {
                   onChange={handleChangeRouteName2}
                   type="text"
                   className="w-full p-3 border border-gray-300 rounded focus:outline-none"
-                  placeholder="যেমন: রুট ১"
+                  placeholder="যেমন: রাস্তা ১"
                 />
               </div>
             </div>
@@ -1765,15 +1765,15 @@ const Settings = () => {
               onClick={handleAddRoute2}
               className="bg-[#673DE5] cursor-pointer  duration-200 text-white px-6 py-3 rounded font-bold hover:bg-[#5025D1] transition-colors"
             >
-              রুট যুক্ত করুন
+              রাস্তা যুক্ত করুন
             </motion.button>
 
             <div className="w-full mt-8">
-              <h3 className="mb-4">সকল রুটের তালিকা</h3>
+              <h3 className="mb-4">সকল রাস্তার তালিকা</h3>
               <table className="w-full mt-5">
                 <thead className="bg-[#8B5DFF]">
                   <tr className="bg-ray-100 text-white text-left">
-                    <th className="p-3 border-b-2 border-gray-200">রুট নাম</th>
+                    <th className="p-3 border-b-2 border-gray-200">রাস্তা নাম</th>
                     <th className="p-3 border-b-2 border-gray-200">
                       স্ট্যান্ডসমূহ
                     </th>
@@ -1812,7 +1812,7 @@ const Settings = () => {
                         colSpan="4"
                         className="p-3 text-center text-[#2F1C6A] -500"
                       >
-                        কোনো রুট পাওয়া যায়নি
+                        কোনো রাস্তা পাওয়া যায়নি
                       </td>
                     </tr>
                   )}
@@ -1845,17 +1845,17 @@ const Settings = () => {
         >
           <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-200">
             <h1 className="text-2xl font-bold text-[#2F1C6A] -800">
-              রুট আপডেট করুন (মর্নিং শিফট)
+              রাস্তা আপডেট করুন (মর্নিং শিফট)
             </h1>
           </div>
 
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
             <h2 className="text-xl font-bold mb-5 flex items-center">
-              <span className="mr-2">🔄</span> মর্নিং শিফট রুট আপডেট করুন
+              <span className="mr-2">🔄</span> মর্নিং শিফট রাস্তা আপডেট করুন
             </h2>
 
             <div className="mb-5">
-              <label className="block mb-2 font-bold">রুট নির্বাচন করুন</label>
+              <label className="block mb-2 font-bold">রাস্তা নির্বাচন করুন</label>
               <select
                 value={selectedRouteMorning}
                 onChange={(e) => {
@@ -1869,7 +1869,7 @@ const Settings = () => {
                 }}
                 className="w-full p-3 border border-gray-300 rounded focus:outline-none"
               >
-                <option value="">রুট নির্বাচন করুন</option>
+                <option value="">রাস্তা নির্বাচন করুন</option>
                 {routes2.map((route) => (
                   <option key={route.name} value={route.name}>
                     {route.name}

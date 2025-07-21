@@ -70,8 +70,8 @@ const AssignmentTable = ({
 
   return (
     <div className="mt-6">
-      <h2 className="text-2xl font-bold mb-4">
-        {mode === 'automation' ? 'Automated Assignments' : 'Current Assignments'}
+      <h2 className="text-2xl font-bold mb-4 font-[Noto Serif Bengali]">
+        {mode === 'automation' ? 'অটোমেটিক নির্ধারণসমূহ' : 'বর্তমান নির্ধারণসমূহ'}
       </h2>
       <div className="overflow-x-auto">
         <motion.table 
@@ -82,22 +82,22 @@ const AssignmentTable = ({
         >
           <thead className="bg-[#8B5DFF] text-white">
             <tr>
-              <th className="border border-gray-500 p-2">Bus ID</th>
-              <th className="border border-gray-500 p-2">Capacity</th>
-              <th className="border border-gray-500 p-2">Assigned</th>
-              <th className="border border-gray-500 p-2">Utilization</th>
+              <th className="border border-gray-500 p-2">বাস নং</th>
+              <th className="border border-gray-500 p-2">ধারণক্ষমতা</th>
+              <th className="border border-gray-500 p-2">পূর্ণ</th>
+              <th className="border border-gray-500 p-2">পূরণের হার</th>
               {mode === 'automation' && (
                 <>
-                  <th className="border border-gray-500 p-2">Boys</th>
-                  <th className="border border-gray-500 p-2">Girls</th>
+                  <th className="border border-gray-500 p-2">ছাত্র</th>
+                  <th className="border border-gray-500 p-2">ছাত্রী</th>
                 </>
               )}
-              <th className="border border-gray-500 p-2">Stands</th>
+              <th className="border border-gray-500 p-2">স্ট্যান্ডসমূহ</th>
               {mode === 'automation' && (
-                <th className="border border-gray-500 p-2">Route</th>
+                <th className="border border-gray-500 p-2">রাস্তা</th>
               )}
               {location.pathname === '/morning' && mode === 'manual' && (
-                <th className="border border-gray-500 p-2">Actions</th>
+                <th className="border border-gray-500 p-2">সক্রিয়তা</th>
               )}
             </tr>
           </thead>
@@ -109,7 +109,7 @@ const AssignmentTable = ({
                   colSpan={mode === 'automation' ? 8 : 6} 
                   className="text-center p-4 text-gray-500"
                 >
-                  No buses assigned yet
+                  কোনো বাসের জন্য এখনো কোন রাস্তা নির্ধারণ করা হয়নি
                 </td>
               </motion.tr>
             ) : (

@@ -5,8 +5,8 @@ import { motion } from "framer-motion";
 
 const Selection = () => {
   return (
-    <div className="font-[clash] flex px-20 py-0 flex-col">
-      <h1 className="text-start fixed top-10 text-4xl">Selection</h1>
+    <div className="font-[Noto Serif Bengali] flex px-20 py-0 flex-col">
+      <h1 className="text-start fixed top-10 text-4xl">ম্যানুয়াল মোড</h1>
 
       <div className="w-full h-screen gap-10 flex justify-center items-center">
         <motion.div
@@ -20,7 +20,7 @@ const Selection = () => {
             to="/morning"
             className="h-60 w-96 flex items-center rounded-2xl justify-center font-semibold text-2xl hover:shadow-2xl transition-all duration-150 hover:translate-y-1 bg-gradient-to-r from-teal-200 to-teal-500"
           >
-            Morning Shift
+            প্রভাতি শাখা
           </Link>
         </motion.div>
 
@@ -32,7 +32,7 @@ const Selection = () => {
           whileTap={{ scale: 0.97 }}
         >
           <Link to="/day" className="h-60 w-96 flex items-center rounded-2xl justify-center font-semibold text-2xl hover:shadow-2xl transition-all duration-150 hover:translate-y-1 bg-gradient-to-r from-indigo-400 to-cyan-400">
-            Day Shift
+            দিবা শাখা
           </Link>
         </motion.div>
       </div>

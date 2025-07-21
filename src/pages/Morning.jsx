@@ -131,8 +131,8 @@ export default function Morning() {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Manual Bus Assignment</h1>
-            <p className="text-gray-500 text-sm">Assign stands to buses manually</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">প্রভাতি শাখা</h1>
+            <p className="text-gray-500 text-sm">প্রভাতি শাখার শিশুদের জন্য মানুষ হিসেবে নির্ধারণ করুন</p>
           </div>
           
           <div className="flex flex-wrap gap-3">
@@ -145,7 +145,7 @@ export default function Morning() {
                 ${saving ? "bg-purple-400 cursor-not-allowed" : 
                   "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md hover:shadow-lg"}`}
             >
-              {saving ? "Saving..." : "Save Assignment"}
+              {saving ? "সেভ হচ্ছে..." : "সেভ করুন"}
             </motion.button>
             
             <motion.button
@@ -156,7 +156,7 @@ export default function Morning() {
                 bg-white text-red-600 border border-red-200 hover:bg-red-50 shadow hover:shadow-md"
             >
               <HiOutlineTrash className="text-lg" />
-              <span>Reset All</span>
+              <span>রিসেট</span>
             </motion.button>
           </div>
         </div>
@@ -166,9 +166,9 @@ export default function Morning() {
           {/* Bus Selection Card */}
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-gray-800">Bus Selection</h2>
+              <h2 className="text-lg font-semibold text-gray-800">বাস নির্ধারণ</h2>
               <span className="text-xs font-medium px-2 py-1 bg-purple-100 text-purple-800 rounded-full">
-                {availableBuses.length} available
+                {availableBuses.length} টি ব্যবহারযোগ্য
               </span>
             </div>
 
@@ -189,10 +189,10 @@ export default function Morning() {
                     }}
                     className="w-full p-3 rounded-lg border border-gray-200 bg-gray-50 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
                   >
-                    <option value="">Select a bus</option>
+                    <option value="">বাস সিলেক্ট করুন</option>
                     {availableBuses.map(bus => (
                       <option key={bus.number} value={bus.number}>
-                        Bus #{bus.number} • {bus.capacity} seats
+                        বাস নং {bus.number}, সিটঃ {bus.capacity}টি
                       </option>
                     ))}
                   </motion.select>
@@ -208,11 +208,11 @@ export default function Morning() {
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                        <span className="bg-purple-600 text-white p-1 px-2.5 rounded-lg">#{selected.number}</span>
-                        <span>{selected.capacity} Seats</span>
+                        <span className="bg-purple-600 text-white p-1 px-2.5 rounded-lg">{selected.number}</span>
+                        <span>{selected.capacity} টি আসন</span>
                       </h3>
                       <p className="text-sm text-gray-500 mt-1">
-                        {tempSelect.length} stand{tempSelect.length !== 1 ? 's' : ''} selected
+                        {tempSelect.length} টি স্ট্যান্ড{tempSelect.length !== 1 ? '' : ''}
                       </p>
                     </div>
                     
@@ -227,9 +227,9 @@ export default function Morning() {
                   {/* Occupancy bar */}
                   <div className="mt-5">
                     <div className="flex justify-between text-sm font-medium mb-1">
-                      <span className="text-gray-600">Occupancy</span>
+                      <span className="text-gray-600">পূরণের হার-</span>
                       <span className={`${totalSelectedStudents > selected.capacity ? "text-red-600" : "text-gray-600"}`}>
-                        {totalSelectedStudents}/{selected.capacity} students
+                        {totalSelectedStudents} জন (মোট {selected.capacity})
                       </span>
                     </div>
                     
@@ -256,9 +256,9 @@ export default function Morning() {
           {/* Selected Stands Card */}
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-gray-800">Selected Stands</h2>
+              <h2 className="text-lg font-semibold text-gray-800">নির্ধারিত স্ট্যান্ডসমূহ</h2>
               <span className="text-xs font-medium px-2 py-1 bg-purple-100 text-purple-800 rounded-full">
-                {tempSelect.length} selected
+                {tempSelect.length} টি স্ট্যান্ড
               </span>
             </div>
             
@@ -273,8 +273,8 @@ export default function Morning() {
                     <div className="bg-gray-100 p-4 rounded-full mb-3">
                       <FaPlus className="text-xl" />
                     </div>
-                    <p className="text-gray-500">No stands selected</p>
-                    <p className="text-sm mt-1 text-gray-400">Select stands from the list below</p>
+                    <p className="text-gray-500">কোনো স্ট্যান্ড নির্ধারণ করা হয়নি</p>
+                    <p className="text-sm mt-1 text-gray-400">নিচের লিস্ট থেকে প্রথমে স্ট্যান্ড সিলেক্ট করুন</p>
                   </motion.div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -291,7 +291,7 @@ export default function Morning() {
                         <div className="flex justify-between items-center">
                           <h4 className="font-medium text-gray-800">{stand.name}</h4>
                           <span className="text-sm font-semibold bg-purple-600 text-white px-2 py-0.5 rounded">
-                            {stand.students} students
+                            {stand.students} জন শিক্ষার্থী
                           </span>
                         </div>
                         
@@ -313,9 +313,9 @@ export default function Morning() {
         {/* Available Stands Section */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-100">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">Available Stands</h2>
+            <h2 className="text-lg font-semibold text-gray-800">ব্যবহারযোগ্য স্ট্যান্ডসমূহ</h2>
             <span className="text-xs font-medium px-2 py-1 bg-purple-100 text-purple-800 rounded-full">
-              {availableStands.reduce((acc, route) => acc + route.stands.length, 0)} available
+              মোটঃ {availableStands.reduce((acc, route) => acc + route.stands.length, 0)}
             </span>
           </div>
           
@@ -358,12 +358,12 @@ export default function Morning() {
                         <div className="flex justify-between items-center">
                           <h4 className="font-medium text-gray-800">{stand.name}</h4>
                           <span className="text-sm font-semibold bg-purple-600 text-white px-2 py-0.5 rounded">
-                            {(stand.boys || 0) + (stand.girls || 0)} students
+                            {(stand.boys || 0) + (stand.girls || 0)} শিক্ষার্থী
                           </span>
                         </div>
                         
                         <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 flex items-center justify-center text-white font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                          <span>Select Stand</span>
+                          <span>সিলেক্ট করুন</span>
                           <FaPlus className="ml-2" />
                         </div>
                       </motion.div>

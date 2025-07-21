@@ -227,7 +227,7 @@ const Automation = () => {
   const summary = getSummaryData();
 
   return (
-    <div className="w-full font-[clash] min-h-screen px-4 md:px-20 lg:px-40 py-10 md:py-20 bg-white">
+    <div className="w-full font-[Noto Serif Bengali] min-h-screen px-4 md:px-20 lg:px-40 py-10 md:py-20 bg-white">
       <ToastContainer />
       <nav className="flex flex-col md:flex-row items-center justify-between gap-4">
         <img src="./src/assets/bcpsc.png" className="w-20 h-20" alt="logo" />
@@ -262,7 +262,7 @@ const Automation = () => {
               button === 5 ? "bg-purple-500 -500" : "bg-gray-500"
             } hover:bg-purple-600 -600`}
           >
-            Morning Shift
+            প্রভাতি শাখা
           </button>
           <button
             onClick={handleAssign}

@@ -129,7 +129,7 @@ export default function Morning() {
   })) || [];
 
   return (
-    <div className="bg-white min-h-screen font-bold text-black space-y-4 font-[clash] p-10">
+    <div className="bg-white min-h-screen font-bold text-black space-y-4 font-[Noto Serif Bengali] p-10">
       <div className="flex justify-between items-center pr-16">
         <h1 className="text-3xl">Manual Selection</h1>
         <div className="flex gap-3">

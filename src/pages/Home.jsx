@@ -87,7 +87,7 @@ const Home = () => {
             to={"/automation"}
             className="bg-purple-600 cursor-pointer text-white px-4 py-2 rounded"
           >
-            স্বয়ংক্রিয় নির্ধারণ
+            অটোমেটিক
           </Link>
           <button
             onClick={handleClick}
@@ -96,7 +96,7 @@ const Home = () => {
             প্রিন্ট
           </button>
           <button className="bg-purple-600 text-white px-4 py-2 rounded">
-            ডিজাইন
+            ডিসপ্লে
           </button>
           <button className="bg-purple-600 text-white px-4 py-2 rounded">
             রেকর্ডিং

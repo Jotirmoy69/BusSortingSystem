@@ -58,7 +58,7 @@ function Print() {
               margin: 20mm;
             }
             html, body {
-              font-family: Arial, sans-serif;
+              font-family: Noto Serif Bengali, Poppins;
               margin: 0;
               padding: 10px;
               height: 100%;
@@ -141,7 +141,7 @@ function Print() {
             onClick={handlePrint}
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold h-10 py-2 px-4 rounded"
           >
-            Print Table (A4)
+            প্রিন্ট (A4)
           </button>
 
           <button
