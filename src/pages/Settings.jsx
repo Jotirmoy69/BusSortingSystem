@@ -29,30 +29,28 @@ const Settings = () => {
   const [totalDayStudents, setTotalDayStudents] = useState(0);
   const [totalMorningStudents, setTotalMorningStudents] = useState(0);
   const [dummy, setDummy] = useState(false);
-  const [dummy2, setDummy2] = useState(false);// Update route states
+  const [dummy2, setDummy2] = useState(false);
+  const [dummy3, setDummy3] = useState(false); // Update route states
   const [selectedRoute, setSelectedRoute] = useState("");
   const [updatedStands, setUpdatedStands] = useState([]);
   const [newStandName, setNewStandName] = useState("");
   const [newBoysCount, setNewBoysCount] = useState("");
-  const [newGirlsCount, setNewGirlsCount] = useState("");// Morning shift update states
+  const [newGirlsCount, setNewGirlsCount] = useState(""); // Morning shift update states
   const [selectedRouteMorning, setSelectedRouteMorning] = useState("");
   const [updatedStandsMorning, setUpdatedStandsMorning] = useState([]);
   const [newStandNameMorning, setNewStandNameMorning] = useState("");
-  const [newBoysCountMorning, setNewBoysCountMorning] = useState("");// Bus management states
+  const [newBoysCountMorning, setNewBoysCountMorning] = useState(""); // Bus management states
   const [busNumber, setBusNumber] = useState("");
   const [busCapacity, setBusCapacity] = useState("");
-  const [buses, setBuses] = useState([]);  // Delete confirmation states
+  const [buses, setBuses] = useState([]); // Delete confirmation states
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [deleteType, setDeleteType] = useState("");
   const mainContentRef = useRef(null);
   const [showDeleteConfirm2, setShowDeleteConfirm2] = useState(false);
   const [itemToDelete2, setItemToDelete2] = useState(null);
-  const {
-    
-    setActiveBuses,
-  } = useAppContext();
-  
+  const { setActiveBuses } = useAppContext();
+
   // Tab configuration for animation
   const tabs = [
     { id: 0, label: "Day Shift", icon: "🌞" },
@@ -62,7 +60,7 @@ const Settings = () => {
     { id: 5, label: "Update Route(Mor)", icon: "🔄" },
     { id: 3, label: "Clear Database", icon: "⚠️" },
   ];
-  
+
   // Helper functions
   const getIpcRenderer = () => {
     if (window.require) {
@@ -119,6 +117,66 @@ const Settings = () => {
     }
   }, [selectedRouteMorning, isShow]);
 
+  const handleDayShiftUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      const bstr = evt.target.result;
+      const workbook = XLSX.read(bstr, { type: "binary" });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+      const routeMap = {};
+
+      for (let i = 1; i < rows.length; i++) {
+        const [standName, boysCount, girlsCount, routeName] = rows[i];
+
+        if (
+          !routeName ||
+          !standName ||
+          boysCount === undefined ||
+          girlsCount === undefined
+        )
+          continue;
+
+        if (!routeMap[routeName]) {
+          routeMap[routeName] = {
+            name: routeName,
+            stands: [],
+            totalBoys: 0,
+            totalGirls: 0,
+          };
+        }
+
+        const boys = Number(boysCount);
+        const girls = Number(girlsCount);
+        routeMap[routeName].stands.push({
+          name: standName,
+          boys: boys,
+          girls: girls,
+        });
+
+        routeMap[routeName].totalBoys += boys;
+        routeMap[routeName].totalGirls += girls;
+      }
+
+      const parsedData = Object.values(routeMap);
+
+      const ipcRenderer = getIpcRenderer();
+      setRoutes(parsedData);
+      console.log(...parsedData);
+
+      await ipcRenderer.invoke("insert-route-dummy", parsedData);
+      fetchRoutes();
+      toast.success("Day shift data applied from Excel successfully!");
+    };
+
+    reader.readAsBinaryString(file);
+  };
+
   const handleBusUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -169,7 +227,7 @@ const Settings = () => {
 
     // Calculate active bus capacity
     const activeCapacity = buses.reduce(
-      (acc, bus) => acc + (bus.isActive ? (bus.capacity || 0) : 0),
+      (acc, bus) => acc + (bus.isActive ? bus.capacity || 0 : 0),
       0
     );
     setActiveBusCapacity(activeCapacity);
@@ -696,19 +754,13 @@ const Settings = () => {
       toast.error("রুট নির্বাচন করুন");
       return;
     }
-
+  
     if (!updatedStands.length) {
       toast.error("অন্তত একটি স্ট্যান্ড যোগ করুন");
       return;
     }
-
+  
     try {
-      const routeData = routes.find((route) => route.name === selectedRoute);
-      if (!routeData) {
-        toast.error("রুট পাওয়া যায়নি");
-        return;
-      }
-
       const totalBoys = updatedStands.reduce(
         (acc, curr) => acc + Number(curr.boys || 0),
         0
@@ -717,26 +769,26 @@ const Settings = () => {
         (acc, curr) => acc + Number(curr.girls || 0),
         0
       );
-
+  
       const ipcRenderer = getIpcRenderer();
       const result = await ipcRenderer.invoke("update-route", {
         name: selectedRoute,
         stands: updatedStands,
         totalBoys,
-        totalGirls,
-        mid: routeData.mid, // Preserve original mid
+        totalGirls
       });
-
+  
       if (result?.success) {
-        await fetchRoutes(); // Refresh context or state
+        await fetchRoutes();
         resetForm();
         toast.success("রুট আপডেট করা হয়েছে");
       } else {
-        toast.error("রুট আপডেট করতে ব্যর্থ");
+        const errorMsg = result?.error || "রুট আপডেট করতে ব্যর্থ";
+        toast.error(errorMsg);
       }
     } catch (err) {
       console.error("Error updating route:", err);
-      toast.error("রুট আপডেট করতে সমস্যা হয়েছে");
+      toast.error(err.message || "রুট আপডেট করতে সমস্যা হয়েছে");
     }
   };
 
@@ -1124,6 +1176,14 @@ const Settings = () => {
                   রাস্তা ব্যবস্থাপনা
                 </h1>
               </div>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setDummy3(true)}
+                className="bg-[#673DE5] cursor-pointer duration-200 text-white px-6 py-3 rounded-md font-bold hover:bg-[#5025D1] transition-colors"
+              >
+                Add From Excel
+              </motion.button>
             </div>
 
             <div className="flex gap-5 mb-5">
@@ -1272,10 +1332,16 @@ const Settings = () => {
                     <td className="p-3">Total</td>
                     <td className="p-3"></td>
                     <td className="p-3">
-                      {routes.reduce((acc, route) => acc + (route.totalBoys || 0), 0)}
+                      {routes.reduce(
+                        (acc, route) => acc + (route.totalBoys || 0),
+                        0
+                      )}
                     </td>
                     <td className="p-3">
-                      {routes.reduce((acc, route) => acc + (route.totalGirls || 0), 0)}
+                      {routes.reduce(
+                        (acc, route) => acc + (route.totalGirls || 0),
+                        0
+                      )}
                     </td>
                     <td className="p-3"></td>
                   </tr>
@@ -1288,19 +1354,19 @@ const Settings = () => {
 
       {/* Bus Management */}
       <AnimatePresence mode="wait">
-    <motion.div
-      key={isShow}
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      transition={{ duration: 0.2 }}
-      className={`flex-1 ml-64 p-8 ${isShow !== 1 ? "hidden" : ""}`}
-      id="bus-management"
-    >
-      <h1 className="text-2xl font-bold mb-4">বাস ম্যানেজমেন্ট</h1>
-      <div className="border-b border-gray-200 w-full"></div>
+        <motion.div
+          key={isShow}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.2 }}
+          className={`flex-1 ml-64 p-8 ${isShow !== 1 ? "hidden" : ""}`}
+          id="bus-management"
+        >
+          <h1 className="text-2xl font-bold mb-4">বাস ম্যানেজমেন্ট</h1>
+          <div className="border-b border-gray-200 w-full"></div>
 
-      <div className="shadow-lg rounded-sm p-10 mb-4 mt-8">
+          <div className="shadow-lg rounded-sm p-10 mb-4 mt-8">
             <div className="flex gap-5 mb-4">
               <div className="flex-1">
                 <label className="block font-bold mb-2">বাস নং</label>
@@ -1346,16 +1412,16 @@ const Settings = () => {
             </div>
 
             <div className="mt-8 mb-4 flex justify-between text-lg font-semibold">
-          <h1>সকল বাসের তালিকা</h1>
-          <div className="flex gap-4">
-            <div className="bg-purple-5 shadow-2xl border-3 border-[#673DE6] px-3 py-1 rounded">
-              Active Capacity: {activeBusCapacity}
+              <h1>সকল বাসের তালিকা</h1>
+              <div className="flex gap-4">
+                <div className="bg-purple-5 shadow-2xl border-3 border-[#673DE6] px-3 py-1 rounded">
+                  Active Capacity: {activeBusCapacity}
+                </div>
+                <div className="bg-purple-500 drop-shadow-2xl text-white px-3 py-2 rounded">
+                  Total Capacity: {totalBusCapacity}
+                </div>
+              </div>
             </div>
-            <div className="bg-purple-500 drop-shadow-2xl text-white px-3 py-2 rounded">
-              Total Capacity: {totalBusCapacity}
-            </div>
-          </div>
-        </div>
             <table className="w-full mt-5">
               <thead className="bg-[#8B5DFF] ">
                 <tr className="bg-gray-10 text-white">
@@ -1822,7 +1888,10 @@ const Settings = () => {
                     <td className="p-3">Total</td>
                     <td className="p-3"></td>
                     <td className="p-3 text-end">
-                      {routes2.reduce((acc, route) => acc + (route.totalBoys || 0), 0)}
+                      {routes2.reduce(
+                        (acc, route) => acc + (route.totalBoys || 0),
+                        0
+                      )}
                     </td>
                     <td className="p-3"></td>
                   </tr>
@@ -2053,6 +2122,38 @@ const Settings = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <AnimatePresence>
+  {dummy3 && (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="p-4 fixed z-99 backdrop-blur-md top-0 right-0 flex justify-center items-center bottom-0 left-0"
+    >
+      <motion.div
+        initial={{ scale: 0.9 }}
+        animate={{ scale: 1 }}
+        exit={{ scale: 0.9 }}
+        className="h-64 rounded-2xl flex items-center relative justify-center w-1/3 bg-[#F5F5FF] shadow-2xl"
+      >
+        <IoClose
+          className="absolute top-3 right-3 text-2xl cursor-pointer hover:rotate-90 transition-all duration-200"
+          onClick={() => setDummy3(false)}
+        />
+        <label className="cursor-pointer bg-purple-500 transition-all duration-200 text-white px-4 py-2 rounded hover:bg-purple-600">
+          Upload Day Shift XLSX
+          <input
+            type="file"
+            accept=".xlsx"
+            onChange={handleDayShiftUpload}
+            className="hidden"
+          />
+        </label>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
 
       <ToastContainer />
     </div>

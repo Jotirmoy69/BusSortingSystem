@@ -12,6 +12,7 @@ export default function Morning() {
   const [selected, setSelected] = useState({});
   const [tempSelect, setTempSelect] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [manualOverload, setManualOverload] = useState(27); // Default overload value
 
   const {
     activeBuses,
@@ -38,17 +39,17 @@ export default function Morning() {
     if (!stand) return toast.error("Invalid stand data!");
     if (!isBusSelected) return toast.error("Please select a bus before adding stands!");
     if (getAssignedStandNames().includes(stand.name)) return toast.error("This stand is already assigned!");
-
+  
     const totalStudents = (stand.boys || 0) + (stand.girls || 0);
-    const remainingCapacity = selected.capacity -
-      tempSelect.reduce((sum, s) => sum + (s.boys || 0) + (s.girls || 0), 0);
-
-    if (totalStudents > remainingCapacity + 27)
-      return toast.error("Cannot exceed bus capacity by more than 25 students!");
-
+    const newTotal = tempSelect.reduce((sum, s) => sum + s.students, 0) + totalStudents;
+  
+    // Use manualOverload value for capacity check
+    if (newTotal > selected.capacity + manualOverload)
+      return toast.error(`Cannot exceed bus capacity by more than ${manualOverload} students!`);
+  
     setTempSelect(prev => [...prev, {
       name: stand.name,
-      students: (stand.boys || 0) + (stand.girls || 0)
+      students: totalStudents
     }]);
   };
 
@@ -58,11 +59,14 @@ export default function Morning() {
 
   const handleEditBus = (bus) => {
     const standsToReturn = bus.stands.map(stand => ({
-      name: stand.stand || stand.name,
-      students: (stand.boys || 0) + (stand.girls || 0)
+      name: stand.name || stand.stand,
+      students: stand.total,
     }));
     setAssignedBuses(prev => prev.filter(b => b.id !== bus.id));
-    setSelected(bus);
+    setSelected({
+      ...bus,
+      number: bus.number || bus.id,
+    });
     setTempSelect(standsToReturn);
   };
 
@@ -120,10 +124,11 @@ export default function Morning() {
     )
   })) || [];
 
-  // Calculate occupancy percentage
+  // Calculate occupancy percentage using manualOverload
   const totalSelectedStudents = tempSelect.reduce((sum, s) => sum + s.students, 0);
+  const maxCapacity = isBusSelected ? selected.capacity + manualOverload : 0;
   const occupancyPercentage = isBusSelected ? 
-    Math.min(100, (totalSelectedStudents / selected.capacity) * 100) : 0;
+    Math.min(100, (totalSelectedStudents / maxCapacity) * 100) : 0;
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans p-6">
@@ -136,6 +141,18 @@ export default function Morning() {
           </div>
           
           <div className="flex flex-wrap gap-3">
+            {/* Overload Input */}
+            <div className="bg-gray-100 p-3 rounded-lg flex items-center gap-2">
+              <label className="text-sm font-medium">Overload Allowed:</label>
+              <input
+                type="number"
+                value={manualOverload}
+                onChange={(e) => setManualOverload(Number(e.target.value))}
+                className="w-16 px-2 py-1 border rounded"
+                min="0"
+              />
+            </div>
+            
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
@@ -229,7 +246,7 @@ export default function Morning() {
                     <div className="flex justify-between text-sm font-medium mb-1">
                       <span className="text-gray-600">Occupancy</span>
                       <span className={`${totalSelectedStudents > selected.capacity ? "text-red-600" : "text-gray-600"}`}>
-                        {totalSelectedStudents}/{selected.capacity} students
+                        {totalSelectedStudents}/{selected.capacity} + {manualOverload} (max: {selected.capacity + manualOverload})
                       </span>
                     </div>
                     
@@ -244,7 +261,8 @@ export default function Morning() {
                     
                     {totalSelectedStudents > selected.capacity && (
                       <p className="text-red-600 text-xs font-medium mt-2">
-                        Warning: Over capacity by {totalSelectedStudents - selected.capacity} students
+                        Overloaded by {totalSelectedStudents - selected.capacity} students
+                        (allowed: +{manualOverload})
                       </p>
                     )}
                   </div>

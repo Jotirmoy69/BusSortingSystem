@@ -1,12 +1,14 @@
 import React from "react";
 import { IoCloseOutline } from "react-icons/io5";
 import { useAppContext } from "../context/context";
+import { useLocation } from "react-router-dom";
 
 const PrePrint = ({ setprePrintShow }) => {
+  const location = useLocation();
  
   const { ipcRenderer } = window.require("electron");
 
-  const { assignedBuses } = useAppContext();
+  const { assignedBuses , assignedBusesDay } = useAppContext();
   const handleClick = () => {
     console.log({
       assignedBuses: assignedBuses,
@@ -15,6 +17,18 @@ const PrePrint = ({ setprePrintShow }) => {
     
     ipcRenderer.send("open-new-window", 
        assignedBuses
+    );
+  };
+  const handleClickDay = () => {
+    // console.log({
+    //   assignedBuses: assignedBusesDay,
+    //   mode: "automation",
+    // },);
+    console.log(location.pathname);
+    
+    
+    ipcRenderer.send("open-new-window", 
+      assignedBusesDay
     );
   };
   return (
@@ -32,7 +46,7 @@ const PrePrint = ({ setprePrintShow }) => {
           >
             Morning Shift
           </button>
-          <button className="  bg-gradient-to-r from-lime-200 via-lime-400 to-lime-500 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-lime-300 dark:focus:ring-lime-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center  text-white">
+          <button onClick={handleClickDay} className="  bg-gradient-to-r from-lime-200 via-lime-400 to-lime-500 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-lime-300 dark:focus:ring-lime-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center  text-white">
             Day Shift
           </button>
         </div>

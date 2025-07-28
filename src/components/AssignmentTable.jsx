@@ -1,6 +1,6 @@
 import React from "react";
-import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLocation } from "react-router-dom"; // ✅ Imported useLocation
 
 const AssignmentTable = ({ 
   assignedBuses = [], 
@@ -8,14 +8,16 @@ const AssignmentTable = ({
   onEdit = () => {},
   onRemove = () => {} 
 }) => {
-  const location = useLocation();
 
-  // Helper functions
+  const location = useLocation(); // ✅ Get current path
+  const showActions = ['/morning', '/day'].includes(location.pathname); // ✅ Only show on these paths
+
   const getBusIdentifier = (bus) => bus.id || bus.number || `bus-${Math.random().toString(36).substr(2, 5)}`;
   const getStandName = (stand) => stand.stand || stand.name || 'Unknown';
   const getTotalStudents = (stand) => stand.total || (stand.boys || 0) + (stand.girls || 0);
+  
+  const showGender = mode === 'day-shift';
 
-  // Animation variants
   const tableVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -68,11 +70,12 @@ const AssignmentTable = ({
     }
   };
 
+  const columnCount = showGender ? 
+    (mode === 'automation' ? 9 : 7) : 
+    (mode === 'automation' ? 8 : 6);
+
   return (
     <div className="mt-6">
-      <h2 className="text-2xl font-bold mb-4">
-        {mode === 'automation' ? 'Automated Assignments' : 'Current Assignments'}
-      </h2>
       <div className="overflow-x-auto">
         <motion.table 
           className="w-full shadow-lg rounded-md overflow-hidden"
@@ -86,17 +89,11 @@ const AssignmentTable = ({
               <th className="border border-gray-500 p-2">Capacity</th>
               <th className="border border-gray-500 p-2">Assigned</th>
               <th className="border border-gray-500 p-2">Utilization</th>
-              {mode === 'automation' && (
-                <>
-                  <th className="border border-gray-500 p-2">Boys</th>
-                  <th className="border border-gray-500 p-2">Girls</th>
-                </>
+              {showGender && (
+                <th className="border border-gray-500 p-2">Gender</th>
               )}
               <th className="border border-gray-500 p-2">Stands</th>
-              {mode === 'automation' && (
-                <th className="border border-gray-500 p-2">Route</th>
-              )}
-              {location.pathname === '/morning' && mode === 'manual' && (
+              {showActions && (
                 <th className="border border-gray-500 p-2">Actions</th>
               )}
             </tr>
@@ -106,7 +103,7 @@ const AssignmentTable = ({
             {assignedBuses.length === 0 ? (
               <motion.tr variants={rowVariants}>
                 <td 
-                  colSpan={mode === 'automation' ? 8 : 6} 
+                  colSpan={columnCount} 
                   className="text-center p-4 text-gray-500"
                 >
                   No buses assigned yet
@@ -172,15 +169,23 @@ const AssignmentTable = ({
                         </motion.span>
                       </td>
                       
-                      {mode === 'automation' && (
-                        <>
-                          <td className="border border-gray-300 p-3">
-                            {bus.boys ?? 'N/A'}
-                          </td>
-                          <td className="border border-gray-300 p-3">
-                            {bus.girls ?? 'N/A'}
-                          </td>
-                        </>
+                      {showGender && (
+                        <td className="border border-gray-300 p-3">
+                          <div className="flex flex-wrap gap-1">
+                            {bus.stands && bus.stands.map((stand, index) => (
+                              <span 
+                                key={index}
+                                className={`px-2 py-1 rounded-full text-xs ${
+                                  stand.gender === 'boys' 
+                                    ? 'bg-blue-100 text-blue-800' 
+                                    : 'bg-pink-100 text-pink-800'
+                                }`}
+                              >
+                                {stand.gender || 'mixed'}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
                       )}
                       
                       <td className="border border-gray-300 p-3">
@@ -209,13 +214,7 @@ const AssignmentTable = ({
                         )}
                       </td>
                       
-                      {mode === 'automation' && (
-                        <td className="border border-gray-300 p-3">
-                          {bus.route || 'N/A'}
-                        </td>
-                      )}
-                      
-                      {location.pathname === '/morning' && mode === 'manual' && (
+                      {showActions && (
                         <td className="border border-gray-300 p-3">
                           <div className="flex space-x-2">
                             <motion.button

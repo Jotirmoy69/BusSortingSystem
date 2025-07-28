@@ -6,25 +6,22 @@ import AssignmentTable from "../components/AssignmentTable";
 import PrePrint from "../components/PrePrint";
 
 const Home = () => {
-  const [routes, setRoutes] = useState([]);
-  const [prePrintShow, setprePrintShow] = useState(false)
+  // const [routes, setRoutes] = useState([]);
+  const [prePrintShow, setprePrintShow] = useState(false);
+  const [table, setTable] = useState(false)
   const {
-    activeBuses,
     setActiveBuses,
-    stands,
     assignedBuses,
+    assignedBusesDay,
     setStands,
-    stands2,
     setStands2,
   } = useAppContext();
-  
-  const { ipcRenderer } = window.require('electron');
+
+  const { ipcRenderer } = window.require("electron");
 
   const handleClick = () => {
-    setprePrintShow(true)
+    setprePrintShow(true);
   };
-  
- 
 
   const fetchBuses = async () => {
     try {
@@ -52,7 +49,6 @@ const Home = () => {
     try {
       const res = await ipcRenderer.invoke("fetch-routes");
       const routeData = res.data || [];
-      setRoutes(routeData);
       setStands(routeData);
     } catch (err) {
       console.error("Error fetching routes:", err);
@@ -72,8 +68,8 @@ const Home = () => {
     <div className="p-6 bg-[#FFFFFF] min-h-screen px-40">
       <nav className="flex justify-between mt-10">
         <div className="flex items-center gap-5">
-        <img src="./bcpsc.png" className="w-30 h-30" alt="" />
-        <h1 className="text-2xl font-bold mb-6">স্কুল বাস ম্যানেজমেন্ট</h1>
+          <img src="./bcpsc.png" className="w-30 h-30" alt="" />
+          <h1 className="text-2xl font-bold mb-6">Bus Management System</h1>
         </div>
 
         <div className="flex flex-wrap gap-3 mb-6 items-center">
@@ -81,93 +77,41 @@ const Home = () => {
             to={"/selection"}
             className="bg-purple-600 text-white px-4 py-2 rounded"
           >
-            ম্যানুয়াল নির্ধারণ
+            Manual 
           </Link>
           <Link
             to={"/automation"}
             className="bg-purple-600 cursor-pointer text-white px-4 py-2 rounded"
           >
-            স্বয়ংক্রিয় নির্ধারণ
+            Automatic
           </Link>
           <button
             onClick={handleClick}
             className="bg-purple-600 cursor-pointer text-white px-4 py-2 rounded"
           >
-            প্রিন্ট
+            Print
           </button>
-          <button className="bg-purple-600 text-white px-4 py-2 rounded">
-            ডিজাইন
-          </button>
-          <button className="bg-purple-600 text-white px-4 py-2 rounded">
+          
+          {/* <button className="bg-purple-600 text-white px-4 py-2 rounded">
             রেকর্ডিং
-          </button>
+          </button> */}
           <Link to={"/settings"} className="text-2xl">
             ⚙️
           </Link>
         </div>
       </nav>
 
-      {/* Uncomment and use this if you want to show assigned data table */}
-      {/* <div className="overflow-x-auto shadow rounded-lg mt-40">
-        <table className="min-w-full table-auto border-collapse">
-          <thead>
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold mb-4 mt-20">Last Assignments</h2>
+          <button onClick={() => setTable(!table)} className="bg-purple-600 hover:bg-purple-500 transition-all cursor-pointer text-white px-4 py-2 mb-4 mt-20 rounded">{table ? "Morning Shift" : "Day Shift"}</button>
+      </div>
 
-
-            <tr className="bg-[#2B7FFF] h-16 text-white text-left">
-              <th className="px-6 py-3 font-semibold text-lg text-center">ছাত্র</th>
-              <th className="px-6 py-3 font-semibold text-lg text-center">ছাত্রী</th>
-              <th className="px-6 py-3 font-semibold text-lg text-end">স্ট্যান্ডসমূহ</th>
-            </tr>
-          </thead>
-          <tbody>
-            {assignedData?.boys && assignedData?.girls ? (
-              <tr className="border-t h-20 align-middle">
-                <td className="px-16 py-4 text-blue-600 font-semibold align-middle text-center">
-                  {assignedData.boys.buses.reduce(
-                    (total, bus) =>
-                      total + bus.stands.reduce((sum, s) => sum + s.count, 0),
-                    0
-                  )}
-                </td>
-                <td className="px-16 py-4 text-pink-500 font-semibold align-middle text-center">
-                  {assignedData.girls.buses.reduce(
-                    (total, bus) =>
-                      total + bus.stands.reduce((sum, s) => sum + s.count, 0),
-                    0
-                  )}
-                </td>
-                <td className="px-6 py-4 text-gray-800 align-middle text-end">
-                  {[
-                    ...new Set([
-                      ...assignedData.boys.buses.flatMap((bus) =>
-                        bus.stands.map((s) => `${s.route}-${s.stand}`)
-                      ),
-                      ...assignedData.girls.buses.flatMap((bus) =>
-                        bus.stands.map((s) => `${s.route}-${s.stand}`)
-                      ),
-                    ]),
-                  ].join(", ")}
-                </td>
-              </tr>
-            ) : (
-              <tr className="border-t h-20">
-                <td
-                  className="px-16 py-4 text-center text-gray-500 font-semibold"
-                  colSpan={3}
-                >
-                  কোনো ডাটা পাওয়া যায়নি
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div> */}
-
-      <AssignmentTable assignedBuses={assignedBuses} />
+      {table ? <AssignmentTable assignedBuses={assignedBuses} mode="automation" /> : <AssignmentTable
+          assignedBuses={assignedBusesDay}
+          mode="automation"
+        />}
       <ToastContainer />
-      {
-        prePrintShow && <PrePrint setprePrintShow={setprePrintShow} />
-      }
+      {prePrintShow && <PrePrint setprePrintShow={setprePrintShow} />}
     </div>
   );
 };

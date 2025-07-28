@@ -256,6 +256,17 @@ app.whenReady().then(async () => {
       }
     });
 
+    ipcMain.handle("insert-route-dummy", async (event, newRoute) => {
+      try {
+        await db.collection("dayShift").deleteMany({});
+        const result = await db.collection("dayShift").insertMany(newRoute);
+        return { success: true, insertedCount: result.insertedCount };
+      } catch (err) {
+        console.error("Error inserting route:", err);
+        throw err;
+      }
+    });
+
     ipcMain.handle("insert-bus-dummy", async (event, busData) => {
       try {
         await db.collection("buses").deleteMany({});
@@ -358,33 +369,73 @@ app.whenReady().then(async () => {
       "update-route",
       async (event, { name, stands, totalBoys, totalGirls }) => {
         try {
-          if (
-            !name ||
-            !Array.isArray(stands) ||
-            typeof totalBoys !== "number" ||
-            typeof totalGirls !== "number"
-          ) {
-            throw new Error("Invalid route data payload");
+          // Validate input
+          if (!name || !Array.isArray(stands) || 
+              typeof totalBoys !== 'number' || 
+              typeof totalGirls !== 'number') {
+            return { success: false, error: "Invalid input data" };
           }
-
+    
+          // Update the route
           const result = await db.collection("dayShift").updateOne(
             { name: name },
-            {
-              $set: {
+            { 
+              $set: { 
                 stands: stands,
                 totalBoys: totalBoys,
                 totalGirls: totalGirls,
-              },
+                updatedAt: new Date() 
+              } 
             }
           );
-
-          return { success: result.modifiedCount > 0 };
+    
+          // Check if document was found and updated
+          if (result.matchedCount === 0) {
+            return { success: false, error: "Route not found" };
+          }
+    
+          return { 
+            success: result.modifiedCount > 0,
+            matchedCount: result.matchedCount,
+            modifiedCount: result.modifiedCount
+          };
         } catch (err) {
           console.error("Error updating route:", err);
-          throw err;
+          return { success: false, error: err.message };
         }
       }
     );
+    // ipcMain.handle(
+    //   "update-route",
+    //   async (event, { name, stands, totalBoys, totalGirls }) => {
+    //     try {
+    //       if (
+    //         !name ||
+    //         !Array.isArray(stands) ||
+    //         typeof totalBoys !== "number" ||
+    //         typeof totalGirls !== "number"
+    //       ) {
+    //         throw new Error("Invalid route data payload");
+    //       }
+
+    //       const result = await db.collection("dayShift").updateOne(
+    //         { name: name },
+    //         {
+    //           $set: {
+    //             stands: stands,
+    //             totalBoys: totalBoys,
+    //             totalGirls: totalGirls,
+    //           },
+    //         }
+    //       );
+
+    //       return { success: result.modifiedCount > 0 };
+    //     } catch (err) {
+    //       console.error("Error updating route:", err);
+    //       throw err;
+    //     }
+    //   }
+    // );
 
     ipcMain.handle("reset-database", async () => {
       try {

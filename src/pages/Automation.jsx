@@ -8,41 +8,208 @@ import AssignmentTable from "../components/AssignmentTable";
 
 const Automation = () => {
   const [button, setButton] = useState(5);
+  const [morningOverload, setMorningOverload] = useState(27);
+  const [dayOverload, setDayOverload] = useState(10);
+  
   const {
     activeBuses,
     stands2,
     stands,
     assignedBuses,
     setAssignedBuses,
+    assignedBusesDay,
+    automationAssignmentsDay,
+    setAutomationAssignmentsDay,
+    setAssignedBusesDay,
     setAutomationAssignments,
     setAutomationAssigned,
   } = useAppContext();
 
-  const assignMorningShiftBuses = ({ buses, routes }) => {
-    // Sort routes by total students descending
+  const assignDayShiftBuses = ({ buses, routes }) => {
     routes.sort((a, b) => {
-      const totalA = a.stands.reduce((sum, s) => sum + (s.boys || 0) + (s.girls || 0), 0);
-      const totalB = b.stands.reduce((sum, s) => sum + (s.boys || 0) + (s.girls || 0), 0);
+      const totalA = a.stands.reduce(
+        (sum, s) => sum + (s.boys || 0) + (s.girls || 0),
+        0
+      );
+      const totalB = b.stands.reduce(
+        (sum, s) => sum + (s.boys || 0) + (s.girls || 0),
+        0
+      );
       return totalB - totalA;
     });
-  
-    // Sort buses descending by capacity (biggest first)
+
     const sortedBuses = [...buses].sort((a, b) => b.capacity - a.capacity);
-  
+
     let assignments = [];
     let unassignedStands = [];
-  
+
     for (const route of routes) {
-      // Prepare stands, but split any stand that exceeds the biggest bus effective capacity
-      const maxBusCapacity = Math.max(...sortedBuses.map(b => b.capacity));
-      const overloadLimitForBus = busCapacity => busCapacity > 50 ? 30 : 25;
-      const maxEffectiveCapacity = Math.max(...sortedBuses.map(b => b.capacity + overloadLimitForBus(b.capacity)));
-  
+      const maxBusCapacity = Math.max(...sortedBuses.map((b) => b.capacity));
+      const maxEffectiveCapacity = maxBusCapacity + dayOverload;
+
+      let standsToAssign = [];
+      for (const stand of route.stands) {
+        const boys = stand.boys || 0;
+        const girls = stand.girls || 0;
+
+        if (boys > 0) {
+          if (boys > maxEffectiveCapacity) {
+            let remainingBoys = boys;
+            while (remainingBoys > 0) {
+              const chunkSize = Math.min(remainingBoys, maxEffectiveCapacity);
+              standsToAssign.push({
+                route: route.name,
+                name: stand.name + " (boys part)",
+                originalName: stand.name,
+                boys: chunkSize,
+                girls: 0,
+                total: chunkSize,
+                gender: "boys",
+              });
+              remainingBoys -= chunkSize;
+            }
+          } else {
+            standsToAssign.push({
+              route: route.name,
+              name: stand.name + " (boys)",
+              boys: boys,
+              girls: 0,
+              total: boys,
+              gender: "boys",
+            });
+          }
+        }
+
+        if (girls > 0) {
+          if (girls > maxEffectiveCapacity) {
+            let remainingGirls = girls;
+            while (remainingGirls > 0) {
+              const chunkSize = Math.min(remainingGirls, maxEffectiveCapacity);
+              standsToAssign.push({
+                route: route.name,
+                stand: stand.name + " (girls part)",
+                boys: 0,
+                girls: chunkSize,
+                total: chunkSize,
+                gender: "girls",
+              });
+              remainingGirls -= chunkSize;
+            }
+          } else {
+            standsToAssign.push({
+              route: route.name,
+              stand: stand.name + " (girls)",
+              boys: 0,
+              girls: girls,
+              total: girls,
+              gender: "girls",
+            });
+          }
+        }
+      }
+
+      const assignByGender = (gender) => {
+        const genderStands = standsToAssign.filter((s) => s.gender === gender);
+
+        for (const stand of genderStands) {
+          let assigned = false;
+
+          let routeBuses = assignments.filter(
+            (b) => b.route === route.name && b.gender === gender
+          );
+
+          routeBuses = routeBuses.sort((a, b) => {
+            return (
+              b.capacity +
+              dayOverload -
+              b.assigned -
+              (a.capacity + dayOverload - a.assigned)
+            );
+          });
+
+          for (const bus of routeBuses) {
+            const effectiveCapacity = bus.capacity + dayOverload;
+            if (bus.assigned + stand.total <= effectiveCapacity) {
+              bus.stands.push(stand);
+              bus.boys += stand.boys;
+              bus.girls += stand.girls;
+              bus.assigned += stand.total;
+              assigned = true;
+              break;
+            }
+          }
+
+          if (assigned) continue;
+
+          const suitableBus = sortedBuses.find((bus) => {
+            const busId = bus.number || bus._id || bus.id || "unknown";
+            const isUsed = assignments.some((a) => a.id === busId);
+            const effectiveCapacity = bus.capacity + dayOverload;
+            return !isUsed && effectiveCapacity >= stand.total;
+          });
+
+          if (suitableBus) {
+            assignments.push({
+              id:
+                suitableBus.number ||
+                suitableBus._id ||
+                suitableBus.id ||
+                "unknown",
+              capacity: suitableBus.capacity,
+              assigned: stand.total,
+              boys: stand.boys,
+              girls: stand.girls,
+              stands: [stand],
+              route: route.name,
+              gender: gender,
+            });
+            assigned = true;
+          }
+
+          if (!assigned) {
+            unassignedStands.push(stand);
+          }
+        }
+      };
+
+      assignByGender("boys");
+      assignByGender("girls");
+    }
+
+    if (unassignedStands.length > 0) {
+      toast.error(
+        "Not enough buses to assign all students while maintaining gender separation."
+      );
+    }
+    return assignments;
+  };
+
+  const assignMorningShiftBuses = ({ buses, routes }) => {
+    routes.sort((a, b) => {
+      const totalA = a.stands.reduce(
+        (sum, s) => sum + (s.boys || 0) + (s.girls || 0),
+        0
+      );
+      const totalB = b.stands.reduce(
+        (sum, s) => sum + (s.boys || 0) + (s.girls || 0),
+        0
+      );
+      return totalB - totalA;
+    });
+
+    const sortedBuses = [...buses].sort((a, b) => b.capacity - a.capacity);
+
+    let assignments = [];
+    let unassignedStands = [];
+
+    for (const route of routes) {
+      const maxBusCapacity = Math.max(...sortedBuses.map((b) => b.capacity));
+      const maxEffectiveCapacity = maxBusCapacity + morningOverload;
+
       let standsToAssign = [];
       for (const stand of route.stands) {
         const totalStudents = (stand.boys || 0) + (stand.girls || 0);
         if (totalStudents > maxEffectiveCapacity) {
-          // Split stand into smaller chunks of maxEffectiveCapacity size
           let remaining = totalStudents;
           let boys = stand.boys || 0;
           let girls = stand.girls || 0;
@@ -54,7 +221,7 @@ const Automation = () => {
             girls -= girlChunk;
             standsToAssign.push({
               route: route.name,
-              stand: stand.name + ' (part)',
+              stand: stand.name + " (part)",
               boys: boyChunk,
               girls: girlChunk,
               total: chunkSize,
@@ -71,22 +238,22 @@ const Automation = () => {
           });
         }
       }
-  
-      // Assign stands trying to fit to buses with the most free capacity on that route first
+
       for (const stand of standsToAssign) {
         let assigned = false;
-  
-        // Try assign to existing bus with most free capacity
-        let routeBuses = assignments.filter(b => b.route === route.name);
+
+        let routeBuses = assignments.filter((b) => b.route === route.name);
         routeBuses = routeBuses.sort((a, b) => {
-          const overloadA = overloadLimitForBus(a.capacity);
-          const overloadB = overloadLimitForBus(b.capacity);
-          return (b.capacity + overloadB - b.assigned) - (a.capacity + overloadA - a.assigned);
+          return (
+            b.capacity +
+            morningOverload -
+            b.assigned -
+            (a.capacity + morningOverload - a.assigned)
+          );
         });
-  
+
         for (const bus of routeBuses) {
-          const overload = overloadLimitForBus(bus.capacity);
-          const effectiveCapacity = bus.capacity + overload;
+          const effectiveCapacity = bus.capacity + morningOverload;
           if (bus.assigned + stand.total <= effectiveCapacity) {
             bus.stands.push(stand);
             bus.boys += stand.boys;
@@ -96,21 +263,23 @@ const Automation = () => {
             break;
           }
         }
-  
+
         if (assigned) continue;
-  
-        // Assign to new bus if available
-        const suitableBus = sortedBuses.find(bus => {
+
+        const suitableBus = sortedBuses.find((bus) => {
           const busId = bus.number || bus._id || bus.id || "unknown";
-          const isUsed = assignments.some(a => a.id === busId);
-          const overload = overloadLimitForBus(bus.capacity);
-          const effectiveCapacity = bus.capacity + overload;
+          const isUsed = assignments.some((a) => a.id === busId);
+          const effectiveCapacity = bus.capacity + morningOverload;
           return !isUsed && effectiveCapacity >= stand.total;
         });
-  
+
         if (suitableBus) {
           assignments.push({
-            id: suitableBus.number || suitableBus._id || suitableBus.id || "unknown",
+            id:
+              suitableBus.number ||
+              suitableBus._id ||
+              suitableBus.id ||
+              "unknown",
             capacity: suitableBus.capacity,
             assigned: stand.total,
             boys: stand.boys,
@@ -120,29 +289,27 @@ const Automation = () => {
           });
           assigned = true;
         }
-  
+
         if (!assigned) {
           unassignedStands.push(stand);
         }
       }
     }
-  
+
     if (unassignedStands.length > 0) {
-      toast.error("Not enough buses to assign all students while maintaining route separation.");
+      toast.error(
+        "Not enough buses to assign all students while maintaining route separation."
+      );
     }
-  
-    // Optional: Merge underfilled buses here
-  
+
     return assignments;
   };
-  
-  
 
   const assignBuses = ({ buses, routes }) => {
     if (button === 5) {
       return assignMorningShiftBuses({ buses, routes });
-    } else if ([2, 3, 4].includes(button)) {
-      return [];
+    } else if (button === 2) {
+      return assignDayShiftBuses({ buses, routes });
     }
     return [];
   };
@@ -171,8 +338,9 @@ const Automation = () => {
       0
     );
 
-    if(button === 1){
-      const totalStudents = totalStudents.boys + totalStudents.girls - (activeBuses.length*25)
+    if (button === 1) {
+      const totalStudents =
+        totalStudents.boys + totalStudents.girls - activeBuses.length * 25;
       if (totalCapacity < totalStudents) {
         toast.error(
           `Not enough bus seats! Total students: ${
@@ -189,8 +357,10 @@ const Automation = () => {
         routes: activeRoutes,
       });
 
-      setAssignedBuses(assigned);
-      setAutomationAssignments(assigned);
+      button === 5 ? setAssignedBuses(assigned) : setAssignedBusesDay(assigned);
+      button === 5
+        ? setAutomationAssignments(assigned)
+        : setAutomationAssignmentsDay(assigned);
       setAutomationAssigned(true);
       toast.success("Bus assignment done!");
     } catch (err) {
@@ -199,26 +369,28 @@ const Automation = () => {
   };
 
   const getSummaryData = () => {
-    const totalAssigned = assignedBuses.reduce(
+    const currentAssignments = button === 5 ? assignedBuses : assignedBusesDay;
+
+    const totalAssigned = currentAssignments.reduce(
       (sum, bus) => sum + Number(bus.assigned || 0),
       0
     );
-    const totalCapacity = assignedBuses.reduce(
+    const totalCapacity = currentAssignments.reduce(
       (sum, bus) => sum + Number(bus.capacity || 0),
       0
     );
 
     return {
-      totalBuses: assignedBuses.length,
+      totalBuses: currentAssignments.length,
       totalAssigned,
       totalCapacity,
-      fullBuses: assignedBuses.filter(
+      fullBuses: currentAssignments.filter(
         (bus) => Number(bus.assigned) === Number(bus.capacity)
       ),
-      underfilledBuses: assignedBuses.filter(
+      underfilledBuses: currentAssignments.filter(
         (bus) => Number(bus.assigned) < Number(bus.capacity)
       ),
-      overloadedBuses: assignedBuses.filter(
+      overloadedBuses: currentAssignments.filter(
         (bus) => Number(bus.assigned) > Number(bus.capacity)
       ),
     };
@@ -232,30 +404,36 @@ const Automation = () => {
       <nav className="flex flex-col md:flex-row items-center justify-between gap-4">
         <img src="./src/assets/bcpsc.png" className="w-20 h-20" alt="logo" />
         <div className="flex flex-wrap justify-center gap-2">
+          {/* Single dynamic overload input */}
+          <div className="bg-gray-100 p-3 rounded-lg flex items-center gap-2">
+            <label className="text-sm font-medium">
+              {button === 5 ? "Morning" : "Day"} Overload:
+            </label>
+            <input
+              type="number"
+              value={button === 5 ? morningOverload : dayOverload}
+              onChange={(e) => {
+                const value = Number(e.target.value);
+                if (button === 5) {
+                  setMorningOverload(value);
+                } else {
+                  setDayOverload(value);
+                }
+              }}
+              className="w-16 px-2 py-1 border rounded"
+              min="0"
+            />
+          </div>
+          
           <button
             onClick={() => setButton(2)}
-            className={`px-4 py-2 rounded-md transition-all duration-200 text-white font-semibold ${
-              button === 2 ? "bg-red-500" : "bg-gray-500"
-            } hover:bg-red-600`}
+            className={`px-4 py-2 rounded-md cursor-pointer transition-all duration-200 text-white font-semibold ${
+              button === 2 ? "bg-sky-500" : "bg-gray-500"
+            } hover:bg-sky-600`}
           >
-            Small Bus First
+            Day Shift
           </button>
-          <button
-            onClick={() => setButton(3)}
-            className={`px-4 py-2 rounded-md transition-all duration-200 text-white font-semibold ${
-              button === 3 ? "bg-[#01B091]  -500" : "bg-gray-500"
-            } hover:bg-[#01B091]  -600`}
-          >
-            Large Bus First
-          </button>
-          <button
-            onClick={() => setButton(4)}
-            className={`px-4 py-2 rounded-md transition-all duration-200 text-white font-semibold ${
-              button === 4 ? "bg-yellow-500" : "bg-gray-500"
-            } hover:bg-yellow-600`}
-          >
-            85%+ Occupancy
-          </button>
+
           <button
             onClick={() => setButton(5)}
             className={`px-4 py-2 rounded-md transition-all cursor-pointer duration-200 text-white font-semibold ${
@@ -295,7 +473,9 @@ const Automation = () => {
                   ? summary.underfilledBuses
                       .map(
                         (bus) =>
-                          `${bus.id || bus.number} (${Number(bus.capacity) - Number(bus.assigned)})`
+                          `${bus.id || bus.number} (${
+                            Number(bus.capacity) - Number(bus.assigned)
+                          })`
                       )
                       .join(", ")
                   : "None"}
@@ -308,7 +488,9 @@ const Automation = () => {
                   ? summary.overloadedBuses
                       .map(
                         (bus) =>
-                          `${bus.id || bus.number} (+${Number(bus.assigned) - Number(bus.capacity)})`
+                          `${bus.id || bus.number} (+${
+                            Number(bus.assigned) - Number(bus.capacity)
+                          })`
                       )
                       .join(", ")
                   : "None"}
@@ -317,7 +499,10 @@ const Automation = () => {
           </div>
         </div>
 
-        <AssignmentTable assignedBuses={assignedBuses} mode="automation" />
+        <AssignmentTable
+          assignedBuses={button === 5 ? assignedBuses : assignedBusesDay}
+          mode="automation"
+        />
       </div>
     </div>
   );
