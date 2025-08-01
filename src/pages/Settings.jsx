@@ -50,14 +50,29 @@ const Settings = () => {
   const [showDeleteConfirm2, setShowDeleteConfirm2] = useState(false);
   const [itemToDelete2, setItemToDelete2] = useState(null);
   const { setActiveBuses } = useAppContext();
+  const [inputCollege, setInputCollege] = useState("");
+  const [routeNameCollege, setRouteNameCollege] = useState("");
+  const [routesCollege, setRoutesCollege] = useState([]);
+  const [standNameCollege, setStandNameCollege] = useState([]);
+  const [boysCountCollege, setBoysCountCollege] = useState("");
+  const [girlsCountCollege, setGirlsCountCollege] = useState("");
+  const [selectedRouteCollege, setSelectedRouteCollege] = useState("");
+  const [updatedStandsCollege, setUpdatedStandsCollege] = useState([]);
+  const [newStandNameCollege, setNewStandNameCollege] = useState("");
+  const [newBoysCountCollege, setNewBoysCountCollege] = useState("");
+  const [newGirlsCountCollege, setNewGirlsCountCollege] = useState("");
+  const [dummyCollege, setDummyCollege] = useState(false);
+  const [totalCollegeStudents, setTotalCollegeStudents] = useState(0);
 
   // Tab configuration for animation
   const tabs = [
     { id: 0, label: "Day Shift", icon: "🌞" },
     { id: 4, label: "Morning Shift", icon: "🌅" },
+    { id: 6, label: "College Shift", icon: "🎓" }, // New College tab
     { id: 1, label: "Bus Management", icon: "🚌" },
     { id: 2, label: "Update Route (Day)", icon: "🔄" },
     { id: 5, label: "Update Route(Mor)", icon: "🔄" },
+    { id: 7, label: "Update Route(Col)", icon: "🔄" }, // New College update tab
     { id: 3, label: "Clear Database", icon: "⚠️" },
   ];
 
@@ -74,6 +89,29 @@ const Settings = () => {
     };
   };
 
+  useEffect(() => {
+  // Add college students to totals calculation
+  const collegeStudentsTotal = routesCollege.reduce(
+    (acc, route) => acc + (route.totalBoys || 0) + (route.totalGirls || 0),
+    0
+  );
+  setTotalCollegeStudents(collegeStudentsTotal);
+}, [routesCollege]);
+
+useEffect(() => {
+  fetchRoutes();
+  fetchRoutes2();
+  fetchRoutesCollege(); // Add this
+}, []);
+
+useEffect(() => {
+  if (selectedRouteCollege && isShow === 7) {
+    const route = routesCollege.find((r) => r.name === selectedRouteCollege);
+    if (route) {
+      setUpdatedStandsCollege([...route.stands]);
+    }
+  }
+}, [selectedRouteCollege, isShow]);
   // Calculate totals whenever routes or buses change
   useEffect(() => {
     // Calculate total bus capacity
@@ -116,6 +154,348 @@ const Settings = () => {
       }
     }
   }, [selectedRouteMorning, isShow]);
+
+
+  // College Shift handlers
+const handleKeyDownCollege = (e) => {
+  if (e.key === "Enter" || e.key === "NumpadEnter" || e.key === ",") {
+    e.preventDefault();
+    const forbiddenCharsRegex =
+      /[!@#$%^&*()_+{}:"<>?|~`0-9\-=\[\];'\/><.,\\]/g;
+    let cleanedInput = inputCollege.replace(forbiddenCharsRegex, "").trim();
+    const words = cleanedInput.split(/\s+/);
+    cleanedInput = words.length === 1 ? words[0] : words.join(" ");
+    const newStand = cleanedInput.toLowerCase();
+
+    if (!cleanedInput) {
+      toast.error("শুধুমাত্র স্পেস বা খালি নাম ব্যবহার করা যাবে না");
+      return;
+    }
+
+    if (!boysCountCollege || isNaN(parseInt(boysCountCollege))) {
+      toast.error("ছাত্র সংখ্যা লিখুন (অবশ্যই সংখ্যা হতে হবে)");
+      return;
+    }
+
+    if (!girlsCountCollege || isNaN(parseInt(girlsCountCollege))) {
+      toast.error("ছাত্রী সংখ্যা লিখুন (অবশ্যই সংখ্যা হতে হবে)");
+      return;
+    }
+
+    const isDuplicateInCurrent = standNameCollege.some(
+      (stand) => stand.name.trim().toLowerCase() === newStand
+    );
+
+    if (isDuplicateInCurrent) {
+      toast.error("এই স্ট্যান্ড নাম ইতোমধ্যে যোগ করা হয়েছে");
+      return;
+    }
+
+    const isDuplicateInRoutes = routesCollege.some((route) =>
+      route.stands.some(
+        (stand) => stand.name.trim().toLowerCase() === newStand
+      )
+    );
+
+    if (isDuplicateInRoutes) {
+      toast.error("এই স্ট্যান্ড নাম ইতোমধ্যে অন্য একটি রুটে রয়েছে");
+      return;
+    }
+
+    setStandNameCollege((prev) => [
+      ...prev,
+      {
+        name: cleanedInput,
+        boys: parseInt(boysCountCollege),
+        girls: parseInt(girlsCountCollege),
+      },
+    ]);
+
+    setBoysCountCollege("");
+    setGirlsCountCollege("");
+    setInputCollege("");
+  }
+};
+
+const handleChangeCollege = (e) => setInputCollege(e.target.value);
+
+const handleRemoveStandCollege = (index) => {
+  setStandNameCollege((prev) => prev.filter((_, i) => i !== index));
+};
+
+const handleAddRouteCollege = async () => {
+  const routeNameValue = routeNameCollege.trim().toLowerCase();
+
+  if (!routeNameValue) {
+    toast.error("রুটের নাম লিখুন");
+    return;
+  }
+
+  if (!standNameCollege.length) {
+    toast.error("অন্তত একটি স্ট্যান্ড যোগ করুন");
+    return;
+  }
+
+  if (routesCollege.some((route) => route.name.toLowerCase() === routeNameValue)) {
+    toast.error("এই রুট নাম ইতিমধ্যে রয়েছে");
+    return;
+  }
+
+  try {
+    const totalBoys = standNameCollege.reduce((acc, curr) => acc + curr.boys, 0);
+    const totalGirls = standNameCollege.reduce((acc, curr) => acc + curr.girls, 0);
+
+    const ipcRenderer = getIpcRenderer();
+    await ipcRenderer.invoke("insert-route-college", {
+      name: routeNameCollege.trim(),
+      stands: [...standNameCollege],
+      totalBoys,
+      totalGirls,
+    });
+
+    await fetchRoutesCollege();
+    setRouteNameCollege("");
+    setStandNameCollege([]);
+    setBoysCountCollege("");
+    setGirlsCountCollege("");
+    toast.success("কলেজ শিফট রুট যোগ করা হয়েছে");
+  } catch (err) {
+    console.error("Error inserting college route:", err);
+    toast.error("রুট যোগ করতে সমস্যা হয়েছে");
+  }
+};
+
+const handleDeleteRouteCollege = (index) => {
+  const routeToDelete = routesCollege[index];
+  if (!routeToDelete) return;
+
+  setItemToDelete({
+    type: "route-college",
+    index,
+    name: routeToDelete.name,
+  });
+  setDeleteType("route-college");
+  setShowDeleteConfirm(true);
+};
+
+const fetchRoutesCollege = async () => {
+  try {
+    const ipcRenderer = getIpcRenderer();
+    const res = await ipcRenderer.invoke("fetch-routes-college");
+    setRoutesCollege(res.data || []);
+  } catch (err) {
+    console.error("Error fetching college routes:", err);
+    toast.error("কলেজ রুট লোড করতে সমস্যা হয়েছে");
+  }
+};
+
+const handleCollegeUpload = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = async (evt) => {
+    const bstr = evt.target.result;
+    const workbook = XLSX.read(bstr, { type: "binary" });
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+    const routeMap = {};
+
+    for (let i = 1; i < rows.length; i++) {
+      const [standName, boysCount, girlsCount, routeName] = rows[i];
+
+      if (
+        !routeName ||
+        !standName ||
+        boysCount === undefined ||
+        girlsCount === undefined
+      )
+        continue;
+
+      if (!routeMap[routeName]) {
+        routeMap[routeName] = {
+          name: routeName,
+          stands: [],
+          totalBoys: 0,
+          totalGirls: 0,
+        };
+      }
+
+      const boys = Number(boysCount);
+      const girls = Number(girlsCount);
+      routeMap[routeName].stands.push({
+        name: standName,
+        boys: boys,
+        girls: girls,
+      });
+
+      routeMap[routeName].totalBoys += boys;
+      routeMap[routeName].totalGirls += girls;
+    }
+
+    const parsedData = Object.values(routeMap);
+
+    const ipcRenderer = getIpcRenderer();
+    setRoutesCollege(parsedData);
+
+    await ipcRenderer.invoke("insert-route-college-dummy", parsedData);
+    fetchRoutesCollege();
+    toast.success("কলেজ শিফট ডাটা এক্সেল থেকে প্রয়োগ করা হয়েছে!");
+  };
+
+  reader.readAsBinaryString(file);
+};
+
+const handleUpdateRouteCollege = async () => {
+  if (!selectedRouteCollege) {
+    toast.error("রুট নির্বাচন করুন");
+    return;
+  }
+
+  if (!updatedStandsCollege.length) {
+    toast.error("অন্তত একটি স্ট্যান্ড যোগ করুন");
+    return;
+  }
+
+  try {
+    const totalBoys = updatedStandsCollege.reduce(
+      (acc, curr) => acc + Number(curr.boys || 0),
+      0
+    );
+    const totalGirls = updatedStandsCollege.reduce(
+      (acc, curr) => acc + Number(curr.girls || 0),
+      0
+    );
+
+    const ipcRenderer = getIpcRenderer();
+    const result = await ipcRenderer.invoke("update-route-college", {
+      name: selectedRouteCollege,
+      stands: updatedStandsCollege,
+      totalBoys,
+      totalGirls
+    });
+
+    if (result?.success) {
+      await fetchRoutesCollege();
+      setSelectedRouteCollege("");
+      setUpdatedStandsCollege([]);
+      setNewStandNameCollege("");
+      setNewBoysCountCollege("");
+      setNewGirlsCountCollege("");
+      toast.success("কলেজ রুট আপডেট করা হয়েছে");
+    } else {
+      const errorMsg = result?.error || "রুট আপডেট করতে ব্যর্থ";
+      toast.error(errorMsg);
+    }
+  } catch (err) {
+    console.error("Error updating college route:", err);
+    toast.error(err.message || "রুট আপডেট করতে সমস্যা হয়েছে");
+  }
+};
+
+const handleAddNewStandCollege = () => {
+  const trimmedName = newStandNameCollege.trim().toLowerCase();
+
+  if (!trimmedName) {
+    toast.error("স্ট্যান্ডের নাম লিখুন");
+    return;
+  }
+
+  if (!newBoysCountCollege || isNaN(parseInt(newBoysCountCollege))) {
+    toast.error("ছাত্র সংখ্যা লিখুন (অবশ্যই সংখ্যা হতে হবে)");
+    return;
+  }
+
+  if (!newGirlsCountCollege || isNaN(parseInt(newGirlsCountCollege))) {
+    toast.error("ছাত্রী সংখ্যা লিখুন (অবশ্যই সংখ্যা হতে হবে)");
+    return;
+  }
+
+  const isDuplicate = updatedStandsCollege.some(
+    (stand) => stand.name.toLowerCase() === trimmedName
+  );
+
+  if (isDuplicate) {
+    toast.error("এই স্ট্যান্ড নাম ইতিমধ্যে রয়েছে");
+    return;
+  }
+
+  const isDuplicateInOtherRoutes = routesCollege.some(
+    (route) =>
+      route.name !== selectedRouteCollege &&
+      route.stands.some((stand) => stand.name.toLowerCase() === trimmedName)
+  );
+
+  if (isDuplicateInOtherRoutes) {
+    toast.error("এই স্ট্যান্ড নাম ইতিমধ্যে অন্য একটি রুটে রয়েছে");
+    return;
+  }
+
+  setUpdatedStandsCollege((prev) => [
+    ...prev,
+    {
+      name: newStandNameCollege.trim(),
+      boys: parseInt(newBoysCountCollege),
+      girls: parseInt(newGirlsCountCollege),
+    },
+  ]);
+
+  setNewStandNameCollege("");
+  setNewBoysCountCollege("");
+  setNewGirlsCountCollege("");
+};
+
+const handleUpdateStandCountCollege = (index, type, value) => {
+  const newValue = parseInt(value);
+  if (isNaN(newValue)) return;
+
+  setUpdatedStandsCollege((prev) =>
+    prev.map((stand, i) =>
+      i === index ? { ...stand, [type]: newValue } : stand
+    )
+  );
+};
+
+const handleRemoveUpdatedStandCollege = (index) => {
+  setUpdatedStandsCollege((prev) => prev.filter((_, i) => i !== index));
+};
+
+// Add to confirmDeletion function
+const confirmDeletion = async () => {
+  if (!itemToDelete) return;
+
+  try {
+    const ipcRenderer = getIpcRenderer();
+
+    // Existing delete handlers...
+
+    // Add college route deletion
+    if (itemToDelete.type === "route-college") {
+      const result = await ipcRenderer.invoke(
+        "delete-route-college",
+        itemToDelete.name
+      );
+
+      if (result?.success) {
+        await fetchRoutesCollege();
+        toast.success("কলেজ রুটটি মুছে ফেলা হয়েছে");
+      } else {
+        toast.error("রুট মুছে ফেলতে ব্যর্থ");
+      }
+    }
+  } catch (err) {
+    console.error("Error deleting:", err);
+    toast.error("কলেজ রুট মুছে ফেলতে সমস্যা হয়েছে");
+  }
+
+  setShowDeleteConfirm(false);
+  setItemToDelete(null);
+  if (mainContentRef.current) {
+    mainContentRef.current.focus();
+  }
+};
 
   const handleDayShiftUpload = async (e) => {
     const file = e.target.files[0];
@@ -611,52 +991,52 @@ const Settings = () => {
     }
   };
 
-  const confirmDeletion = async () => {
-    if (!itemToDelete) return;
+  // const confirmDeletion = async () => {
+  //   if (!itemToDelete) return;
 
-    try {
-      const ipcRenderer = getIpcRenderer();
+  //   try {
+  //     const ipcRenderer = getIpcRenderer();
 
-      if (itemToDelete.type === "route") {
-        const result = await ipcRenderer.invoke(
-          "delete-route",
-          itemToDelete.name
-        );
+  //     if (itemToDelete.type === "route") {
+  //       const result = await ipcRenderer.invoke(
+  //         "delete-route",
+  //         itemToDelete.name
+  //       );
 
-        if (result?.success) {
-          await fetchRoutes();
-          toast.success("রুটটি মুছে ফেলা হয়েছে");
-        } else {
-          toast.error("রুট মুছে ফেলতে ব্যর্থ");
-        }
-      } else if (itemToDelete.type === "bus") {
-        const result = await ipcRenderer.invoke(
-          "delete-bus",
-          itemToDelete.name
-        );
+  //       if (result?.success) {
+  //         await fetchRoutes();
+  //         toast.success("রুটটি মুছে ফেলা হয়েছে");
+  //       } else {
+  //         toast.error("রুট মুছে ফেলতে ব্যর্থ");
+  //       }
+  //     } else if (itemToDelete.type === "bus") {
+  //       const result = await ipcRenderer.invoke(
+  //         "delete-bus",
+  //         itemToDelete.name
+  //       );
 
-        if (result?.success) {
-          await fetchBuses();
-          toast.success("বাসটি মুছে ফেলা হয়েছে");
-        } else {
-          toast.error("বাস মুছে ফেলতে ব্যর্থ");
-        }
-      }
-    } catch (err) {
-      console.error("Error deleting:", err);
-      toast.error(
-        itemToDelete.type === "route"
-          ? "রুট মুছে ফেলতে সমস্যা হয়েছে"
-          : "বাস মুছে ফেলতে সমস্যা হয়েছে"
-      );
-    }
+  //       if (result?.success) {
+  //         await fetchBuses();
+  //         toast.success("বাসটি মুছে ফেলা হয়েছে");
+  //       } else {
+  //         toast.error("বাস মুছে ফেলতে ব্যর্থ");
+  //       }
+  //     }
+  //   } catch (err) {
+  //     console.error("Error deleting:", err);
+  //     toast.error(
+  //       itemToDelete.type === "route"
+  //         ? "রুট মুছে ফেলতে সমস্যা হয়েছে"
+  //         : "বাস মুছে ফেলতে সমস্যা হয়েছে"
+  //     );
+  //   }
 
-    setShowDeleteConfirm(false);
-    setItemToDelete(null);
-    if (mainContentRef.current) {
-      mainContentRef.current.focus();
-    }
-  };
+  //   setShowDeleteConfirm(false);
+  //   setItemToDelete(null);
+  //   if (mainContentRef.current) {
+  //     mainContentRef.current.focus();
+  //   }
+  // };
 
   const confirmDeletion2 = async () => {
     if (!itemToDelete2) return;
@@ -754,12 +1134,12 @@ const Settings = () => {
       toast.error("রুট নির্বাচন করুন");
       return;
     }
-  
+
     if (!updatedStands.length) {
       toast.error("অন্তত একটি স্ট্যান্ড যোগ করুন");
       return;
     }
-  
+
     try {
       const totalBoys = updatedStands.reduce(
         (acc, curr) => acc + Number(curr.boys || 0),
@@ -769,15 +1149,15 @@ const Settings = () => {
         (acc, curr) => acc + Number(curr.girls || 0),
         0
       );
-  
+
       const ipcRenderer = getIpcRenderer();
       const result = await ipcRenderer.invoke("update-route", {
         name: selectedRoute,
         stands: updatedStands,
         totalBoys,
-        totalGirls
+        totalGirls,
       });
-  
+
       if (result?.success) {
         await fetchRoutes();
         resetForm();
@@ -1092,7 +1472,7 @@ const Settings = () => {
         </div>
 
         <ul className="space-y-2">
-          {tabs.slice(0, 2).map((tab) => (
+          {tabs.slice(0, 3).map((tab) => (
             <motion.li
               key={tab.id}
               initial={false}
@@ -1119,7 +1499,7 @@ const Settings = () => {
           ))}
 
           <div className="fixed left-6 bottom-10 w-52">
-            {tabs.slice(2).map((tab) => (
+            {tabs.slice(3).map((tab) => (
               <motion.li
                 key={tab.id}
                 initial={false}
@@ -1147,6 +1527,385 @@ const Settings = () => {
           </div>
         </ul>
       </div>
+
+      {/* College Shift */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={isShow}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.2 }}
+          className={`flex-1 ml-64 p-8 ${isShow !== 6 ? "hidden" : ""}`}
+        >
+          <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-200">
+            <h1 className="text-2xl font-bold text-[#2F1C6A] -800">
+              College Shift
+            </h1>
+            <div className="text-lg font-semibold">
+              Total Students: {totalCollegeStudents}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center">
+                <span className="mr-2">🛣️</span>
+                <h1 className="text-xl font-bold mb-5 flex items-center">
+                  রাস্তা ব্যবস্থাপনা
+                </h1>
+              </div>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setDummyCollege(true)}
+                className="bg-[#673DE5] cursor-pointer duration-200 text-white px-6 py-3 rounded-md font-bold hover:bg-[#5025D1] transition-colors"
+              >
+                Add From Excel
+              </motion.button>
+            </div>
+
+            <div className="flex gap-5 mb-5">
+              <div className="flex-1">
+                <label className="block mb-2 font-bold">রাস্তার নাম</label>
+                <input
+                  value={routeNameCollege}
+                  onChange={(e) => setRouteNameCollege(e.target.value)}
+                  type="text"
+                  className="w-full p-3 border border-gray-300 rounded focus:outline-none"
+                  placeholder="যেমন: রুট ১"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-wrap -mx-3 mb-6">
+              <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
+                <label className="block text-[#2F1C6A] -700 text-sm font-bold mb-2">
+                  ছাত্র সংখ্যা
+                </label>
+                <input
+                  type="number"
+                  value={boysCountCollege}
+                  onChange={(e) => setBoysCountCollege(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded focus:outline-none"
+                  placeholder="যেমন: ২৫"
+                  min="0"
+                />
+              </div>
+              <div className="w-full md:w-1/2 px-3">
+                <label className="block text-[#2F1C6A] -700 text-sm font-bold mb-2">
+                  ছাত্রী সংখ্যা
+                </label>
+                <input
+                  type="number"
+                  value={girlsCountCollege}
+                  onChange={(e) => setGirlsCountCollege(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded focus:outline-none"
+                  placeholder="যেমন: ২৫"
+                  min="0"
+                />
+              </div>
+            </div>
+
+            <div className="mb-5">
+              <label className="block mb-2 font-bold">
+                স্ট্যান্ডসমূহ (কমা বা স্পেস দিয়ে পৃথক করুন)
+              </label>
+              <div className="flex flex-wrap gap-2 p-2 border border-gray-300 rounded min-h-[50px] items-center">
+                {standNameCollege.map((stand, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="flex items-center justify-center bg-[#3498DB] text-white gap-2 border border-gray-300 rounded-full py-3 px-4"
+                  >
+                    <span className="font-bold">
+                      {stand.name} ({stand.boys} ছাত্র, {stand.girls} ছাত্রী)
+                    </span>
+                    <button
+                      onClick={() => handleRemoveStandCollege(index)}
+                      className="text-white cursor-pointer"
+                    >
+                      <ImCross
+                        className="hover:rotate-90 duration-200 transition-all"
+                        size={15}
+                      />
+                    </button>
+                  </motion.div>
+                ))}
+                <input
+                  type="text"
+                  value={inputCollege}
+                  onChange={(e) => setInputCollege(e.target.value)}
+                  onKeyDown={handleKeyDownCollege}
+                  className="flex-1 min-w-[100px] p-2 border-none outline-none"
+                  placeholder="স্ট্যান্ডের নাম লিখুন"
+                />
+              </div>
+            </div>
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleAddRouteCollege}
+              className="bg-[#673DE5] cursor-pointer duration-200 text-white px-6 py-3 rounded font-bold hover:bg-[#5025D1] transition-colors"
+            >
+              রুট যুক্ত করুন
+            </motion.button>
+
+            <div className="w-full mt-8">
+              <h3 className="mb-4">সকল রুটের তালিকা</h3>
+              <table className="w-full mt-5">
+                <thead className="bg-[#8B5DFF]">
+                  <tr className="text-white rounded-tl-lg text-left">
+                    <th className="p-3 border-b-2 border-gray-200">রুট নাম</th>
+                    <th className="p-3 border-b-2 border-gray-200">
+                      স্ট্যান্ডসমূহ
+                    </th>
+                    <th className="p-3 border-b-2 border-gray-200">ছাত্র</th>
+                    <th className="p-3 border-b-2 border-gray-200">ছাত্রী</th>
+                    <th className="p-3 border-b-2 border-gray-200">ডিলিট</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {routesCollege.length > 0 ? (
+                    routesCollege.map((route, index) => (
+                      <tr key={index}>
+                        <td className="p-3 border-b-2 border-gray-200">
+                          {route.name}
+                        </td>
+                        <td className="p-3 border-b-2 border-gray-200">
+                          {route.stands.map((stand) => stand.name).join(", ")}
+                        </td>
+                        <td className="p-3 border-b-2 border-gray-200">
+                          {route.totalBoys}
+                        </td>
+                        <td className="p-3 border-b-2 border-gray-200">
+                          {route.totalGirls}
+                        </td>
+                        <td className="p-3 border-b-2 border-gray-200">
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => handleDeleteRouteCollege(index)}
+                            className="text-red-500 px-4 py-2 rounded font-bold hover:scale-130 transition-all cursor-pointer"
+                          >
+                            🗑️
+                          </motion.button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan="5"
+                        className="p-3 text-center text-[#2F1C6A] -500"
+                      >
+                        কোনো রুট পাওয়া যায়নি
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+                <tfoot>
+                  <tr className="bg-gray-100 font-bold">
+                    <td className="p-3">Total</td>
+                    <td className="p-3"></td>
+                    <td className="p-3">
+                      {routesCollege.reduce(
+                        (acc, route) => acc + (route.totalBoys || 0),
+                        0
+                      )}
+                    </td>
+                    <td className="p-3">
+                      {routesCollege.reduce(
+                        (acc, route) => acc + (route.totalGirls || 0),
+                        0
+                      )}
+                    </td>
+                    <td className="p-3"></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Update College Shift Route */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={isShow}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.2 }}
+          className={`flex-1 ml-64 p-8 ${isShow !== 7 ? "hidden" : ""}`}
+        >
+          <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-200">
+            <h1 className="text-2xl font-bold text-[#2F1C6A] -800">
+              রুট আপডেট করুন (কলেজ শিফট)
+            </h1>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 className="text-xl font-bold mb-5 flex items-center">
+              <span className="mr-2">🔄</span> কলেজ শিফট রুট আপডেট করুন
+            </h2>
+
+            <div className="mb-5">
+              <label className="block mb-2 font-bold">রুট নির্বাচন করুন</label>
+              <select
+                value={selectedRouteCollege}
+                onChange={(e) => setSelectedRouteCollege(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded focus:outline-none"
+              >
+                <option value="">রুট নির্বাচন করুন</option>
+                {routesCollege.map((route) => (
+                  <option key={route.name} value={route.name}>
+                    {route.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {selectedRouteCollege && (
+              <>
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold mb-3">স্ট্যান্ডসমূহ</h3>
+                  <div className="space-y-3">
+                    {updatedStandsCollege.map((stand, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex items-center justify-between p-3 border border-gray-200 rounded"
+                      >
+                        <div className="font-bold">{stand.name}</div>
+                        <div className="flex items-center space-x-3">
+                          <div>
+                            <label className="block text-sm mb-1">ছাত্র</label>
+                            <input
+                              type="number"
+                              value={stand.boys}
+                              onChange={(e) =>
+                                handleUpdateStandCountCollege(
+                                  index,
+                                  "boys",
+                                  e.target.value
+                                )
+                              }
+                              className="w-20 p-2 border border-gray-300 rounded"
+                              min="0"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm mb-1">ছাত্রী</label>
+                            <input
+                              type="number"
+                              value={stand.girls}
+                              onChange={(e) =>
+                                handleUpdateStandCountCollege(
+                                  index,
+                                  "girls",
+                                  e.target.value
+                                )
+                              }
+                              className="w-20 p-2 border border-gray-300 rounded"
+                              min="0"
+                            />
+                          </div>
+                          <button
+                            onClick={() =>
+                              handleRemoveUpdatedStandCollege(index)
+                            }
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <ImCross />
+                          </button>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="border-t border-gray-200 pt-5">
+                  <h3 className="text-lg font-semibold mb-3">
+                    নতুন স্ট্যান্ড যোগ করুন
+                  </h3>
+                  <div className="flex flex-wrap -mx-3 mb-4">
+                    <div className="w-full md:w-1/3 px-3 mb-4">
+                      <label className="block mb-2">স্ট্যান্ডের নাম</label>
+                      <input
+                        type="text"
+                        value={newStandNameCollege}
+                        onChange={(e) => setNewStandNameCollege(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded"
+                        placeholder="স্ট্যান্ডের নাম"
+                      />
+                    </div>
+                    <div className="w-full md:w-1/4 px-3 mb-4">
+                      <label className="block mb-2">ছাত্র সংখ্যা</label>
+                      <input
+                        type="number"
+                        value={newBoysCountCollege}
+                        onChange={(e) => setNewBoysCountCollege(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded"
+                        placeholder="ছাত্র"
+                        min="0"
+                      />
+                    </div>
+                    <div className="w-full md:w-1/4 px-3 mb-4">
+                      <label className="block mb-2">ছাত্রী সংখ্যা</label>
+                      <input
+                        type="number"
+                        value={newGirlsCountCollege}
+                        onChange={(e) =>
+                          setNewGirlsCountCollege(e.target.value)
+                        }
+                        className="w-full p-2 border border-gray-300 rounded"
+                        placeholder="ছাত্রী"
+                        min="0"
+                      />
+                    </div>
+                    <div className="w-full md:w-1/6 px-3 mb-4 flex items-end">
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={handleAddNewStandCollege}
+                        className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+                      >
+                        যোগ করুন
+                      </motion.button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex space-x-3 mt-6">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleUpdateRouteCollege}
+                    className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded font-bold"
+                  >
+                    আপডেট করুন
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      setSelectedRouteCollege("");
+                      setUpdatedStandsCollege([]);
+                    }}
+                    className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded font-bold"
+                  >
+                    রিসেট করুন
+                  </motion.button>
+                </div>
+              </>
+            )}
+          </div>
+        </motion.div>
+      </AnimatePresence>
 
       {/* Day Shift */}
       <AnimatePresence mode="wait">
@@ -1350,6 +2109,39 @@ const Settings = () => {
             </div>
           </div>
         </motion.div>
+      </AnimatePresence>
+
+      {/* College Excel Modal */}
+      <AnimatePresence>
+        {dummyCollege && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="p-4 fixed z-99 backdrop-blur-md top-0 right-0 flex justify-center items-center bottom-0 left-0"
+          >
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+              className="h-64 rounded-2xl flex items-center relative justify-center w-1/3 bg-[#F5F5FF] shadow-2xl"
+            >
+              <IoClose
+                className="absolute top-3 right-3 text-2xl cursor-pointer hover:rotate-90 transition-all duration-200"
+                onClick={() => setDummyCollege(false)}
+              />
+              <label className="cursor-pointer bg-purple-500 transition-all duration-200 text-white px-4 py-2 rounded hover:bg-purple-600">
+                Upload College XLSX
+                <input
+                  type="file"
+                  accept=".xlsx"
+                  onChange={handleCollegeUpload}
+                  className="hidden"
+                />
+              </label>
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
 
       {/* Bus Management */}
@@ -2124,36 +2916,36 @@ const Settings = () => {
       </AnimatePresence>
 
       <AnimatePresence>
-  {dummy3 && (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="p-4 fixed z-99 backdrop-blur-md top-0 right-0 flex justify-center items-center bottom-0 left-0"
-    >
-      <motion.div
-        initial={{ scale: 0.9 }}
-        animate={{ scale: 1 }}
-        exit={{ scale: 0.9 }}
-        className="h-64 rounded-2xl flex items-center relative justify-center w-1/3 bg-[#F5F5FF] shadow-2xl"
-      >
-        <IoClose
-          className="absolute top-3 right-3 text-2xl cursor-pointer hover:rotate-90 transition-all duration-200"
-          onClick={() => setDummy3(false)}
-        />
-        <label className="cursor-pointer bg-purple-500 transition-all duration-200 text-white px-4 py-2 rounded hover:bg-purple-600">
-          Upload Day Shift XLSX
-          <input
-            type="file"
-            accept=".xlsx"
-            onChange={handleDayShiftUpload}
-            className="hidden"
-          />
-        </label>
-      </motion.div>
-    </motion.div>
-  )}
-</AnimatePresence>
+        {dummy3 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="p-4 fixed z-99 backdrop-blur-md top-0 right-0 flex justify-center items-center bottom-0 left-0"
+          >
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+              className="h-64 rounded-2xl flex items-center relative justify-center w-1/3 bg-[#F5F5FF] shadow-2xl"
+            >
+              <IoClose
+                className="absolute top-3 right-3 text-2xl cursor-pointer hover:rotate-90 transition-all duration-200"
+                onClick={() => setDummy3(false)}
+              />
+              <label className="cursor-pointer bg-purple-500 transition-all duration-200 text-white px-4 py-2 rounded hover:bg-purple-600">
+                Upload Day Shift XLSX
+                <input
+                  type="file"
+                  accept=".xlsx"
+                  onChange={handleDayShiftUpload}
+                  className="hidden"
+                />
+              </label>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <ToastContainer />
     </div>

@@ -286,7 +286,7 @@ export default function DayShift() {
   const allStandsAssigned = !hasAvailableStands;
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans p-6">
+    <div className="min-h-screen bg-gray-50 pt-14 font-sans p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
@@ -302,25 +302,24 @@ export default function DayShift() {
           <div className="flex flex-wrap gap-3 items-center">
             {/* Overload Size Input - Moved here */}
             {isBusSelected && (
-              <div className="flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-200">
-                <label htmlFor="overload" className="text-sm font-medium text-gray-600 whitespace-nowrap">
-                  Max Overload:
-                </label>
-                <div className="flex items-center gap-1">
-                  <input
-                    id="overload"
-                    type="number"
-                    min="0"
-                    max="50"
-                    value={overloadSize}
-                    onChange={(e) => setOverloadSize(Math.min(50, Math.max(0, parseInt(e.target.value) || 0)))}
-                    className="w-16 p-1.5 rounded border border-gray-300 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-center"
-                  />
-                  <span className="text-sm text-gray-500 whitespace-nowrap">
-                    students
-                  </span>
-                </div>
-              </div>
+
+            // <div className="flex flex-wrap w- gap-3">         
+            <div className="bg-gray-100 px-4 py-3 items-center rounded-lg flex gap-4 w- max-w-md">
+              <label className="text-sm font-medium w-40 text-gray-700">
+                Overload Allowed:{" "}
+                <span className="font-bold">{overloadSize}</span>
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="50"
+                step="1"
+                value={overloadSize}
+                onChange={(e) => setOverloadSize(Number(e.target.value))}
+                className="w-32 accent-purple-500"
+              />
+            </div>
+
             )}
 
             <motion.button

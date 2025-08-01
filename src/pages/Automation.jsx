@@ -10,7 +10,7 @@ const Automation = () => {
   const [button, setButton] = useState(5);
   const [morningOverload, setMorningOverload] = useState(27);
   const [dayOverload, setDayOverload] = useState(10);
-  
+
   const {
     activeBuses,
     stands2,
@@ -401,16 +401,19 @@ const Automation = () => {
   return (
     <div className="w-full font-[clash] min-h-screen px-4 md:px-20 lg:px-40 py-10 md:py-20 bg-white">
       <ToastContainer />
-      <nav className="flex flex-col md:flex-row items-center justify-between gap-4">
+      <nav className="flex flex-col md:flex-row items-center  justify-between gap-4">
         <img src="./src/assets/bcpsc.png" className="w-20 h-20" alt="logo" />
-        <div className="flex flex-wrap justify-center gap-2">
+        <div className="flex flex-wrap justify-end   w-full h-10 gap-2">
           {/* Single dynamic overload input */}
-          <div className="bg-gray-100 p-3 rounded-lg flex items-center gap-2">
-            <label className="text-sm font-medium">
-              {button === 5 ? "Morning" : "Day"} Overload:
+          <div className="bg-gray-100 px-4 items-center rounded-lg flex   gap-2 w- max-w-md">
+            <label className="text-sm font-medium w-40 text-gray-700">
+              {button === 5 ? "Morning" : "Day"} Overload:{" "}<span className="font-bold">{button === 5 ? morningOverload : dayOverload}</span>
             </label>
             <input
-              type="number"
+              type="range"
+              min="0"
+              max="50"
+              step="1"
               value={button === 5 ? morningOverload : dayOverload}
               onChange={(e) => {
                 const value = Number(e.target.value);
@@ -420,14 +423,13 @@ const Automation = () => {
                   setDayOverload(value);
                 }
               }}
-              className="w-16 px-2 py-1 border rounded"
-              min="0"
+              className="w-32 accent-purple-500"
             />
           </div>
-          
+
           <button
             onClick={() => setButton(2)}
-            className={`px-4 py-2 rounded-md cursor-pointer transition-all duration-200 text-white font-semibold ${
+            className={`px-4 py-2 rounded-md cursor-pointer transition-all duration-200 text-white  ${
               button === 2 ? "bg-sky-500" : "bg-gray-500"
             } hover:bg-sky-600`}
           >
@@ -436,7 +438,7 @@ const Automation = () => {
 
           <button
             onClick={() => setButton(5)}
-            className={`px-4 py-2 rounded-md transition-all cursor-pointer duration-200 text-white font-semibold ${
+            className={`px-4 py-2 rounded-md transition-all cursor-pointer duration-200 text-white  ${
               button === 5 ? "bg-purple-500 -500" : "bg-gray-500"
             } hover:bg-purple-600 -600`}
           >

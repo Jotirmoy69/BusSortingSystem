@@ -17,11 +17,7 @@ function App() {
         <Route path="/selection" element={<Selection />} />
         <Route path="/morning" element={<Morning />} />
         <Route path="/day" element={<Day />} />
-
-        
         <Route path="/new" element={<Print />} />
-
-        
         <Route path="*" element={<h1>404 Not Found</h1>} />
       </Routes>
     </HashRouter>

@@ -145,6 +145,13 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1920,
     height: 1080,
+    autoHideMenuBar: true,
+    // titleBarOverlay: {
+    //   color: '#ffffff',           // ✅ White top bar
+    //   symbolColor: '#000000',     // ✅ Black icons (close/minimize/max)
+    //   height: 30
+    // },
+    // titleBarStyle: 'hidden', 
     icon: path.join(__dirname, "../src/assets/bcpsc.png"),
     webPreferences: {
       nodeIntegration: true,
@@ -405,37 +412,7 @@ app.whenReady().then(async () => {
         }
       }
     );
-    // ipcMain.handle(
-    //   "update-route",
-    //   async (event, { name, stands, totalBoys, totalGirls }) => {
-    //     try {
-    //       if (
-    //         !name ||
-    //         !Array.isArray(stands) ||
-    //         typeof totalBoys !== "number" ||
-    //         typeof totalGirls !== "number"
-    //       ) {
-    //         throw new Error("Invalid route data payload");
-    //       }
-
-    //       const result = await db.collection("dayShift").updateOne(
-    //         { name: name },
-    //         {
-    //           $set: {
-    //             stands: stands,
-    //             totalBoys: totalBoys,
-    //             totalGirls: totalGirls,
-    //           },
-    //         }
-    //       );
-
-    //       return { success: result.modifiedCount > 0 };
-    //     } catch (err) {
-    //       console.error("Error updating route:", err);
-    //       throw err;
-    //     }
-    //   }
-    // );
+    
 
     ipcMain.handle("reset-database", async () => {
       try {
@@ -445,6 +422,67 @@ app.whenReady().then(async () => {
         return { success: true };
       } catch (err) {
         console.error("Error resetting data:", err);
+        throw err;
+      }
+    });
+
+    ipcMain.handle("fetch-routes-college", async () => {
+      try {
+        const routes = await db.collection("collegeShift").find({}).toArray();
+        return { data: routes };
+      } catch (err) {
+        console.error("Error fetching college routes:", err);
+        return { data: [], error: err.message };
+      }
+    });
+
+    ipcMain.handle("insert-route-college", async (event, newRoute) => {
+      try {
+        const result = await db.collection("collegeShift").insertOne(newRoute);
+        return { success: true, id: result.insertedId };
+      } catch (err) {
+        console.error("Error inserting college route:", err);
+        throw err;
+      }
+    });
+
+    ipcMain.handle("delete-route-college", async (event, routeName) => {
+      try {
+        const result = await db.collection("collegeShift").deleteOne({ name: routeName });
+        return { success: result.deletedCount > 0 };
+      } catch (err) {
+        console.error("Error deleting college route:", err);
+        return { success: false, error: err.message };
+      }
+    });
+
+    ipcMain.handle("update-route-college", async (event, { name, stands, totalBoys, totalGirls }) => {
+      try {
+        const result = await db.collection("collegeShift").updateOne(
+          { name },
+          {
+            $set: {
+              stands,
+              totalBoys,
+              totalGirls,
+              updatedAt: new Date()
+            }
+          }
+        );
+        return { success: result.modifiedCount > 0 };
+      } catch (err) {
+        console.error("Error updating college route:", err);
+        return { success: false, error: err.message };
+      }
+    });
+
+    ipcMain.handle("insert-route-college-dummy", async (event, newRoute) => {
+      try {
+        await db.collection("collegeShift").deleteMany({});
+        const result = await db.collection("collegeShift").insertMany(newRoute);
+        return { success: true, insertedCount: result.insertedCount };
+      } catch (err) {
+        console.error("Error inserting college route:", err);
         throw err;
       }
     });
@@ -493,6 +531,14 @@ function createNewWindow(data) {
     width: 1920,
     height: 1080,
     title: "Final Print",
+    // frame: false,
+    autoHideMenuBar: true,
+    // titleBarOverlay: {
+    //   color: '#ffffff',           // ✅ White top bar
+    //   symbolColor: '#000000',     // ✅ Black icons (close/minimize/max)
+    //   height: 30
+    // },
+    // titleBarStyle: 'hidden', 
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
