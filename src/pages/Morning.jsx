@@ -482,7 +482,9 @@ export default function Morning() {
           </motion.div>
         </Link>
 
-        <ToastContainer autoClose={3000} />
+        <ToastContainer draggable progressBar={false}  
+        // toastStyle={{ backgroundColor: "white", color : "orange"}}
+         autoClose={3000} />
       </div>
 
       <style jsx global>{`

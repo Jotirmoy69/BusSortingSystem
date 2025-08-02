@@ -7,7 +7,12 @@ import Selection from './pages/Selection.jsx';
 import Morning from './pages/Morning.jsx';
 import Print from './pages/Print.jsx';
 import Day from './pages/Day.jsx';
+import LocomotiveScroll from 'locomotive-scroll';
 function App() {
+
+
+const locomotiveScroll = new LocomotiveScroll();
+
   return (
     <HashRouter>
       <Routes>

@@ -4,11 +4,15 @@ import { ToastContainer, toast } from "react-toastify";
 import { useAppContext } from "../context/context";
 import AssignmentTable from "../components/AssignmentTable";
 import PrePrint from "../components/PrePrint";
+import { HiOutlineDotsVertical } from "react-icons/hi";
+  // Tailwind Heroicons
+
+
 
 const Home = () => {
   // const [routes, setRoutes] = useState([]);
   const [prePrintShow, setprePrintShow] = useState(false);
-  const [table, setTable] = useState(false)
+  const [table, setTable] = useState(false);
   const {
     setActiveBuses,
     assignedBuses,
@@ -68,48 +72,74 @@ const Home = () => {
     <div className="p-6 bg-[#FFFFFF] min-h-screen px-40">
       <nav className="flex justify-between mt-10">
         <div className="flex items-center gap-5">
-          <img src="./bcpsc.png" className="w-30 h-30" alt="" />
-          <h1 className="text-2xl font-bold mb-6">Bus Management System</h1>
+          <img src="./bcpsc.png" className="w-25 " alt="" />
+          <h1 className="text-2xl font-bold mb-2">Bus Management System</h1>
         </div>
 
         <div className="flex flex-wrap gap-3 mb-6 items-center">
           <Link
             to={"/selection"}
-            className="bg-purple-600 text-white px-4 py-2 rounded"
+            className="px-6 py-2 rounded-lg 
+               bg-purple-600 border border-purple-600/20 
+               backdrop-blur-md 
+               text-white hover:text-purple-900 font-semibold 
+               shadow-md hover:bg-white/20 
+               transition duration-300"
           >
-            Manual 
+            Manual
           </Link>
           <Link
             to={"/automation"}
-            className="bg-purple-600 cursor-pointer text-white px-4 py-2 rounded"
+            className="px-6 py-2 rounded-lg 
+               bg-purple-600 border border-purple-600/20 
+               backdrop-blur-md 
+               text-white hover:text-purple-900 font-semibold 
+               shadow-md hover:bg-white/20 
+               transition duration-300"
           >
             Automatic
           </Link>
           <button
             onClick={handleClick}
-            className="bg-purple-600 cursor-pointer text-white px-4 py-2 rounded"
+            className="px-6 py-2 rounded-lg 
+               bg-purple-600 border border-purple-600/20 
+               backdrop-blur-md 
+               text-white hover:text-purple-900 font-semibold 
+               shadow-md cursor-pointer hover:bg-white/20 
+               transition duration-300"
           >
-            Print
+            Display
           </button>
-          
+
           {/* <button className="bg-purple-600 text-white px-4 py-2 rounded">
             রেকর্ডিং
           </button> */}
-          <Link to={"/settings"} className="text-2xl">
-            ⚙️
+          <Link to={"/settings"} className="text-4xl hover:rotate-90 transition-all duration-300">
+            <HiOutlineDotsVertical />
           </Link>
         </div>
       </nav>
 
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold mb-4 mt-20">Last Assignments</h2>
-          <button onClick={() => setTable(!table)} className="bg-purple-600 hover:bg-purple-500 transition-all cursor-pointer text-white px-4 py-2 mb-4 mt-20 rounded">{table ? "Morning Shift" : "Day Shift"}</button>
+        <button
+          onClick={() => setTable(!table)}
+          className="px-6 py-2 mt-20 rounded-lg 
+               bg-purple-600 border border-purple-600/20 
+               backdrop-blur-md 
+               text-white hover:text-purple-900 font-semibold 
+               shadow-md hover:bg-white/20 
+               transition duration-300 cursor-pointer"
+        >
+          {table ? "Morning Shift" : "Day Shift"}
+        </button>
       </div>
 
-      {table ? <AssignmentTable assignedBuses={assignedBuses} mode="automation" /> : <AssignmentTable
-          assignedBuses={assignedBusesDay}
-          mode="automation"
-        />}
+      {table ? (
+        <AssignmentTable assignedBuses={assignedBuses} mode="automation" />
+      ) : (
+        <AssignmentTable assignedBuses={assignedBusesDay} mode="automation" />
+      )}
       <ToastContainer />
       {prePrintShow && <PrePrint setprePrintShow={setprePrintShow} />}
     </div>
