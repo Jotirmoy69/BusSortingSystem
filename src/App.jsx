@@ -8,6 +8,7 @@ import Morning from './pages/Morning.jsx';
 import Print from './pages/Print.jsx';
 import Day from './pages/Day.jsx';
 import LocomotiveScroll from 'locomotive-scroll';
+import College from './pages/College.jsx';
 function App() {
 
 
@@ -21,6 +22,7 @@ const locomotiveScroll = new LocomotiveScroll();
         <Route path="/automation" element={<Automation />} />
         <Route path="/selection" element={<Selection />} />
         <Route path="/morning" element={<Morning />} />
+         <Route path="/college" element={<College />} />
         <Route path="/day" element={<Day />} />
         <Route path="/new" element={<Print />} />
         <Route path="*" element={<h1>404 Not Found</h1>} />

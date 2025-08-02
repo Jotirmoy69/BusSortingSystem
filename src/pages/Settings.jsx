@@ -4714,7 +4714,7 @@ return (
 
             <div className="mb-5">
               <label className="block mb-2 font-bold">
-                Stands (Separate with comma or space)
+                Stands (Separate with Comma or Enter)
               </label>
               <div className="flex flex-wrap gap-2 p-2 border border-gray-300 rounded min-h-[50px] items-center">
                 {standNameCollege.map((stand, index) => (
@@ -5118,7 +5118,7 @@ return (
 
             <div className="mb-5">
               <label className="block mb-2 font-bold">
-                Stands (Separate with comma or space)
+                Stands (Separate with Comma or Enter)
               </label>
               <div className="flex flex-wrap gap-2 p-2 border border-gray-300 rounded min-h-[50px] items-center">
                 {standName.map((stand, index) => (
@@ -5356,7 +5356,7 @@ return (
                     return (
                       <tr key={index} className="border-b border-gray-200">
                         <td className="p-3">{bus.number}</td>
-                        <td className="p-3">{bus.capacity} people</td>
+                        <td className="p-3 fot">{bus.capacity} Students</td>
                         <td className="p-3 flex items-center">
                           <Switch
                             checked={isActive}
@@ -5384,7 +5384,7 @@ return (
                             whileTap={{ scale: 0.9 }}
                             onClick={() => handleDeleteBus(bus.number)}
                             className="px-6 py-2 rounded-lg 
-                 border   
+                  
                backdrop-blur-md 
                text-white   font-semibold 
                  cursor-pointer   hover:scale-120
@@ -5723,7 +5723,7 @@ return (
 
             <div className="mb-5">
               <label className="block mb-2 font-bold">
-                Stands (Separate with comma or space)
+                Stands (Separate with Comma or Enter)
               </label>
               <div className="flex flex-wrap gap-2 p-2 border border-gray-300 rounded min-h-[50px] items-center">
                 {standName2.map((stand, index) => (

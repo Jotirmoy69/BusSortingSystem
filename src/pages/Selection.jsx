@@ -35,6 +35,17 @@ const Selection = () => {
             Day Shift
           </Link>
         </motion.div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.97 }}
+        >
+          <Link to="/college" className="h-60 w-96 flex items-center rounded-2xl justify-center font-semibold text-2xl hover:shadow-2xl transition-all duration-150 hover:translate-y-1 bg-gradient-to-r from-indigo-400 to-cyan-400">
+            College Shift
+          </Link>
+        </motion.div>
       </div>
 
       <Link

@@ -12,13 +12,15 @@ import { HiOutlineDotsVertical } from "react-icons/hi";
 const Home = () => {
   // const [routes, setRoutes] = useState([]);
   const [prePrintShow, setprePrintShow] = useState(false);
-  const [table, setTable] = useState(false);
+  const [table, setTable] = useState(0);
   const {
     setActiveBuses,
     assignedBuses,
     assignedBusesDay,
     setStands,
     setStands2,
+    setStands3,
+    assignedBusesCollege,
   } = useAppContext();
 
   const { ipcRenderer } = window.require("electron");
@@ -48,6 +50,15 @@ const Home = () => {
       toast.error("রুট লোড করতে সমস্যা হয়েছে");
     }
   };
+  const fetchRoutes3 = async () => {
+    try {
+      const res = await ipcRenderer.invoke("fetch-routes-college");
+      setStands3(res.data || []);
+    } catch (err) {
+      console.error("Error fetching routes:", err);
+      toast.error("রুট লোড করতে সমস্যা হয়েছে");
+    }
+  };
 
   const fetchRoutes = async () => {
     try {
@@ -65,9 +76,19 @@ const Home = () => {
       await fetchBuses();
       await fetchRoutes();
       await fetchRoutes2();
+      await fetchRoutes3();
     })();
   }, []);
 
+  const handleToggle = () => {
+    if (table === 1) {
+      setTable(2);
+    } else if (table === 2) {
+      setTable(0);
+    }else {
+      setTable(1);
+    }
+  }
   return (
     <div className="p-6 bg-[#FFFFFF] min-h-screen px-40">
       <nav className="flex justify-between mt-10">
@@ -123,7 +144,7 @@ const Home = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold mb-4 mt-20">Last Assignments</h2>
         <button
-          onClick={() => setTable(!table)}
+          onClick={handleToggle}
           className="px-6 py-2 mt-20 rounded-lg 
                bg-purple-600 border border-purple-600/20 
                backdrop-blur-md 
@@ -131,14 +152,16 @@ const Home = () => {
                shadow-md hover:bg-white/20 
                transition duration-300 cursor-pointer"
         >
-          {table ? "Morning Shift" : "Day Shift"}
+          {table === 0 ? "Day Shift" : table === 1 ? "Morning Shift" : "College Shift"}
         </button>
       </div>
 
-      {table ? (
+      {table === 0  ? (
         <AssignmentTable assignedBuses={assignedBuses} mode="automation" />
-      ) : (
+      ) : table === 1 ? (
         <AssignmentTable assignedBuses={assignedBusesDay} mode="automation" />
+      ) : (
+        <AssignmentTable assignedBuses={assignedBusesCollege} mode="automation" />
       )}
       <ToastContainer />
       {prePrintShow && <PrePrint setprePrintShow={setprePrintShow} />}

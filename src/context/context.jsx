@@ -4,13 +4,15 @@ const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
   const [activeBuses, setActiveBuses] = useState([]);
-  const [stands, setStands] = useState([]); // day shift
   const [assignedBuses, setAssignedBuses] = useState([]);
   const [assignedBusesDay, setAssignedBusesDay] = useState([]);
+  const [stands, setStands] = useState([]); // day shift
   const [stands2, setStands2] = useState([]);
+  const [stands3, setStands3] = useState([])
   const [automationAssigned, setAutomationAssigned] = useState(false);
   const [automationAssignments, setAutomationAssignments] = useState([]);
   const [automationAssignmentsDay, setAutomationAssignmentsDay] = useState([]);
+const [automationAssignmentsCollege, setAutomationAssignmentsCollege] = useState([])
 
   return (
     <AppContext.Provider
@@ -21,6 +23,8 @@ export const AppProvider = ({ children }) => {
         setStands,
         stands2,
         setStands2,
+        stands3,
+        setStands3,
         assignedBuses,
         setAssignedBuses,
         automationAssigned,
@@ -30,7 +34,9 @@ export const AppProvider = ({ children }) => {
         assignedBusesDay, 
         setAssignedBusesDay,
         automationAssignmentsDay,
-        setAutomationAssignmentsDay
+        setAutomationAssignmentsDay,
+        automationAssignmentsCollege,
+        setAutomationAssignmentsCollege
       }}
     >
       {children}
