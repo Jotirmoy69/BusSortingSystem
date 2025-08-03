@@ -20,8 +20,8 @@ export default function DayShift() {
     stands,
     assignedBusesDay,
     setAssignedBusesDay,
-    automationAssignmentsDay,
-    setAutomationAssignmentsDay,
+    // automationAssignmentsDay,
+    // setAutomationAssignmentsDay,
   } = useAppContext();
 
   // Function to get assigned stand names (excluding the bus being edited)
@@ -71,7 +71,7 @@ export default function DayShift() {
     // Get all assigned bus IDs from both manual and automation assignments
     const assignedBusIds = [
       ...assignedBusesDay.map(bus => bus.id),
-      ...automationAssignmentsDay.map(bus => bus.id)
+      // ...automationAssignmentsDay.map(bus => bus.id)
     ].filter(id => id !== editingBusId);
     
     return activeBuses.filter(
@@ -233,9 +233,9 @@ export default function DayShift() {
 
   // Handle reassigning all buses
   const handleReassign = () => {
-    if (assignedBusesDay.length > 0 || automationAssignmentsDay.length > 0) {
+    if (assignedBusesDay.length > 0) {
       setAssignedBusesDay([]);
-      setAutomationAssignmentsDay([]);
+      // setAutomationAssignmentsDay([]);
       toast.success("All day shift assignments cleared");
     } else {
       toast.info("No day shift assignments found");
@@ -687,7 +687,7 @@ export default function DayShift() {
           onEdit={handleEditBus}
           onRemove={handleRemoveBus}
           showGender={true}
-          automationAssigned={automationAssignmentsDay.length > 0}
+          // automationAssigned={automationAssignmentsDay.length > 0}
         />
 
         {/* Navigation Button */}
