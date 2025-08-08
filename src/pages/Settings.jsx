@@ -2724,6 +2724,7 @@ const Settings = () => {
       if (result?.success) {
         await fetchRoutes();
         await fetchRoutes2();
+        fetchRoutesCollege();
         await fetchBuses();
         toast.success("Database reset successfully");
       } else {

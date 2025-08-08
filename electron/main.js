@@ -419,6 +419,7 @@ app.whenReady().then(async () => {
         await db.collection("dayShift").deleteMany({});
         await db.collection("morningShift").deleteMany({});
         await db.collection("buses").deleteMany({});
+        await db.collection("collegeShift").deleteMany({});
         return { success: true };
       } catch (err) {
         console.error("Error resetting data:", err);

@@ -10,7 +10,7 @@ const AssignmentTable = ({
 }) => {
 
   const location = useLocation(); // ✅ Get current path
-  const showActions = ['/morning', '/day'].includes(location.pathname); // ✅ Only show on these paths
+  const showActions = ['/morning', '/day','/college'].includes(location.pathname); // ✅ Only show on these paths
 
   const getBusIdentifier = (bus) => bus.id || bus.number || `bus-${Math.random().toString(36).substr(2, 5)}`;
   const getStandName = (stand) => stand.stand || stand.name || 'Unknown';

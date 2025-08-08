@@ -113,11 +113,11 @@ export default function Morning() {
   };
 
   const handleReassign = () => {
-    if (automationAssignments?.length > 0) {
+    if (assignedBuses?.length > 0) {
       setAssignedBuses([]);
       toast.success("All assignments cleared");
     } else {
-      toast.info("No automation assignments found");
+      toast.info("No assignments found");
     }
     setSelected({});
     setTempSelect([]);
