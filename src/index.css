@@ -6,6 +6,22 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: 'milker';
+  src: url('./assets/fonts/Milker.otf') format('opentype');
+  font-weight: 550;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'gilroy';
+  src: url('./assets/fonts/Gilroy-ExtraBold.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+}
+*{
+  font-family: 'gilroy';
+  scroll-behavior: smooth;
+}
 /* Hide scrollbar background (track) */
 .no-scrollbar::-webkit-scrollbar {
   width: 8px; /* or 0 if you want it hidden */
@@ -25,3 +41,20 @@
   scrollbar-width: thin;
   scrollbar-color: #38bdf8 transparent;
 }
+
+.perspective {
+  perspective: 800px;
+}
+
+.flip {
+  display: inline-block;
+  transition: transform 0.6s ease;
+  transform-style: preserve-3d;
+  transform-origin: center;
+  cursor: pointer;
+}
+
+.flip:hover {
+  transform: rotateY(180deg);
+}
+ 

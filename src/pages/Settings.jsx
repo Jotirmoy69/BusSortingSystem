@@ -4450,7 +4450,7 @@ return (
     <div
       ref={mainContentRef}
       tabIndex="-1"
-      className="flex min-h-screen overflow-x-hidden bg-[#F5F5FF] text-[#2F1C6A] -800"
+      className="flex min-h-screen overflow-x-hidden font-[gilroy] bg-[#F5F5FF] text-[#2F1C6A] -800"
     >
       {/* Delete Confirmation Modals */}
       {showDeleteConfirm && (

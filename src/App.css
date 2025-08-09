@@ -1,1 +1,47 @@
 @import "tailwindcss";
+
+ 
+.perspective {
+  perspective: 800px;
+}
+
+.flip {
+  display: inline-block;
+  transition: transform 0.6s ease;
+  transform-style: preserve-3d;
+  transform-origin: center;
+  cursor: pointer;
+}
+
+.flip:hover {
+  transform: rotateY(180deg);
+}
+.running-dashed-border {
+  position: relative;
+  padding: 20px;
+  border-radius: 8px;
+  border: 4px solid transparent; /* space for the dashed border */
+
+  /* Create dashed border effect with two repeating linear gradients */
+  background-image:
+    repeating-linear-gradient(
+      90deg, 
+      black 0, black 6px, transparent 6px, transparent 12px
+    ),
+    repeating-linear-gradient(
+      0deg, 
+      black 0, black 6px, transparent 6px, transparent 12px
+    );
+  background-position: 0 0, 0 0;
+  background-repeat: repeat-x, repeat-y;
+  background-size: 12px 4px, 4px 12px;
+
+  /* Animate background position to create running dash effect */
+  animation: dash-run 1s linear infinite;
+}
+
+@keyframes dash-run {
+  to {
+    background-position: 12px 0, 0 12px;
+  }
+}
