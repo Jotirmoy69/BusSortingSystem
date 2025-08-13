@@ -36,8 +36,7 @@ It supports **morning**, **day**, and **college** shifts with both **manual** an
 
 | Layer          | Technology                     |
 |----------------|--------------------------------|
-| **Frontend**   | React, React Router, TailwindCSS, Toastify |
-| **Backend**    | Node.js (Electron Main Process) |
+| **Frontend**   | React, React Router, TailwindCSS, Toastify | 
 | **Database**   | MongoDB                        |
 | **Desktop**    | Electron                       |
 | **Animations** | Framer Motion                  |
