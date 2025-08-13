@@ -1,17 +1,15 @@
-import { useEffect, useState,useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import { useAppContext } from "../context/context";
 import AssignmentTable from "../components/AssignmentTable";
 import PrePrint from "../components/PrePrint";
 import { HiOutlineDotsVertical } from "react-icons/hi";
-  // Tailwind Heroicons
-
-
+// Tailwind Heroicons
 
 const Home = () => {
   // const [routes, setRoutes] = useState([]);
-   const printRef = useRef();
+  const printRef = useRef();
   const [prePrintShow, setprePrintShow] = useState(false);
   const [table, setTable] = useState(0);
   const {
@@ -86,41 +84,41 @@ const Home = () => {
       setTable(2);
     } else if (table === 2) {
       setTable(0);
-    }else {
+    } else {
       setTable(1);
     }
-  }
+  };
 
   const handlePrint = () => {
-  let assignedBusesToPrint;
+    let assignedBusesToPrint;
 
-  if (table === 0) {
-    assignedBusesToPrint = assignedBuses; // Day Shift buses
-    if (!assignedBusesToPrint || assignedBusesToPrint.length === 0) {
-      toast.error("No Bus assigned to Day Shift");
+    if (table === 0) {
+      assignedBusesToPrint = assignedBuses; // Day Shift buses
+      if (!assignedBusesToPrint || assignedBusesToPrint.length === 0) {
+        toast.error("No Bus assigned to Day Shift");
+        return;
+      }
+    } else if (table === 1) {
+      assignedBusesToPrint = assignedBusesDay; // Morning Shift buses
+      if (!assignedBusesToPrint || assignedBusesToPrint.length === 0) {
+        toast.error("No Bus assigned to Morning Shift");
+        return;
+      }
+    } else if (table === 2) {
+      assignedBusesToPrint = assignedBusesCollege; // College Shift buses
+      if (!assignedBusesToPrint || assignedBusesToPrint.length === 0) {
+        toast.error("No Bus assigned to College Shift");
+        return;
+      }
+    } else {
+      toast.error("Invalid shift selected");
       return;
     }
-  } else if (table === 1) {
-    assignedBusesToPrint = assignedBusesDay; // Morning Shift buses
-    if (!assignedBusesToPrint || assignedBusesToPrint.length === 0) {
-      toast.error("No Bus assigned to Morning Shift");
-      return;
-    }
-  } else if (table === 2) {
-    assignedBusesToPrint = assignedBusesCollege; // College Shift buses
-    if (!assignedBusesToPrint || assignedBusesToPrint.length === 0) {
-      toast.error("No Bus assigned to College Shift");
-      return;
-    }
-  } else {
-    toast.error("Invalid shift selected");
-    return;
-  }
 
-  if (!printRef.current) return;
+    if (!printRef.current) return;
 
-  const printContents = printRef.current.innerHTML;
-  const printWindow = window.open("", "_blank", "width=800,height=600");
+    const printContents = printRef.current.innerHTML;
+    const printWindow = window.open("", "_blank", "width=800,height=600");
 
     printWindow.document.write(`
       <html>
@@ -173,17 +171,19 @@ const Home = () => {
     printWindow.close();
   };
   return (
-    <div className="p-6 bg-[#FFFFFF] min-h-screen font-[gilroy] px-40">
+    <div className="p-6 bg-[#FFFFFF] min-h-screen font-[gilroy] lg:px-40 px-16">
       <nav className="flex justify-between mt-10">
         <div className="flex items-center gap-5">
-          <img src="./bcpsc.png" className="w-25 " alt="" />
-          <h1 className="text-2xl font-bold mb-2">Bus Management System</h1>
+          <img src="./bcpsc.png" className="md:w-25 w-15" alt="" />
+          <h1 className="lg:text-2xl text-xs font-bold mb-2">
+            Bus Management System
+          </h1>
         </div>
 
         <div className="flex flex-wrap gap-3 mb-6 items-center">
           <Link
             to={"/selection"}
-            className="px-6 py-2 rounded-lg 
+            className="lg:px-6 px-2 lg:py-2 py-1 rounded-lg 
                bg-purple-600 border border-purple-600/20 
                backdrop-blur-md 
                text-white hover:text-purple-900 font-semibold 
@@ -194,7 +194,7 @@ const Home = () => {
           </Link>
           <Link
             to={"/automation"}
-            className="px-6 py-2 rounded-lg 
+            className="lg:px-6 px-2 lg:py-2 py-1 rounded-lg 
                bg-purple-600 border border-purple-600/20 
                backdrop-blur-md 
                text-white hover:text-purple-900 font-semibold 
@@ -205,7 +205,7 @@ const Home = () => {
           </Link>
           <button
             onClick={handleClick}
-            className="px-6 py-2 rounded-lg 
+            className="lg:px-6 px-2 lg:py-2 py-1 rounded-lg 
                bg-purple-600 border border-purple-600/20 
                backdrop-blur-md 
                text-white hover:text-purple-900 font-semibold 
@@ -216,7 +216,7 @@ const Home = () => {
           </button>
           <button
             onClick={handlePrint}
-            className="px-6 py-2 rounded-lg 
+            className="lg:px-6 px-2 lg:py-2 py-1 rounded-lg 
                bg-purple-600 border border-purple-600/20 
                backdrop-blur-md 
                text-white hover:text-purple-900 font-semibold 
@@ -224,12 +224,15 @@ const Home = () => {
                transition duration-300"
           >
             Print Table (A4)
-          </button> 
+          </button>
 
           {/* <button className="bg-purple-600 text-white px-4 py-2 rounded">
             রেকর্ডিং
           </button> */}
-          <Link to={"/settings"} className="text-4xl hover:rotate-90 transition-all duration-300">
+          <Link
+            to={"/settings"}
+            className="text-4xl hover:rotate-90 transition-all duration-300"
+          >
             <HiOutlineDotsVertical />
           </Link>
         </div>
@@ -246,20 +249,26 @@ const Home = () => {
                shadow-md hover:bg-white/20 
                transition duration-300 cursor-pointer"
         >
-          {table === 0 ? "Day Shift" : table === 1 ? "Morning Shift" : "College Shift"}
+          {table === 0
+            ? "Morning Shift"
+            : table === 1
+            ? "Day Shift"
+            : "College Shift"}
         </button>
-      </div >
-            <div ref={printRef}>
-
-      {table === 0  ? (
-        <AssignmentTable assignedBuses={assignedBuses} mode="automation" />
-      ) : table === 1 ? (
-        <AssignmentTable assignedBuses={assignedBusesDay} mode="automation" />
-      ) : table === 2 ? (
-        <AssignmentTable assignedBuses={assignedBusesCollege} mode="automation" />
-      ): null}
-      <ToastContainer />
-      {prePrintShow && <PrePrint setprePrintShow={setprePrintShow} />}
+      </div>
+      <div ref={printRef}>
+        {table === 0 ? (
+          <AssignmentTable assignedBuses={assignedBuses} mode="automation" />
+        ) : table === 1 ? (
+          <AssignmentTable assignedBuses={assignedBusesDay} mode="automation" />
+        ) : table === 2 ? (
+          <AssignmentTable
+            assignedBuses={assignedBusesCollege}
+            mode="automation"
+          />
+        ) : null}
+        <ToastContainer />
+        {prePrintShow && <PrePrint setprePrintShow={setprePrintShow} />}
       </div>
     </div>
   );

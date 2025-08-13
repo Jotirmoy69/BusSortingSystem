@@ -11,8 +11,7 @@ import LocomotiveScroll from 'locomotive-scroll';
 import College from './pages/College.jsx';
 function App() {
 
-
-const locomotiveScroll = new LocomotiveScroll();
+ 
 
   return (
     <HashRouter>

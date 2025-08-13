@@ -402,7 +402,7 @@
 //                     <div>
 //                       <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
 //                         <span className="bg-purple-600 text-white p-1 px-2.5 rounded-lg">
-//                           #{selected.number}
+//                           {selected.number}
 //                         </span>
 //                         <span>{selected.capacity} Seats</span>
 //                       </h3>
@@ -1142,7 +1142,7 @@ export default function DayShift() {
                     <div>
                       <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                         <span className="bg-purple-600 text-white p-1 px-2.5 rounded-lg">
-                          #{selected.number}
+                          {selected.number}
                         </span>
                         <span>{selected.capacity} Seats</span>
                       </h3>

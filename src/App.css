@@ -45,3 +45,54 @@
     background-position: 12px 0, 0 12px;
   }
 }
+
+/* Camouflage scrollbars to match container background */
+.scroll-camo {
+  /* Set this to the same color as the container/table body */
+  --scrollbar-bg: #0000ff;   /* track/corner color */
+  --scrollbar-thumb: #000000; /* thumb color (same = camo) */
+
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-bg);
+}
+
+/* Chrome/Safari/Edge (WebKit) */
+.scroll-camo::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+  background: var(--scrollbar-bg);
+}
+.scroll-camo::-webkit-scrollbar-track {
+  background: var(--scrollbar-bg);
+}
+.scroll-camo::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 9999px;
+  border: 3px solid var(--scrollbar-bg); /* adds spacing and blends edges */
+}
+.scroll-camo::-webkit-scrollbar-corner {
+  background: var(--scrollbar-bg); /* hides the rounded corner block */
+}
+
+/* Hide scrollbars but keep scrolling */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE/Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+/* WebKit (Chrome/Safari) */
+.no-scrollbar::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+}
+.no-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent !important;
+  border: none !important;
+}
+.no-scrollbar::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+.no-scrollbar::-webkit-scrollbar-corner {
+  background: transparent !important; /* gets rid of the rounded corner */
+}

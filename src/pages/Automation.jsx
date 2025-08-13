@@ -71,7 +71,7 @@ const Automation = () => {
               rem -= chunk;
             }
           } else {
-            standsToAssign.push(mk(`${stand.name} (boys)`, boys, 0, "boys", stand.name));
+            standsToAssign.push(mk(`${stand.name}`, boys, 0, "boys", stand.name));
           }
         }
         // girls
@@ -84,7 +84,7 @@ const Automation = () => {
               rem -= chunk;
             }
           } else {
-            standsToAssign.push(mk(`${stand.name} (girls)`, 0, girls, "girls", stand.name));
+            standsToAssign.push(mk(`${stand.name}`, 0, girls, "girls", stand.name));
           }
         }
       }
@@ -193,7 +193,7 @@ const Automation = () => {
               rem -= chunk;
             }
           } else {
-            standsToAssign.push(mk(`${stand.name} (boys)`, boys, 0, "boys", stand.name));
+            standsToAssign.push(mk(`${stand.name}`, boys, 0, "boys", stand.name));
           }
         }
         if (girls > 0) {
@@ -205,7 +205,7 @@ const Automation = () => {
               rem -= chunk;
             }
           } else {
-            standsToAssign.push(mk(`${stand.name} (girls)`, 0, girls, "girls", stand.name));
+            standsToAssign.push(mk(`${stand.name}`, 0, girls, "girls", stand.name));
           }
         }
       }
@@ -437,7 +437,7 @@ const Automation = () => {
   })();
 
   return (
-    <div className="w-full font-[gilroy] min-h-screen px-4 md:px-20 lg:px-40 py-10 md:py-20 bg-white">
+    <div className="w-full font-[gilroy] min-h-screen px-10 lg:px-40 py-10 md:py-20 bg-white">
       <ToastContainer />
       <nav className="flex flex-col md:flex-row items-center  justify-between gap-4">
         <img src="./src/assets/bcpsc.png" className="w-20 h-20" alt="logo" />
@@ -518,7 +518,7 @@ const Automation = () => {
               <p className="text-lg font-semibold">{summary.totalBuses}</p>
             </div>
             <div className="p-4 bg-yellow-100 rounded-md shadow-sm">
-              <p className="text-sm text-gray-600">Buses with Empty Seats</p>
+              <p className="text-sm text-gray-600">Buses with empty seats</p>
               <p className="text-lg font-semibold">
                 {summary.underfilledBuses.length > 0
                   ? summary.underfilledBuses

@@ -394,7 +394,7 @@ export default function College() {
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                        <span className="bg-purple-600 text-white p-1 px-2.5 rounded-lg">#{selected.number}</span>
+                        <span className="bg-purple-600 text-white p-1 px-2.5 rounded-lg">{selected.number}</span>
                         <span>{selected.capacity} Seats</span>
                       </h3>
                       <p className="text-sm text-gray-500 mt-1">

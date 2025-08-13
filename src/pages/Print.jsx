@@ -15,6 +15,8 @@ function Print() {
     });
     ipcRenderer.send("request-assigned-buses");
     console.log(location.pathname);
+    console.log(assignedBuses);
+    
     
     return () => {
       ipcRenderer.removeAllListeners("assigned-buses-data");

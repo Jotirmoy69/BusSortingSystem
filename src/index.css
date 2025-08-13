@@ -9,13 +9,12 @@
 @font-face {
   font-family: 'milker';
   src: url('./assets/fonts/Milker.otf') format('opentype');
-  font-weight: 550;
+  font-weight: 900;
   font-style: normal;
 }
 @font-face {
   font-family: 'gilroy';
-  src: url('./assets/fonts/Gilroy-ExtraBold.otf') format('opentype');
-  font-weight: 500;
+  src: url('./assets/fonts/Gilroy-ExtraBold.otf') format('opentype'); 
   font-style: normal;
 }
 *{
