@@ -48,18 +48,22 @@ It supports **morning**, **day**, and **college** shifts with both **manual** an
 
 ```
 src/
- ├── components/
- │    ├── Morning.jsx
- │    ├── Day.jsx
- │    ├── College.jsx
+ ├── components/ 
+ │    ├── Preprint.jsx
  │    └── AssignmentTable.jsx
  │
  ├── pages/
- │    └── Automation.jsx
+ │    ├── Morning.jsx
+ │    ├── Day.jsx
+ │    ├── College.jsx
+ │    ├── Automation.jsx
+ │    ├── Home.jsx
+ │    ├── Print.jsx
+ │    ├── Selection.jsx
+ │    └── Settings.jsx 
  │
- ├── utils/
- │    ├── busAssignmentLogic.js   # Shared assignment functions
- │    └── mongoConfig.js          # Single MongoDB configuration for all environments
+ ├── context/
+ │    └── context.jsx
  │
  ├── App.jsx
  ├── index.js
@@ -77,12 +81,12 @@ npm install
 
 ### 2️⃣ Run in development
 ```bash
-npm run electron:dev
+npm run dev
 ```
 
 ### 3️⃣ Build for production
 ```bash
-npm run electron:build
+npm run dist
 ```
 
 ---
@@ -98,14 +102,4 @@ npm run electron:build
   - Runs a set of rules to auto-allocate buses based on availability and shift.
   - Hides already-assigned buses from other shifts until reset.
 
----
-
-## 📝 Notes for Developers
-- **Single MongoDB Config**:  
-  The app uses the same MongoDB connection for **development** and **production**.
-  
-- **Adding New Shift**:  
-  - Create a new `<ShiftName>.jsx` in `components/`.
-  - Add corresponding logic in `Automation.jsx`.
-  - Update shared assignment logic in `utils/busAssignmentLogic.js`.
-
+ 
