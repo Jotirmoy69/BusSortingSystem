@@ -200,6 +200,7 @@ export default function College() {
       assigned: totalStudents,
       stands: allStands,
       route: "College Assignment",
+      gender: activeGender,
     };
 
     setAssignedBusesCollege((prev) => [...(prev || []), newAssignment]);
@@ -496,8 +497,8 @@ export default function College() {
                 <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
                   <FaPlus className="text-2xl text-gray-400" />
                 </div>
-                <p className="text-lg font-medium">All stands have been assigned</p>
-                <p className="text-sm mt-1 text-gray-400">Reset assignments to free up stands</p>
+                <p className="text-lg font-medium">All stands have been assigned or not loaded</p>
+                <p className="text-sm mt-1 text-gray-400">Reset assignments to free up stands or load stands</p>
               </div>
             ) : availableStands.length === 0 ? (
               <div className="py-10 text-center text-gray-500">

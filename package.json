@@ -3,8 +3,8 @@
   "private": true,
   "version": "1.0.0",
   "description": "A school bus route and automation management system",
-  "author": "Jotirmoy Bhomwik",
-  "publisher": "Jotirmoy Bhomwik",
+  "author": "Jotirmoy Bhomwik - SSC 27",
+  "publisher": "Jotirmoy Bhomwik - SSC 27",
   "type": "module",
   "main": "electron/main.js",
   "scripts": {
@@ -20,7 +20,7 @@
   "build": {
     "appId": "com.jotirmoy.busmanagementsystem",
     "productName": "Bus Management System",
-    "copyright": "Copyright © 2024 ${author}",
+    "copyright": "Copyright © 2025 ${author}",
     "directories": {
       "buildResources": "assets",
       "output": "dist"

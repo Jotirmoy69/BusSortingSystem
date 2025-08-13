@@ -439,9 +439,7 @@ const Automation = () => {
   return (
     <div className="w-full font-[gilroy] min-h-screen px-10 lg:px-40 py-10 md:py-20 bg-white">
       <ToastContainer />
-      <nav className="flex flex-col md:flex-row items-center  justify-between gap-4">
-        <img src="./src/assets/bcpsc.png" className="w-20 h-20" alt="logo" />
-        <div className="flex flex-wrap justify-end   w-full h-10 gap-2">
+      <nav className="flex flex-col md:flex-row items-center  justify-between gap-4"> 
           <div className="bg-gray-100 px-4 items-center rounded-lg flex   gap-2 w- max-w-md">
             <label className="text-sm font-medium w-40 text-gray-700">
               {button === 5 ? "Morning" : button === 2 ? "Day" : "College"} Overload:{" "}
@@ -461,9 +459,10 @@ const Automation = () => {
                 else if (button === 2) setDayOverload(v);
                 else if (button === 3) setCollegeOverload(v);
               }}
-              className="w-32 accent-purple-500"
+              className="w-32 h-10 accent-purple-500"
             />
           </div>
+        <div className="flex flex-wrap justify-end   w-full h-10 gap-2">
 
           <button
             onClick={() => setButton(3)}
