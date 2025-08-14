@@ -397,7 +397,7 @@ const AssignmentTable = ({
         {/* ✅ Countdown bubble */}
       </div>
       {isNew && countdown !== null && isOverflowing && (
-        <div className="absolute bottom-5 right-5 bg-black/70 text-white text-sm px-3 py-2 rounded-full shadow-lg">
+        <div className="absolute bottom-5 right-5 bg-black/70 text-white text-2xl px-8 py-4 rounded-full shadow-lg">
           {atBottom ? "Back to top in" : "Auto-scroll in"} {countdown}s
         </div>
       )}
