@@ -214,9 +214,9 @@ const AssignmentTable = ({
                   <th className="border border-gray-500 p-2">Utilization</th>
                 </>
               )}
-              {showGender && (
+              {/* {showGender && (
                 <th className="border border-gray-500 p-2">Gender</th>
-              )}
+              )} */}
               <th className="border border-gray-500 p-2">Stands</th>
               {showActions && (
                 <th className="border border-gray-500 p-2">Actions</th>
@@ -261,7 +261,7 @@ const AssignmentTable = ({
                       >
                         <div className="flex flex-col text-center h-full w-full items-center justify-center">
                           <span>{bus.number || bus.id || "N/A"}</span>
-                          <span>({bus.gender || "N/A"})</span>
+                          <span>{bus.gender && `(${bus.gender})`}</span>
                         </div>
                       </td>
 
@@ -310,7 +310,7 @@ const AssignmentTable = ({
                         </>
                       )}
 
-                      {showGender && (
+                      {/* {showGender && (
                         <td className="border border-gray-300 p-3">
                           <div className="flex flex-wrap gap-1">
                             {bus.stands &&
@@ -328,7 +328,7 @@ const AssignmentTable = ({
                               ))}
                           </div>
                         </td>
-                      )}
+                        )} */}
 
                       {/* ✅ Stand font size applied */}
                       <td
