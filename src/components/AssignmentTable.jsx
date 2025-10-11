@@ -20,6 +20,7 @@ const AssignmentTable = ({
   const [countdown, setCountdown] = useState(null); // number | null
   const [isOverflowing, setIsOverflowing] = useState(false);
   const [atBottom, setAtBottom] = useState(false);
+  const [isChecked, setIsChecked] = useState(true);
 
   // ✅ Font size for bus number
   const [fontSize, setFontSize] = useState(() => {
@@ -155,45 +156,54 @@ const AssignmentTable = ({
     return () => clearTimeout(reset);
   }, [countdown, isNew, isOverflowing]);
 
+  const handleChange = (event) => {
+    setIsChecked(!isChecked);
+    console.log(isChecked);
+  };
+
   return (
     <div className="mt-2">
       {/* ✅ Font size selectors */}
       <div className="mb-3 flex items-center transition-all duration-300 gap-4">
-        <div className="flex items-center gap-2">
-          <label className="font-medium">Bus Font Size:</label>
-          <select
-            value={fontSize}
-            onChange={(e) => setFontSize(e.target.value)}
-            className="border border-gray-300 rounded p-1"
-          >
-            <option value="text-sm">Small</option>
-            <option value="text-base">Medium</option>
-            <option value="text-lg">Large</option>
-            <option value="text-3xl">Extra Large</option>
-          </select>
-        </div>
+        {isChecked && (
+          <>
+            <div className="flex items-center gap-2">
+              <label className="font-medium">Bus Font Size:</label>
+              <select
+                value={fontSize}
+                onChange={(e) => setFontSize(e.target.value)}
+                className="border border-gray-300 rounded p-1"
+              >
+                <option value="text-sm">Small</option>
+                <option value="text-base">Medium</option>
+                <option value="text-lg">Large</option>
+                <option value="text-3xl">Extra Large</option>
+              </select>
+            </div>
 
-        <div className="flex items-center gap-2">
-          <label className="font-medium">Stand Font Size:</label>
-          <select
-            value={standFontSize}
-            onChange={(e) => setStandFontSize(e.target.value)}
-            className="border border-gray-300 rounded p-1"
-          >
-            <option value="text-xs">Extra Small</option>
-            <option value="text-sm">Small</option>
-            <option value="text-base">Medium</option>
-            <option value="text-lg">Large</option>
-            <option value="text-3xl">Extra Large</option>
-          </select>
-        </div>
+            <div className="flex items-center gap-2">
+              <label className="font-medium">Stand Font Size:</label>
+              <select
+                value={standFontSize}
+                onChange={(e) => setStandFontSize(e.target.value)}
+                className="border border-gray-300 rounded p-1"
+              >
+                <option value="text-xs">Extra Small</option>
+                <option value="text-sm">Small</option>
+                <option value="text-base">Medium</option>
+                <option value="text-lg">Large</option>
+                <option value="text-3xl">Extra Large</option>
+              </select>
+            </div>
+          </>
+        )}
       </div>
 
       {/* ✅ 90vh scroll area on /new; auto-scroll countdown overlays here */}
       <div
         ref={scrollRef}
         className={`relative overflow-x-auto overflow-y-auto scroll-camo no-scrollbar  ${
-          isNew ? "h-[91vh]" : ""
+          isNew ? (isChecked ? "h-[91vh]" : "h-[94vh]") : ""
         }`}
       >
         <motion.table
@@ -310,26 +320,6 @@ const AssignmentTable = ({
                         </>
                       )}
 
-                      {/* {showGender && (
-                        <td className="border border-gray-300 p-3">
-                          <div className="flex flex-wrap gap-1">
-                            {bus.stands &&
-                              bus.stands.map((stand, index) => (
-                                <span
-                                  key={index}
-                                  className={`px-2 py-1 rounded-full text-xs ${
-                                    stand.gender === "boys"
-                                      ? "bg-blue-100 text-blue-800"
-                                      : "bg-pink-100 text-pink-800"
-                                  }`}
-                                >
-                                  {stand.gender || "mixed"}
-                                </span>
-                              ))}
-                          </div>
-                        </td>
-                        )} */}
-
                       {/* ✅ Stand font size applied */}
                       <td
                         className={`border border-gray-300 p-3 cursor-pointer`}
@@ -352,8 +342,8 @@ const AssignmentTable = ({
                                 }
                               >
                                 <span className="w-2 h-2 bg-purple-500 rounded-full mr-2" />
-                                { getStandName(stand) + (index === bus.stands.length - 1 ? "." : ",") }
-
+                                {getStandName(stand) +
+                                  (index === bus.stands.length - 1 ? "." : ",")}
                               </motion.li>
                             ))}
                           </motion.ul>
@@ -403,9 +393,25 @@ const AssignmentTable = ({
       )}
 
       {location.pathname === "/new" && (
-        <span className="fixed bottom-1 left-2 text-gray-500">
-          Developed By Jotirmoy || Designed By Raiyan || Copyright © 2025
-        </span>
+        <div className="flex justify-between items-center gap-2 fixed bottom-1">
+          <div className=" text-gray-500 flex items-center">
+            Developed By Jotirmoy || Designed By Raiyan || Copyright{" "}
+            {/* <span className="flex items-center" >
+              <label class="inline-flex items-center  cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={handleChange}
+                  className="sr-only peer"
+                />
+                <div className="relative w-11 h-6 bg-gray-200 rounded-full peer     peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600 dark:peer-checked:bg-purple-600"></div>
+              </label>
+            </span> */}
+            <div 
+                  checked={isChecked}
+                  onClick={handleChange} className={`flex transition-all duration-300  items-center cursor-pointer ${isChecked ? "ml-5 text-purple-500":""} mx-1`}>©</div>2025
+          </div>
+        </div>
       )}
     </div>
   );
