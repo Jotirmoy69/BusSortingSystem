@@ -701,8 +701,7 @@
 //           </motion.div>
 //         </Link>
 
-//         <ToastContainer autoClose={3000} />
-//       </div>
+// //       </div>
 
 //       <style jsx global>{`
 //         .custom-scrollbar::-webkit-scrollbar {
@@ -728,8 +727,7 @@ import React, { useState } from "react";
 import { HiPencil, HiOutlineTrash, HiOutlineX } from "react-icons/hi";
 import { useAppContext } from "../context/context";
 import { FaArrowLeftLong, FaPlus } from "react-icons/fa6";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import AssignmentTable from "../components/AssignmentTable";
 import { motion, AnimatePresence } from "framer-motion";
@@ -1443,7 +1441,6 @@ export default function DayShift() {
           </motion.div>
         </Link>
 
-        <ToastContainer autoClose={3000} />
       </div>
 
       <style jsx global>{`

@@ -1,12 +1,11 @@
 import { FaRegTrashAlt } from "react-icons/fa";
 import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "sonner";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { ImCross } from "react-icons/im";
 import { Switch } from "@headlessui/react";
 import { AnimatePresence, motion } from "framer-motion";
-import "react-toastify/dist/ReactToastify.css";
 import * as XLSX from "xlsx";
 import { useAppContext } from "../context/context";
 import { IoClose } from "react-icons/io5";
@@ -3036,7 +3035,6 @@ const Settings = () => {
         )}
       </AnimatePresence>
 
-      <ToastContainer />
     </div>
   );
 };

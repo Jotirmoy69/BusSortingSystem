@@ -1,5 +1,6 @@
 // src/App.jsx
 import { HashRouter, Routes, Route, Link } from 'react-router-dom';
+import { Toaster } from 'sonner';
 import Home from './pages/Home.jsx';
 import Settings from './pages/Settings.jsx';
 import Automation from './pages/Automation.jsx';
@@ -15,6 +16,7 @@ function App() {
 
   return (
     <HashRouter>
+      <Toaster />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/settings" element={<Settings />} />

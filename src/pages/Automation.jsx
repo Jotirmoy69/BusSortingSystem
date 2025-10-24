@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { FaArrowLeftLong } from "react-icons/fa6";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { useAppContext } from "../context/context";
-import "react-toastify/dist/ReactToastify.css";
 import AssignmentTable from "../components/AssignmentTable";
 
 const Automation = () => {
@@ -438,7 +437,6 @@ const Automation = () => {
 
   return (
     <div className="w-full font-[gilroy] min-h-screen px-10 lg:px-40 py-10 md:py-20 bg-white">
-      <ToastContainer />
       <nav className="flex flex-col md:flex-row items-center  justify-between gap-4"> 
           <div className="bg-gray-100 px-4 items-center rounded-lg flex   gap-2 w- max-w-md">
             <label className="text-sm font-medium w-40 text-gray-700">
