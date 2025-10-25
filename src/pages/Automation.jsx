@@ -1,12 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaArrowLeftLong } from "react-icons/fa6";
-import { ToastContainer, toast } from "react-toastify";
-import { Link } from "react-router-dom";
+import { toast } from "sonner";
+import { Link, useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/context";
-import "react-toastify/dist/ReactToastify.css";
 import AssignmentTable from "../components/AssignmentTable";
 
 const Automation = () => {
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleEsc = (event) => {
+      if (event.key === "Escape") {
+        navigate("/"); // same as <Link to="/" />
+      }
+    };
+
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [navigate]);
   const [button, setButton] = useState(5);
   const [morningOverload, setMorningOverload] = useState(27);
   const [dayOverload, setDayOverload] = useState(10);
@@ -438,7 +450,6 @@ const Automation = () => {
 
   return (
     <div className="w-full font-[gilroy] min-h-screen px-10 lg:px-40 py-10 md:py-20 bg-white">
-      <ToastContainer />
       <nav className="flex flex-col md:flex-row items-center  justify-between gap-4"> 
           <div className="bg-gray-100 px-4 items-center rounded-lg flex   gap-2 w- max-w-md">
             <label className="text-sm font-medium w-40 text-gray-700">

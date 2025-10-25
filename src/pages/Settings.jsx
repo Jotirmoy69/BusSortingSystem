@@ -1,17 +1,17 @@
 import { FaRegTrashAlt } from "react-icons/fa";
 import React, { useEffect, useState, useRef } from "react";
-import { Link } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { ImCross } from "react-icons/im";
 import { Switch } from "@headlessui/react";
 import { AnimatePresence, motion } from "framer-motion";
-import "react-toastify/dist/ReactToastify.css";
 import * as XLSX from "xlsx";
 import { useAppContext } from "../context/context";
 import { IoClose } from "react-icons/io5";
 
 const Settings = () => {
+  const navigate = useNavigate();
   // State declarations for all application components
   const [input, setInput] = useState(""); // Day shift stand input
   const [input2, setInput2] = useState(""); // Morning shift stand input
@@ -36,6 +36,12 @@ const Settings = () => {
   const [totalDayStudents, setTotalDayStudents] = useState(0); // Total day students
   const [totalMorningStudents, setTotalMorningStudents] = useState(0); // Total morning students
   const [totalCollegeStudents, setTotalCollegeStudents] = useState(0); // Total college students
+  const [lastUpdatedDay, setLastUpdatedDay] = useState(null); // Last updated time for day shift
+  const [lastUpdatedMorning, setLastUpdatedMorning] = useState(null); // Last updated time for morning shift
+  const [lastUpdatedCollege, setLastUpdatedCollege] = useState(null); // Last updated time for college shift
+  const [daySeatsNeeded, setDaySeatsNeeded] = useState(0); // Additional seats needed for day shift
+  const [morningSeatsNeeded, setMorningSeatsNeeded] = useState(0); // Additional seats needed for morning shift
+  const [collegeSeatsNeeded, setCollegeSeatsNeeded] = useState(0); // Additional seats needed for college shift
   const [dummy, setDummy] = useState(false); // State trigger for updates
   const [dummy2, setDummy2] = useState(false); // Secondary state trigger
   const [dummy3, setDummy3] = useState(false); // Tertiary state trigger
@@ -90,6 +96,17 @@ const Settings = () => {
     };
   };
 
+
+  useEffect(() => {
+    const handleEsc = (event) => {
+      if (event.key === "Escape") {
+        navigate("/"); // same as <Link to="/" />
+      }
+    };
+
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [navigate]);
   // Effect to calculate college student totals
   useEffect(() => {
     const collegeStudentsTotal = routesCollege.reduce(
@@ -99,8 +116,40 @@ const Settings = () => {
     setTotalCollegeStudents(collegeStudentsTotal);
   }, [routesCollege]);
 
+  // Function to calculate all seat capacity differences
+  const calculateSeatCapacity = () => {
+    const daySeatsNeeded = Math.max(0, totalDayStudents - activeBusCapacity);
+    const morningSeatsNeeded = Math.max(0, totalMorningStudents - activeBusCapacity);
+    const collegeSeatsNeeded = Math.max(0, totalCollegeStudents - activeBusCapacity);
+    
+    setDaySeatsNeeded(daySeatsNeeded);
+    setMorningSeatsNeeded(morningSeatsNeeded);
+    setCollegeSeatsNeeded(collegeSeatsNeeded);
+  };
+
+  // Effect to calculate seat capacity differences when data changes
+  useEffect(() => {
+    calculateSeatCapacity();
+  }, [totalDayStudents, totalMorningStudents, totalCollegeStudents, activeBusCapacity]);
+
+  // Effect to recalculate when tab changes
+  useEffect(() => {
+    calculateSeatCapacity();
+  }, [isShow]);
+
+  // Effect to recalculate when routes data changes
+  useEffect(() => {
+    calculateSeatCapacity();
+  }, [routes, routes2, routesCollege]);
+
+  // Effect to recalculate when buses data changes
+  useEffect(() => {
+    calculateSeatCapacity();
+  }, [buses]);
+
   // Initial data fetching
   useEffect(() => {
+    fetchBuses();
     fetchRoutes();
     fetchRoutes2();
     fetchRoutesCollege();
@@ -361,6 +410,7 @@ const Settings = () => {
 
       await ipcRenderer.invoke("insert-route-college-dummy", parsedData);
       fetchRoutesCollege();
+      setLastUpdatedCollege(new Date());
       toast.success("College shift data has been applied from Excel!");
     };
 
@@ -536,6 +586,7 @@ const Settings = () => {
 
       await ipcRenderer.invoke("insert-route-dummy", parsedData);
       fetchRoutes();
+      setLastUpdatedDay(new Date());
       toast.success("Day shift data applied from Excel successfully!");
     };
 
@@ -626,6 +677,7 @@ const Settings = () => {
 
       await ipcRenderer.invoke("insert-route-morning-dummy", parsedData);
       fetchRoutes2();
+      setLastUpdatedMorning(new Date());
       toast.success("Data applied from Excel Successfully!");
     };
 
@@ -1450,6 +1502,64 @@ const Settings = () => {
           </motion.div>
         </motion.div>
       )}
+
+      {/* Info sections */}
+      <div className="fixed top-3 right-20 z-50 flex gap-2">
+        {/* Last updated time info */}
+        <div className="bg-white rounded-lg shadow-md p-3 min-w-[200px]">
+          <div className="text-xs text-gray-600 mb-1">Last Updated:</div>
+          <div className="text-sm font-medium text-gray-800">
+            {isShow === 0 && lastUpdatedDay && (
+              <span>Day: {lastUpdatedDay.toLocaleString()}</span>
+            )}
+            {isShow === 4 && lastUpdatedMorning && (
+              <span>Morning: {lastUpdatedMorning.toLocaleString()}</span>
+            )}
+            {isShow === 6 && lastUpdatedCollege && (
+              <span>College: {lastUpdatedCollege.toLocaleString()}</span>
+            )}
+            {((isShow === 0 && !lastUpdatedDay) || 
+              (isShow === 4 && !lastUpdatedMorning) || 
+              (isShow === 6 && !lastUpdatedCollege)) && (
+              <span className="text-gray-500">No data imported yet</span>
+            )}
+          </div>
+        </div>
+
+        {/* Seat capacity info */}
+        <div className="bg-white rounded-lg shadow-md p-3 min-w-[200px]">
+          <div className="text-xs text-gray-600 mb-1">Seat Status:</div>
+          <div className="text-sm font-medium">
+            {isShow === 0 && (
+              <span className={daySeatsNeeded > 0 ? "text-red-600" : "text-green-600"}>
+                {daySeatsNeeded > 0 
+                  ? `${daySeatsNeeded} more seats needed`
+                  : "Seats are sufficient"
+                }
+              </span>
+            )}
+            {isShow === 4 && (
+              <span className={morningSeatsNeeded > 0 ? "text-red-600" : "text-green-600"}>
+                {morningSeatsNeeded > 0 
+                  ? `${morningSeatsNeeded} more seats needed`
+                  : "Seats are sufficient"
+                }
+              </span>
+            )}
+            {isShow === 6 && (
+              <span className={collegeSeatsNeeded > 0 ? "text-red-600" : "text-green-600"}>
+                {collegeSeatsNeeded > 0 
+                  ? `${collegeSeatsNeeded} more seats needed`
+                  : "Seats are sufficient"
+                }
+              </span>
+            )}
+            {![0, 4, 6].includes(isShow) && (
+              <span className="text-gray-500">Not applicable</span>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Back button */}
       <Link
@@ -3036,7 +3146,6 @@ const Settings = () => {
         )}
       </AnimatePresence>
 
-      <ToastContainer />
     </div>
   );
 };

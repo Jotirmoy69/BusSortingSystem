@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "sonner";
 import { useAppContext } from "../context/context";
 import AssignmentTable from "../components/AssignmentTable";
 import PrePrint from "../components/PrePrint";
@@ -267,7 +267,6 @@ const Home = () => {
             mode="automation"
           />
         ) : null}
-        <ToastContainer />
         {prePrintShow && <PrePrint setprePrintShow={setprePrintShow} />}
       </div>
     </div>

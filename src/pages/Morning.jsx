@@ -1,14 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { HiPencil, HiOutlineTrash, HiOutlineX } from "react-icons/hi";
 import { useAppContext } from "../context/context";
 import { FaArrowLeftLong, FaPlus } from "react-icons/fa6";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { Link } from "react-router-dom";
+import { toast } from "sonner";
+import { Link, useNavigate } from "react-router-dom";
 import AssignmentTable from "../components/AssignmentTable";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Morning() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleEsc = (event) => {
+      if (event.key === "Escape") {
+        navigate("/"); // same as <Link to="/" />
+      }
+    };
+
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [navigate]);
   const [selected, setSelected] = useState({});
   const [tempSelect, setTempSelect] = useState([]);
   const [saving, setSaving] = useState(false);
@@ -482,9 +493,6 @@ export default function Morning() {
           </motion.div>
         </Link>
 
-        <ToastContainer draggable progressBar={false}  
-        // toastStyle={{ backgroundColor: "white", color : "orange"}}
-         autoClose={3000} />
       </div>
 
       <style jsx global>{`
