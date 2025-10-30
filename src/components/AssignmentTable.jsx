@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
+import AudioControls from "./AudioControls";
 
 const AssignmentTable = ({
   assignedBuses = [],
@@ -47,6 +48,18 @@ const AssignmentTable = ({
     stand.total || (stand.boys || 0) + (stand.girls || 0);
 
   const showGender = mode === "day-shift";
+
+  // Determine shift type based on mode and location
+  const getShiftType = () => {
+    if (location.pathname === "/morning") return "morning";
+    if (location.pathname === "/day") return "day";
+    if (location.pathname === "/college") return "college";
+    if (mode === "day-shift") return "day";
+    if (mode === "college") return "college";
+    return "morning"; // default
+  };
+
+  const shiftType = getShiftType();
 
   const tableVariants = {
     hidden: { opacity: 0 },
@@ -163,6 +176,16 @@ const AssignmentTable = ({
 
   return (
     <div className="mt-2">
+      {/* ✅ Audio Controls */}
+      <div className="mb-4">
+        <AudioControls 
+          assignedBuses={assignedBuses}
+          shift={shiftType}
+          compact={true}
+          className="justify-end"
+        />
+      </div>
+
       {/* ✅ Font size selectors */}
       <div className="mb-3 flex items-center transition-all duration-300 gap-4">
         {isChecked && (

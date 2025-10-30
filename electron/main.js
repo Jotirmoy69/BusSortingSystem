@@ -494,6 +494,207 @@ app.whenReady().then(async () => {
       }
     });
 
+    // Bengali Translation handler
+    ipcMain.handle("translate-to-bengali", async (event, text) => {
+      try {
+        const { spawn } = require('child_process');
+        const path = require('path');
+        const fs = require('fs');
+        
+        // Use the local translator script
+        const translatorScript = path.join(process.cwd(), 'translator.py');
+        
+        // Check if translator script exists
+        if (!fs.existsSync(translatorScript)) {
+          console.warn('Translator script not found, using fallback translation');
+          return {
+            success: false,
+            error: 'Translator script not found',
+            translatedText: fallbackTranslate(text)
+          };
+        }
+        
+        return new Promise((resolve) => {
+          const pythonProcess = spawn('python', [translatorScript, text], {
+            stdio: ['pipe', 'pipe', 'pipe']
+          });
+
+          let output = '';
+          let errorOutput = '';
+
+          pythonProcess.stdout.on('data', (data) => {
+            output += data.toString();
+          });
+
+          pythonProcess.stderr.on('data', (data) => {
+            errorOutput += data.toString();
+          });
+
+          pythonProcess.on('close', (code) => {
+            if (code === 0 && output.trim()) {
+              resolve({
+                success: true,
+                translatedText: output.trim()
+              });
+            } else {
+              console.warn('Translation failed, using fallback:', errorOutput);
+              resolve({
+                success: false,
+                error: errorOutput,
+                translatedText: fallbackTranslate(text)
+              });
+            }
+          });
+
+          pythonProcess.on('error', (err) => {
+            console.warn('Translation process error:', err);
+            resolve({
+              success: false,
+              error: err.message,
+              translatedText: fallbackTranslate(text)
+            });
+          });
+        });
+        
+      } catch (error) {
+        console.error('Translation error:', error);
+        return {
+          success: false,
+          error: error.message,
+          translatedText: fallbackTranslate(text)
+        };
+      }
+    });
+
+    // Fallback translation function
+    function fallbackTranslate(text) {
+      const translations = {
+        'bus': 'বাস',
+        'number': 'নম্বর',
+        'boys': 'ছেলেদের',
+        'girls': 'মেয়েদের',
+        'for': 'জন্য',
+        'stand': 'স্ট্যান্ড',
+        'stands': 'স্ট্যান্ড',
+        'morning': 'সকাল',
+        'day': 'দিন',
+        'college': 'কলেজ',
+        'shift': 'শিফট',
+        'assignment': 'বরাদ্দ',
+        'assignments': 'বরাদ্দ',
+        'thank you': 'ধন্যবাদ',
+        'no buses': 'কোন বাস নেই',
+        'assigned': 'বরাদ্দ করা হয়েছে',
+        'has no stands': 'এর জন্য কোন স্ট্যান্ড নেই',
+        'bus number': 'বাস নম্বর',
+        'morning shift': 'সকালের শিফট',
+        'day shift': 'দিনের শিফট',
+        'college shift': 'কলেজ শিফট',
+        'bus assignments': 'বাস বরাদ্দ'
+      };
+
+      let translated = text.toLowerCase();
+      
+      // Replace common phrases first
+      for (const [english, bengali] of Object.entries(translations)) {
+        translated = translated.replace(new RegExp(english, 'gi'), bengali);
+      }
+      
+      return translated;
+    }
+
+    // TTS Announcement handler
+    ipcMain.handle("generate-tts-announcement", async (event, { text, shift }) => {
+      try {
+        const { spawn } = require('child_process');
+        const path = require('path');
+        const fs = require('fs');
+        const os = require('os');
+        
+        // Get the path to the TTS main script
+        const ttsScriptPath = path.join(process.cwd(), 'main.py');
+        
+        // Check if TTS script exists
+        if (!fs.existsSync(ttsScriptPath)) {
+          throw new Error('TTS script not found');
+        }
+
+        // Generate unique filename for this announcement
+        const timestamp = Date.now();
+        const outputDir = path.join(os.tmpdir(), 'bus-announcements');
+        
+        // Ensure output directory exists
+        if (!fs.existsSync(outputDir)) {
+          fs.mkdirSync(outputDir, { recursive: true });
+        }
+        
+        const outputFile = path.join(outputDir, `announcement_${shift}_${timestamp}.wav`);
+        
+        console.log('Generating TTS for Bengali text:', text);
+        
+        return new Promise((resolve, reject) => {
+          // Spawn Python process to generate TTS with Bengali text
+          const pythonProcess = spawn('python', [ttsScriptPath, text], {
+            stdio: ['pipe', 'pipe', 'pipe'],
+            cwd: process.cwd()
+          });
+
+          let output = '';
+          let errorOutput = '';
+
+          pythonProcess.stdout.on('data', (data) => {
+            output += data.toString();
+          });
+
+          pythonProcess.stderr.on('data', (data) => {
+            errorOutput += data.toString();
+          });
+
+          pythonProcess.on('close', (code) => {
+            if (code === 0) {
+              // Try to find the generated audio file
+              const lines = output.split('\n');
+              let audioPath = null;
+              
+              for (const line of lines) {
+                if (line.includes('.wav') || line.includes('.mp3')) {
+                  const match = line.match(/([^\s]+\.(wav|mp3))/);
+                  if (match) {
+                    audioPath = match[1];
+                    break;
+                  }
+                }
+              }
+              
+              if (audioPath && fs.existsSync(audioPath)) {
+                console.log('TTS generated successfully:', audioPath);
+                resolve({
+                  success: true,
+                  audioPath: audioPath,
+                  message: 'Bengali TTS generated successfully'
+                });
+              } else {
+                reject(new Error('Audio file not found in TTS output'));
+              }
+            } else {
+              reject(new Error(`TTS generation failed: ${errorOutput}`));
+            }
+          });
+
+          pythonProcess.on('error', (err) => {
+            reject(new Error(`Failed to start TTS process: ${err.message}`));
+          });
+        });
+        
+      } catch (error) {
+        console.error('TTS announcement error:', error);
+        return {
+          success: false,
+          error: error.message
+        };
+      }
+    });
+
     console.log("All IPC handlers registered");
 
     mainWindow = createWindow();
