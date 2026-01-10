@@ -1,10 +1,10 @@
 {
   "name": "bus-management-system",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "A school bus route and automation management system",
-  "author": "Jotirmoy Bhomwik - SSC 27",
-  "publisher": "Jotirmoy Bhomwik - SSC 27",
+  "author": "Hylith",
+  "publisher": "Hylith",
   "type": "module",
   "main": "electron/main.js",
   "scripts": {

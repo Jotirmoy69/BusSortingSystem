@@ -8,7 +8,6 @@ function Print() {
   const printRef = useRef();
   const location = useLocation();
 
-  // Load assigned bus data
   useEffect(() => {
     ipcRenderer.once("assigned-buses-data", (event, data) => {
       setAssignedBuses(data);
@@ -21,7 +20,7 @@ function Print() {
     return () => {
       ipcRenderer.removeAllListeners("assigned-buses-data");
     };
-  }, []); 
+    }, []);
   return (
     <div className="px-10 h-screen overflow-y-auto">
   <AssignmentTable assignedBuses={assignedBuses} mode="manual" />

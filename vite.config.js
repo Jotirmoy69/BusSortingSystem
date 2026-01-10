@@ -7,12 +7,10 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     rollupOptions: {
-      // externalize node-only packages to prevent Vite from bundling them in frontend code
       external: ['dmg-license', 'electron-builder'],
     },
   },
   optimizeDeps: {
-    // exclude these from dependency pre-bundling (speed optimization)
     exclude: ['dmg-license', 'electron-builder'],
   },
   base: './',

@@ -1,4 +1,3 @@
-// src/App.jsx
 import { HashRouter, Routes, Route, Link } from "react-router-dom";
 import { Toaster } from "sonner";
 import Home from "./pages/Home.jsx";
@@ -10,6 +9,7 @@ import Print from "./pages/Print.jsx";
 import Day from "./pages/Day.jsx";
 import LocomotiveScroll from "locomotive-scroll";
 import College from "./pages/College.jsx";
+import Manual from "./pages/Manual.jsx";
 function App() {
   return (
     <HashRouter>
@@ -19,6 +19,7 @@ function App() {
         <Route path="/settings" element={<Settings />} />
         <Route path="/automation" element={<Automation />} />
         <Route path="/selection" element={<Selection />} />
+        <Route path="/manual" element={<Manual />} />
         <Route path="/morning" element={<Morning />} />
         <Route path="/college" element={<College />} />
         <Route path="/day" element={<Day />} />

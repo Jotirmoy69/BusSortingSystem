@@ -11,9 +11,6 @@ export const AppProvider = ({ children }) => {
   const [stands2, setStands2] = useState([]);
   const [stands3, setStands3] = useState([])
   const [automationAssigned, setAutomationAssigned] = useState(false);
-//   const [automationAssignments, setAutomationAssignments] = useState([]);
-//   const [automationAssignmentsDay, setAutomationAssignmentsDay] = useState([]);
-// const [automationAssignmentsCollege, setAutomationAssignmentsCollege] = useState([])
 
   return (
     <AppContext.Provider
@@ -32,14 +29,6 @@ export const AppProvider = ({ children }) => {
         setAssignedBusesDay,
         assignedBusesCollege,
         setAssignedBusesCollege
-        // automationAssigned,
-        // setAutomationAssigned,
-        // automationAssignments,
-        // setAutomationAssignments,
-        // automationAssignmentsDay,
-        // setAutomationAssignmentsDay,
-        // automationAssignmentsCollege,
-        // setAutomationAssignmentsCollege
       }}
     >
       {children}

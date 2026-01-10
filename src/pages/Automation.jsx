@@ -4,21 +4,18 @@ import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/context";
 import AssignmentTable from "../components/AssignmentTable";
+import {
+  splitStandByGender,
+  splitStandIfNeeded,
+  findExistingBusForStand,
+  findSuitableBus,
+  assignStandToBus,
+  createNewBusAssignment,
+} from "../utils/assignmentUtils";
+import { getBusId } from "../utils/busUtils";
 
 const Automation = () => {
-
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const handleEsc = (event) => {
-      if (event.key === "Escape") {
-        navigate("/"); // same as <Link to="/" />
-      }
-    };
-
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
-  }, [navigate]);
   const [button, setButton] = useState(5);
   const [morningOverload, setMorningOverload] = useState(27);
   const [dayOverload, setDayOverload] = useState(10);
@@ -37,353 +34,144 @@ const Automation = () => {
     setAssignedBusesDay,
   } = useAppContext();
 
-  const getBusIdAndNumber = (bus) => {
-    const base = bus?.number ?? bus?._id ?? bus?.id ?? bus?.busNumber ?? "unknown";
-    return { id: String(base), number: String(bus?.number ?? base) };
+  useEffect(() => {
+    const handleEsc = (event) => {
+      if (event.key === "Escape") navigate("/");
+    };
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [navigate]);
+
+  const assignStandsByGender = (standsToAssign, assignments, route, sortedBuses, overload, gender) => {
+    const unassignedStands = [];
+    const genderStands = standsToAssign.filter((s) => s.gender === gender);
+
+    for (const stand of genderStands) {
+      const existingBus = findExistingBusForStand(assignments, route.name, gender, stand.total, overload);
+      
+      if (existingBus) {
+        assignStandToBus(existingBus, stand);
+        continue;
+      }
+
+      const suitableBus = findSuitableBus(sortedBuses, assignments, stand.total, overload);
+      if (suitableBus) {
+        const newAssignment = createNewBusAssignment(suitableBus, stand, route.name, gender);
+        if (newAssignment) {
+          assignments.push(newAssignment);
+        } else {
+          unassignedStands.push(stand);
+        }
+      } else {
+        unassignedStands.push(stand);
+      }
+    }
+
+    return unassignedStands;
   };
 
   const assignCollegeShiftBuses = ({ buses, routes }) => {
     setAssignedBusesCollege([]);
-    routes.sort((a, b) => {
-      const total = (r) =>
-        (r.stands || []).reduce((sum, s) => sum + (s.boys || 0) + (s.girls || 0), 0);
-      return total(b) - total(a);
+    const sortedRoutes = [...routes].sort((a, b) => {
+      const totalA = (a.stands || []).reduce((sum, s) => sum + (s.boys || 0) + (s.girls || 0), 0);
+      const totalB = (b.stands || []).reduce((sum, s) => sum + (s.boys || 0) + (s.girls || 0), 0);
+      return totalB - totalA;
     });
     const sortedBuses = [...buses].sort((a, b) => b.capacity - a.capacity);
+    const maxBusCapacity = sortedBuses.length > 0 ? Math.max(...sortedBuses.map((b) => b.capacity)) : 0;
+    const maxCapacity = maxBusCapacity + collegeOverload;
 
-    let assignments = [];
-    let unassignedStands = [];
+    const assignments = [];
+    let allUnassignedStands = [];
 
-    for (const route of routes) {
-      const maxBusCapacity = Math.max(...sortedBuses.map((b) => b.capacity));
-      const maxEff = maxBusCapacity + collegeOverload;
-
+    for (const route of sortedRoutes) {
       const standsToAssign = [];
       for (const stand of route.stands || []) {
-        const boys = Number(stand.boys || 0);
-        const girls = Number(stand.girls || 0);
-
-        const mk = (name, b, g, gender, originalName = stand.name) => ({
-          route: route.name,
-          name,
-          originalName,
-          boys: b,
-          girls: g,
-          total: b + g,
-          gender,
-        });
-
-        // boys
-        if (boys > 0) {
-          if (boys > maxEff) {
-            let rem = boys;
-            while (rem > 0) {
-              const chunk = Math.min(rem, maxEff);
-              standsToAssign.push(mk(`${stand.name} (boys part)`, chunk, 0, "boys", stand.name));
-              rem -= chunk;
-            }
-          } else {
-            standsToAssign.push(mk(`${stand.name}`, boys, 0, "boys", stand.name));
-          }
-        }
-        // girls
-        if (girls > 0) {
-          if (girls > maxEff) {
-            let rem = girls;
-            while (rem > 0) {
-              const chunk = Math.min(rem, maxEff);
-              standsToAssign.push(mk(`${stand.name} (girls part)`, 0, chunk, "girls", stand.name));
-              rem -= chunk;
-            }
-          } else {
-            standsToAssign.push(mk(`${stand.name}`, 0, girls, "girls", stand.name));
-          }
-        }
-      }
-
-      const assignByGender = (gender) => {
-        const genderStands = standsToAssign.filter((s) => s.gender === gender);
-
-        for (const st of genderStands) {
-          let placed = false;
-
-          let routeBuses = assignments
-            .filter((b) => b.route === route.name && b.gender === gender)
-            .sort(
-              (a, b) =>
-                b.capacity + collegeOverload - b.assigned - (a.capacity + collegeOverload - a.assigned)
-            );
-
-          for (const bus of routeBuses) {
-            const eff = bus.capacity + collegeOverload;
-            if (bus.assigned + st.total <= eff) {
-              bus.stands.push(st);
-              bus.boys += st.boys;
-              bus.girls += st.girls;
-              bus.assigned += st.total;
-              placed = true;
-              break;
-            }
+        const splitStands = splitStandByGender(stand, maxCapacity, route.name);
+        standsToAssign.push(...splitStands);
           }
 
-          if (placed) continue;
-
-          const suitable = sortedBuses.find((bus) => {
-            const { id } = getBusIdAndNumber(bus);
-            const used = assignments.some((a) => a.id === id);
-            const eff = bus.capacity + collegeOverload;
-            return !used && eff >= st.total;
-          });
-
-          if (suitable) {
-            const { id, number } = getBusIdAndNumber(suitable);
-            assignments.push({
-              id,
-              number,
-              capacity: suitable.capacity,
-              assigned: st.total,
-              boys: st.boys,
-              girls: st.girls,
-              stands: [st], // includes gender and originalName
-              route: route.name,
-              gender,
-            });
-            placed = true;
-          }
-
-          if (!placed) unassignedStands.push(st);
-        }
-      };
-
-      assignByGender("boys");
-      assignByGender("girls");
+      const boysUnassigned = assignStandsByGender(standsToAssign, assignments, route, sortedBuses, collegeOverload, "boys");
+      const girlsUnassigned = assignStandsByGender(standsToAssign, assignments, route, sortedBuses, collegeOverload, "girls");
+      allUnassignedStands.push(...boysUnassigned, ...girlsUnassigned);
     }
 
-    if (unassignedStands.length > 0) {
+    if (allUnassignedStands.length > 0) {
       toast.error("Not enough buses to assign all students while maintaining gender separation.");
     }
     return assignments;
   };
 
   const assignDayShiftBuses = ({ buses, routes }) => {
-    // unchanged logic for day
-    routes.sort((a, b) => {
-      const total = (r) =>
-        (r.stands || []).reduce((sum, s) => sum + (s.boys || 0) + (s.girls || 0), 0);
-      return total(b) - total(a);
+    const sortedRoutes = [...routes].sort((a, b) => {
+      const totalA = (a.stands || []).reduce((sum, s) => sum + (s.boys || 0) + (s.girls || 0), 0);
+      const totalB = (b.stands || []).reduce((sum, s) => sum + (s.boys || 0) + (s.girls || 0), 0);
+      return totalB - totalA;
     });
     const sortedBuses = [...buses].sort((a, b) => b.capacity - a.capacity);
+    const maxBusCapacity = sortedBuses.length > 0 ? Math.max(...sortedBuses.map((b) => b.capacity)) : 0;
+    const maxCapacity = maxBusCapacity + dayOverload;
 
-    let assignments = [];
-    let unassignedStands = [];
+    const assignments = [];
+    let allUnassignedStands = [];
 
-    for (const route of routes) {
-      const maxBusCapacity = Math.max(...sortedBuses.map((b) => b.capacity));
-      const maxEff = maxBusCapacity + dayOverload;
-
+    for (const route of sortedRoutes) {
       const standsToAssign = [];
       for (const stand of route.stands || []) {
-        const boys = Number(stand.boys || 0);
-        const girls = Number(stand.girls || 0);
-
-        const mk = (name, b, g, gender, originalName = stand.name) => ({
-          route: route.name,
-          name,
-          originalName,
-          boys: b,
-          girls: g,
-          total: b + g,
-          gender,
-        });
-
-        if (boys > 0) {
-          if (boys > maxEff) {
-            let rem = boys;
-            while (rem > 0) {
-              const chunk = Math.min(rem, maxEff);
-              standsToAssign.push(mk(`${stand.name} (boys part)`, chunk, 0, "boys", stand.name));
-              rem -= chunk;
-            }
-          } else {
-            standsToAssign.push(mk(`${stand.name}`, boys, 0, "boys", stand.name));
-          }
-        }
-        if (girls > 0) {
-          if (girls > maxEff) {
-            let rem = girls;
-            while (rem > 0) {
-              const chunk = Math.min(rem, maxEff);
-              standsToAssign.push(mk(`${stand.name} (girls part)`, 0, chunk, "girls", stand.name));
-              rem -= chunk;
-            }
-          } else {
-            standsToAssign.push(mk(`${stand.name}`, 0, girls, "girls", stand.name));
-          }
-        }
-      }
-
-      const assignByGender = (gender) => {
-        const genderStands = standsToAssign.filter((s) => s.gender === gender);
-
-        for (const st of genderStands) {
-          let placed = false;
-
-          let routeBuses = assignments
-            .filter((b) => b.route === route.name && b.gender === gender)
-            .sort(
-              (a, b) =>
-                b.capacity + dayOverload - b.assigned - (a.capacity + dayOverload - a.assigned)
-            );
-
-          for (const bus of routeBuses) {
-            const eff = bus.capacity + dayOverload;
-            if (bus.assigned + st.total <= eff) {
-              bus.stands.push(st);
-              bus.boys += st.boys;
-              bus.girls += st.girls;
-              bus.assigned += st.total;
-              placed = true;
-              break;
-            }
+        const splitStands = splitStandByGender(stand, maxCapacity, route.name);
+        standsToAssign.push(...splitStands);
           }
 
-          if (placed) continue;
-
-          const suitable = sortedBuses.find((bus) => {
-            const base = bus?.number ?? bus?._id ?? bus?.id ?? bus?.busNumber ?? "unknown";
-            const used = assignments.some((a) => a.id === String(base));
-            const eff = bus.capacity + dayOverload;
-            return !used && eff >= st.total;
-          });
-
-          if (suitable) {
-            const base = suitable?.number ?? suitable?._id ?? suitable?.id ?? suitable?.busNumber ?? "unknown";
-            assignments.push({
-              id: String(base),
-              number: String(suitable?.number ?? base),
-              capacity: suitable.capacity,
-              assigned: st.total,
-              boys: st.boys,
-              girls: st.girls,
-              stands: [st],
-              route: route.name,
-              gender,
-            });
-            placed = true;
-          }
-
-          if (!placed) unassignedStands.push(st);
-        }
-      };
-
-      assignByGender("boys");
-      assignByGender("girls");
+      const boysUnassigned = assignStandsByGender(standsToAssign, assignments, route, sortedBuses, dayOverload, "boys");
+      const girlsUnassigned = assignStandsByGender(standsToAssign, assignments, route, sortedBuses, dayOverload, "girls");
+      allUnassignedStands.push(...boysUnassigned, ...girlsUnassigned);
     }
 
-    if (unassignedStands.length > 0) {
+    if (allUnassignedStands.length > 0) {
       toast.error("Not enough buses to assign all students while maintaining gender separation.");
     }
     return assignments;
   };
 
   const assignMorningShiftBuses = ({ buses, routes }) => {
-    routes.sort((a, b) => {
-      const total = (r) =>
-        (r.stands || []).reduce((sum, s) => sum + (s.boys || 0) + (s.girls || 0), 0);
-      return total(b) - total(a);
+    const sortedRoutes = [...routes].sort((a, b) => {
+      const totalA = (a.stands || []).reduce((sum, s) => sum + (s.boys || 0) + (s.girls || 0), 0);
+      const totalB = (b.stands || []).reduce((sum, s) => sum + (s.boys || 0) + (s.girls || 0), 0);
+      return totalB - totalA;
     });
     const sortedBuses = [...buses].sort((a, b) => b.capacity - a.capacity);
+    const maxBusCapacity = sortedBuses.length > 0 ? Math.max(...sortedBuses.map((b) => b.capacity)) : 0;
+    const maxCapacity = maxBusCapacity + morningOverload;
 
-    let assignments = [];
-    let unassignedStands = [];
+    const assignments = [];
+    const unassignedStands = [];
 
-    for (const route of routes) {
-      const maxBusCapacity = Math.max(...sortedBuses.map((b) => b.capacity));
-      const maxEff = maxBusCapacity + morningOverload;
-
+    for (const route of sortedRoutes) {
       const standsToAssign = [];
       for (const stand of route.stands || []) {
-        const total = Number(stand.boys || 0) + Number(stand.girls || 0);
-        if (total > maxEff) {
-          let remaining = total;
-          let boys = Number(stand.boys || 0);
-          let girls = Number(stand.girls || 0);
-          while (remaining > 0) {
-            const chunk = Math.min(remaining, maxEff);
-            const boyChunk = Math.min(boys, chunk);
-            const girlChunk = chunk - boyChunk;
-            boys -= boyChunk;
-            girls -= girlChunk;
-            standsToAssign.push({
-              route: route.name,
-              name: `${stand.name} (part)`,
-              originalName: stand.name,
-              boys: boyChunk,
-              girls: girlChunk,
-              total: chunk,
-            });
-            remaining -= chunk;
-          }
-        } else {
-          standsToAssign.push({
-            route: route.name,
-            name: stand.name,
-            originalName: stand.name,
-            boys: Number(stand.boys || 0),
-            girls: Number(stand.girls || 0),
-            total,
-          });
-        }
+        const splitStands = splitStandIfNeeded(stand, maxCapacity, route.name);
+        standsToAssign.push(...splitStands);
       }
 
-      for (const st of standsToAssign) {
-        let placed = false;
+      for (const stand of standsToAssign) {
+        const existingBus = findExistingBusForStand(assignments, route.name, null, stand.total, morningOverload);
+        
+        if (existingBus) {
+          assignStandToBus(existingBus, stand);
+          continue;
+        }
 
-        let routeBuses = assignments
-          .filter((b) => b.route === route.name)
-          .sort(
-            (a, b) =>
-              b.capacity + morningOverload - b.assigned -
-              (a.capacity + morningOverload - a.assigned)
-          );
-
-        for (const bus of routeBuses) {
-          const eff = bus.capacity + morningOverload;
-          if (bus.assigned + st.total <= eff) {
-            bus.stands.push(st);
-            bus.boys += st.boys;
-            bus.girls += st.girls;
-            bus.assigned += st.total;
-            placed = true;
-            break;
+        const suitableBus = findSuitableBus(sortedBuses, assignments, stand.total, morningOverload);
+        if (suitableBus) {
+          const newAssignment = createNewBusAssignment(suitableBus, stand, route.name);
+          if (newAssignment) {
+            assignments.push(newAssignment);
+          } else {
+            unassignedStands.push(stand);
           }
+        } else {
+          unassignedStands.push(stand);
         }
-
-        if (placed) continue;
-
-        const suitable = sortedBuses.find((bus) => {
-          const base = bus?.number ?? bus?._id ?? bus?.id ?? bus?.busNumber ?? "unknown";
-          const used = assignments.some((a) => a.id === String(base));
-          const eff = bus.capacity + morningOverload;
-          return !used && eff >= st.total;
-        });
-
-        if (suitable) {
-          const base = suitable?.number ?? suitable?._id ?? suitable?.id ?? suitable?.busNumber ?? "unknown";
-          assignments.push({
-            id: String(base),
-            number: String(suitable?.number ?? base),
-            capacity: suitable.capacity,
-            assigned: st.total,
-            boys: st.boys,
-            girls: st.girls,
-            stands: [st],
-            route: route.name,
-          });
-          placed = true;
-        }
-
-        if (!placed) unassignedStands.push(st);
       }
     }
 
@@ -394,10 +182,13 @@ const Automation = () => {
   };
 
   const assignBuses = ({ buses, routes }) => {
-    if (button === 5) return assignMorningShiftBuses({ buses, routes });
-    if (button === 2) return assignDayShiftBuses({ buses, routes });
-    if (button === 3) return assignCollegeShiftBuses({ buses, routes });
-    return [];
+    const shiftMap = {
+      5: assignMorningShiftBuses,
+      2: assignDayShiftBuses,
+      3: assignCollegeShiftBuses,
+    };
+    const assignFunction = shiftMap[button];
+    return assignFunction ? assignFunction({ buses, routes }) : [];
   };
 
   const handleAssign = () => {
@@ -405,7 +196,14 @@ const Automation = () => {
       toast.error("Bus data not loaded or invalid!");
       return;
     }
-    const activeRoutes = button === 5 ? stands2 : button === 2 ? stands : stands3;
+
+    const routesMap = {
+      5: stands2,
+      2: stands,
+      3: stands3,
+    };
+    const activeRoutes = routesMap[button];
+
     if (!activeRoutes || activeRoutes.length === 0) {
       toast.error("Stand data not loaded or invalid!");
       return;
@@ -413,40 +211,52 @@ const Automation = () => {
 
     try {
       const assigned = assignBuses({ buses: activeBuses, routes: activeRoutes });
-      if (button === 5) setAssignedBuses(assigned);
-      else if (button === 2) setAssignedBusesDay(assigned);
-      else if (button === 3) setAssignedBusesCollege(assigned);
+      const setMap = {
+        5: setAssignedBuses,
+        2: setAssignedBusesDay,
+        3: setAssignedBusesCollege,
+      };
+      const setFunction = setMap[button];
+      if (setFunction) {
+        setFunction(assigned);
       toast.success("Bus assignment done!");
+      }
     } catch (err) {
       toast.error("Assignment failed: " + err.message);
     }
   };
 
   const handleRemove = (busOrId) => {
-    const busId = String(typeof busOrId === "object" ? busOrId.id ?? busOrId.number : busOrId);
-    if (button === 5) {
-      setAssignedBuses((prev) => (prev || []).filter((b) => String(b.id ?? b.number) !== busId));
-    } else if (button === 2) {
-      setAssignedBusesDay((prev) => (prev || []).filter((b) => String(b.id ?? b.number) !== busId));
-    } else if (button === 3) {
-      setAssignedBusesCollege((prev) => (prev || []).filter((b) => String(b.id ?? b.number) !== busId));
-    }
+    const busId = String(typeof busOrId === "object" ? getBusId(busOrId) : busOrId);
+    const removeMap = {
+      5: setAssignedBuses,
+      2: setAssignedBusesDay,
+      3: setAssignedBusesCollege,
+    };
+    const removeFunction = removeMap[button];
+    if (removeFunction) {
+      removeFunction((prev) => (prev || []).filter((b) => getBusId(b) !== busId));
     toast.success("Assignment removed");
+    }
   };
 
-  const summary = (() => {
-    const current =
-      button === 5 ? assignedBuses || [] : button === 2 ? assignedBusesDay || [] : assignedBusesCollege || [];
-    const totalAssigned = current.reduce((s, b) => s + Number(b.assigned || 0), 0);
-    const totalCapacity = current.reduce((s, b) => s + Number(b.capacity || 0), 0);
-    return {
-      totalBuses: current.length,
-      totalAssigned,
-      totalCapacity,
-      underfilledBuses: current.filter((b) => Number(b.assigned) < Number(b.capacity)),
-      overloadedBuses: current.filter((b) => Number(b.assigned) > Number(b.capacity)),
+  const getCurrentAssignments = () => {
+    const assignmentMap = {
+      5: assignedBuses,
+      2: assignedBusesDay,
+      3: assignedBusesCollege,
     };
-  })();
+    return assignmentMap[button] || [];
+  };
+
+  const currentAssignments = getCurrentAssignments();
+  const summary = {
+    totalBuses: currentAssignments.length,
+    totalAssigned: currentAssignments.reduce((s, b) => s + Number(b.assigned || 0), 0),
+    totalCapacity: currentAssignments.reduce((s, b) => s + Number(b.capacity || 0), 0),
+    underfilledBuses: currentAssignments.filter((b) => Number(b.assigned) < Number(b.capacity)),
+    overloadedBuses: currentAssignments.filter((b) => Number(b.assigned) > Number(b.capacity)),
+    };
 
   return (
     <div className="w-full font-[gilroy] min-h-screen px-10 lg:px-40 py-10 md:py-20 bg-white">
@@ -465,10 +275,14 @@ const Automation = () => {
               step="1"
               value={button === 5 ? morningOverload : button === 2 ? dayOverload : collegeOverload}
               onChange={(e) => {
-                const v = Number(e.target.value);
-                if (button === 5) setMorningOverload(v);
-                else if (button === 2) setDayOverload(v);
-                else if (button === 3) setCollegeOverload(v);
+                const value = Number(e.target.value);
+                const overloadMap = {
+                  5: setMorningOverload,
+                  2: setDayOverload,
+                  3: setCollegeOverload,
+                };
+                const setOverload = overloadMap[button];
+                if (setOverload) setOverload(value);
               }}
               className="w-32 h-10 accent-purple-500"
             />
@@ -561,13 +375,7 @@ const Automation = () => {
         </div>
 
         <AssignmentTable
-          assignedBuses={
-            button === 5
-              ? assignedBuses
-              : button === 2
-              ? assignedBusesDay
-              : assignedBusesCollege
-          }
+          assignedBuses={currentAssignments}
           mode="automation"
           onRemove={handleRemove}
         />

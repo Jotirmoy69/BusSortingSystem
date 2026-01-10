@@ -11,7 +11,7 @@ const Selection = () => {
   useEffect(() => {
     const handleEsc = (event) => {
       if (event.key === "Escape") {
-        navigate("/"); // same as <Link to="/" />
+        navigate("/");
       }
     };
 

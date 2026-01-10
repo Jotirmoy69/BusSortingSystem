@@ -6,20 +6,17 @@ import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
 import AssignmentTable from "../components/AssignmentTable";
 import { motion, AnimatePresence } from "framer-motion";
+import { 
+  normalizeStandName, 
+  getAvailableBuses, 
+  getAssignedStandNames,
+  getBusId,
+  getStudentCount,
+  calculateOccupancy
+} from "../utils/busUtils";
 
 export default function DayShift() {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const handleEsc = (event) => {
-      if (event.key === "Escape") {
-        navigate("/"); // same as <Link to="/" />
-      }
-    };
-
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
-  }, [navigate]);
   const [selected, setSelected] = useState({});
   const [tempSelect, setTempSelect] = useState({ boys: [], girls: [] });
   const [activeTab, setActiveTab] = useState("boys");
@@ -33,95 +30,63 @@ export default function DayShift() {
     setAssignedBusesDay,
   } = useAppContext();
 
-  // Normalize stand names like "Stop A (boys part)" -> "Stop A"
-  const normalizeStandName = (name) =>
-    String(name || "").trim().replace(/\s*KATEX_INLINE_OPEN.*?KATEX_INLINE_CLOSE\s*$/, "");
-
-  // Get assigned stand names per gender (from saved + in-progress), excluding the bus being edited
-  const getAssignedStandNames = () => {
-    const editingBusId = String(selected.id ?? selected.number ?? "");
-    const boysAssigned = new Set();
-    const girlsAssigned = new Set();
-
-    (assignedBusesDay || []).forEach((bus) => {
-      const busId = String(bus.id ?? bus.number ?? "");
-      if (busId === editingBusId) return;
-
-      (bus.stands || []).forEach((stand) => {
-        const base = normalizeStandName(stand.originalName ?? stand.name);
-        if (stand.gender === "girls") girlsAssigned.add(base);
-        else boysAssigned.add(base);
-      });
-    });
-
-    (tempSelect.boys || []).forEach((s) =>
-      boysAssigned.add(normalizeStandName(s.name))
-    );
-    (tempSelect.girls || []).forEach((s) =>
-      girlsAssigned.add(normalizeStandName(s.name))
-    );
-
-    return {
-      boys: Array.from(boysAssigned),
-      girls: Array.from(girlsAssigned),
+  useEffect(() => {
+    const handleEsc = (event) => {
+      if (event.key === "Escape") navigate("/");
     };
-  };
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [navigate]);
 
-  // Get available buses (exclude already assigned; keep current if editing)
-  const getAvailableBuses = () => {
-    const editingBusId = String(selected.id ?? selected.number ?? "");
-    const assignedIds = (assignedBusesDay || []).map((b) =>
-      String(b.id ?? b.number)
-    );
-    const assignedFiltered = assignedIds.filter((id) => id !== editingBusId);
+  const editingBusId = getBusId(selected);
+  const isBusSelected = Object.keys(selected).length > 0;
+  const availableBusesList = getAvailableBuses(activeBuses, assignedBusesDay, editingBusId);
+  const assignedStandNames = getAssignedStandNames(assignedBusesDay, tempSelect, editingBusId);
 
-    return (activeBuses || []).filter((bus) => {
-      const id = String(bus.number ?? bus.id);
-      return !assignedFiltered.includes(id);
-    });
-  };
-
-  // Handle stand selection per gender
   const handleStandSelect = (stand) => {
-    if (!stand) return toast.error("Invalid stand data!");
-    if (!isBusSelected)
-      return toast.error("Please select a bus before adding stands!");
+    if (!stand) {
+      toast.error("Invalid stand data!");
+      return;
+    }
 
-    const assignedNames = getAssignedStandNames();
+    if (!isBusSelected) {
+      toast.error("Please select a bus before adding stands!");
+      return;
+    }
+
     const baseName = normalizeStandName(stand.name);
+    const assignedNames = assignedStandNames[activeTab] || [];
 
-    if ((assignedNames[activeTab] || []).includes(baseName))
-      return toast.error(`This stand is already assigned for ${activeTab}!`);
+    if (assignedNames.includes(baseName)) {
+      toast.error(`This stand is already assigned for ${activeTab}!`);
+      return;
+    }
 
-    if ((tempSelect[activeTab] || []).some((s) => normalizeStandName(s.name) === baseName))
-      return toast.error("This stand is already selected!");
+    if ((tempSelect[activeTab] || []).some((s) => normalizeStandName(s.name) === baseName)) {
+      toast.error("This stand is already selected!");
+      return;
+    }
 
-    const studentsCount =
-      activeTab === "boys" ? Number(stand.boys || 0) : Number(stand.girls || 0);
-    if (studentsCount <= 0)
-      return toast.error(`No ${activeTab} available at this stand!`);
+    const studentsCount = getStudentCount(stand, activeTab);
+    if (studentsCount <= 0) {
+      toast.error(`No ${activeTab} available at this stand!`);
+      return;
+    }
 
-    const currentTabTotal = (tempSelect[activeTab] || []).reduce(
+    const currentTotal = (tempSelect[activeTab] || []).reduce(
       (sum, s) => sum + Number(s.students || 0),
       0
     );
-    const newTotal = currentTabTotal + studentsCount;
+    const maxCapacity = Number(selected.capacity || 0) + overloadSize;
 
-    if (newTotal > (Number(selected.capacity) || 0) + overloadSize)
-      return toast.error(
-        `Cannot exceed bus capacity by more than ${overloadSize} students!`
-      );
+    if (currentTotal + studentsCount > maxCapacity) {
+      toast.error(`Cannot exceed bus capacity by more than ${overloadSize} students!`);
+      return;
+    }
 
     setTempSelect((prev) => ({
       ...prev,
-      [activeTab]: [
-        ...prev[activeTab],
-        {
-          name: baseName,
-          students: studentsCount,
-          gender: activeTab,
-        },
-      ],
+      [activeTab]: [...(prev[activeTab] || []), { name: baseName, students: studentsCount, gender: activeTab }],
     }));
   };
 
@@ -152,37 +117,23 @@ export default function DayShift() {
         gender: "girls",
       }));
 
-    setAssignedBusesDay((prev) =>
-      (prev || []).filter(
-        (b) => String(b.id ?? b.number) !== String(bus.id ?? bus.number)
-      )
-    );
-
-    setSelected({
-      ...bus,
-      number: bus.number || bus.id,
-    });
-    setTempSelect({
-      boys: boysStands,
-      girls: girlsStands,
-    });
-
+    const busId = getBusId(bus);
+    setAssignedBusesDay((prev) => (prev || []).filter((b) => getBusId(b) !== busId));
+    setSelected({ ...bus, number: bus.number || bus.id });
+    setTempSelect({ boys: boysStands, girls: girlsStands });
     setActiveTab(girlsStands.length > boysStands.length ? "girls" : "boys");
   };
 
   const handleRemoveBus = (busId) => {
     const id = String(busId);
-    setAssignedBusesDay((prev) =>
-      (prev || []).filter((bus) => String(bus.id ?? bus.number) !== id)
-    );
-    if (String(selected.id ?? selected.number) === id) {
+    setAssignedBusesDay((prev) => (prev || []).filter((bus) => getBusId(bus) !== id));
+    if (getBusId(selected) === id) {
       setSelected({});
       setTempSelect({ boys: [], girls: [] });
     }
     toast.success("Bus assignment removed");
   };
 
-  // Save per current gender (like College.jsx)
   const handleSave = () => {
     setSaving(true);
     if (!isBusSelected) {
@@ -209,9 +160,10 @@ export default function DayShift() {
       0
     );
 
+    const busNumber = selected.number || selected.id;
     const newAssignment = {
-      id: selected.id || selected.number,
-      number: selected.number || selected.id,
+      id: getBusId(selected),
+      number: busNumber,
       capacity: Number(selected.capacity),
       assigned: totalStudents,
       stands: allStands,
@@ -221,10 +173,9 @@ export default function DayShift() {
 
     setAssignedBusesDay((prev) => [...(prev || []), newAssignment]);
 
-    // Clear only current tab and reset selected bus (College behavior)
     setTempSelect((prev) => ({ ...prev, [activeTab]: [] }));
     setSelected({});
-    toast.success(`Bus ${newAssignment.number} assigned for ${activeTab}!`);
+    toast.success(`Bus ${busNumber} assigned for ${activeTab}!`);
     setSaving(false);
   };
 
@@ -239,71 +190,44 @@ export default function DayShift() {
     setTempSelect({ boys: [], girls: [] });
   };
 
-  const isBusSelected = Object.keys(selected).length !== 0;
-
-  const availableBuses = getAvailableBuses();
-  const noAvailableBuses = (availableBuses || []).length === 0;
-
-  const assignedStandNames = getAssignedStandNames();
-
-  // Prepare available stands data
-  const availableStands =
-    (stands || []).map((route) => ({
+  const noAvailableBuses = availableBusesList.length === 0;
+  const availableStands = (stands || []).map((route) => ({
       ...route,
       stands: (route.stands || []).map((stand) => ({
         ...stand,
         boys: Number(stand.boys || 0),
         girls: Number(stand.girls || 0),
       })),
-    })) || [];
+  }));
 
-  // Total selected students for current tab only (like College)
   const totalSelectedStudents = (tempSelect[activeTab] || []).reduce(
     (sum, s) => sum + Number(s.students || 0),
     0
   );
-
   const occupancyPercentage = isBusSelected
-    ? Math.min(
-        100,
-        (totalSelectedStudents / Number(selected.capacity || 1)) * 100
-      )
+    ? calculateOccupancy(totalSelectedStudents, selected.capacity) 
     : 0;
 
-  // Availability per current gender
-  const hasAvailableStands = (stands || []).some((route) =>
-    (route.stands || []).some((stand) => {
-      const studentCount =
-        activeTab === "boys"
-          ? Number(stand.boys || 0)
-          : Number(stand.girls || 0);
+  const getFilteredStands = (route) => {
+    return (route.stands || []).filter((stand) => {
+      const studentCount = getStudentCount(stand, activeTab);
       const isAssigned = (assignedStandNames[activeTab] || []).includes(
         normalizeStandName(stand.name)
       );
       return studentCount > 0 && !isAssigned;
-    })
+    });
+  };
+
+  const availableStandCount = availableStands.reduce(
+    (acc, route) => acc + getFilteredStands(route).length,
+    0
   );
-
-  const availableStandCount = (stands || []).reduce((acc, route) => {
-    const count = (route.stands || []).filter((stand) => {
-      const studentCount =
-        activeTab === "boys"
-          ? Number(stand.boys || 0)
-          : Number(stand.girls || 0);
-      const isAssigned = (assignedStandNames[activeTab] || []).includes(
-        normalizeStandName(stand.name)
-      );
-      return studentCount > 0 && !isAssigned;
-    }).length;
-    return acc + count;
-  }, 0);
-
+  const hasAvailableStands = availableStands.some((route) => getFilteredStands(route).length > 0);
   const allStandsAssigned = !hasAvailableStands;
 
   return (
     <div className="min-h-screen bg-gray-50 pt-14 font-sans p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
@@ -315,7 +239,6 @@ export default function DayShift() {
           </div>
 
           <div className="flex flex-wrap gap-3 items-center">
-            {/* Overload Size Input */}
             {isBusSelected && (
               <div className="bg-gray-100 px-4 py-3 items-center rounded-lg flex gap-4 w- max-w-md">
                 <label className="text-sm font-medium w-40 text-gray-700">
@@ -344,7 +267,6 @@ export default function DayShift() {
                     ? "bg-purple-400 cursor-not-allowed"
                     : "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md hover:shadow-lg"
                 }`}
-              // Like College: enable when a bus is selected and current tab has selections
               disabled={saving || !isBusSelected || (tempSelect[activeTab] || []).length === 0}
             >
               {saving ? "Saving..." : "Save Assignment"}
@@ -363,16 +285,14 @@ export default function DayShift() {
           </div>
         </div>
 
-        {/* Bus Selection Area */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* Bus Selection Card */}
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-gray-800">
                 Bus Selection
               </h2>
               <span className="text-xs font-medium px-2 py-1 bg-purple-100 text-purple-800 rounded-full">
-                {availableBuses.length} available
+                {availableBusesList.length} available
               </span>
             </div>
 
@@ -399,7 +319,7 @@ export default function DayShift() {
                     disabled={noAvailableBuses}
                   >
                     <option value="">Select a bus</option>
-                    {availableBuses.map((bus) => (
+                    {availableBusesList.map((bus) => (
                       <option
                         key={bus.number ?? bus.id}
                         value={bus.number ?? bus.id}
@@ -429,7 +349,7 @@ export default function DayShift() {
                         <span className="bg-purple-600 text-white p-1 px-2.5 rounded-lg">
                           {selected.number}
                         </span>
-                        <span>{selected.capacity} Seats</span>
+                        <span>{selected.capacity || 0} Seats</span>
                       </h3>
                       <p className="text-sm text-gray-500 mt-1">
                         {(tempSelect[activeTab] || []).length} stand
@@ -451,25 +371,24 @@ export default function DayShift() {
                     </button>
                   </div>
 
-                  {/* Occupancy bar (per current tab) */}
                   <div className="mt-5">
                     <div className="flex justify-between text-sm font-medium mb-1">
                       <span className="text-gray-600">Occupancy ({activeTab})</span>
                       <span
                         className={`${
-                          totalSelectedStudents > Number(selected.capacity)
+                          totalSelectedStudents > Number(selected.capacity || 0)
                             ? "text-red-600"
                             : "text-gray-600"
                         }`}
                       >
-                        {totalSelectedStudents}/{selected.capacity} students
+                        {totalSelectedStudents}/{selected.capacity || 0} students
                       </span>
                     </div>
 
                     <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
                       <motion.div
                         className={`h-full ${
-                          totalSelectedStudents > Number(selected.capacity)
+                          totalSelectedStudents > Number(selected.capacity || 0)
                             ? "bg-red-500"
                             : "bg-gradient-to-r from-purple-500 to-indigo-600"
                         }`}
@@ -479,10 +398,10 @@ export default function DayShift() {
                       />
                     </div>
 
-                    {totalSelectedStudents > Number(selected.capacity) && (
+                    {totalSelectedStudents > Number(selected.capacity || 0) && (
                       <p className="text-red-600 text-xs font-medium mt-2">
                         Warning: Over capacity by{" "}
-                        {totalSelectedStudents - Number(selected.capacity)} students
+                        {totalSelectedStudents - Number(selected.capacity || 0)} students
                       </p>
                     )}
                   </div>
@@ -491,7 +410,6 @@ export default function DayShift() {
             </AnimatePresence>
           </div>
 
-          {/* Selected Stands Card */}
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-gray-800">
@@ -504,7 +422,6 @@ export default function DayShift() {
               </span>
             </div>
 
-            {/* Gender Tabs */}
             <div className="flex border-b border-gray-200 mb-4">
               <button
                 className={`py-2 px-4 font-medium text-sm flex items-center gap-2 ${
@@ -584,7 +501,6 @@ export default function DayShift() {
           </div>
         </div>
 
-        {/* Available Stands Section */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-100">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold text-gray-800">
@@ -627,16 +543,7 @@ export default function DayShift() {
               </div>
             ) : (
               availableStands.map((route, idx) => {
-                const filteredStands = (route.stands || []).filter((stand) => {
-                  const studentCount =
-                    activeTab === "boys"
-                      ? Number(stand.boys || 0)
-                      : Number(stand.girls || 0);
-                  const isAssigned = (assignedStandNames[activeTab] || []).includes(
-                    normalizeStandName(stand.name)
-                  );
-                  return studentCount > 0 && !isAssigned;
-                });
+                const filteredStands = getFilteredStands(route);
 
                 if (filteredStands.length === 0) {
                   return (
@@ -708,7 +615,6 @@ export default function DayShift() {
           </div>
         </div>
 
-        {/* Assignment Table */}
         <AssignmentTable
           assignedBuses={assignedBusesDay || []}
           mode="day-shift"
@@ -717,7 +623,6 @@ export default function DayShift() {
           showGender={true}
         />
 
-        {/* Navigation Button */}
         <Link to="/" className="fixed top-6 right-6 z-50">
           <motion.div
             whileHover={{ scale: 1.1 }}

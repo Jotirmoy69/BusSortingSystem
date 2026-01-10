@@ -49,13 +49,11 @@ async function startMongoDB() {
         throw new Error(`mongod binary not found at: ${mongodPath}`);
       }
 
-      // Try userData path first
       let dbPath = app.getPath("userData");
 
       try {
         fs.accessSync(dbPath, fs.constants.W_OK);
       } catch (err) {
-        // Fallback to OS temp directory if userData is not writable
         const fallbackPath = path.join(os.tmpdir(), "BusSortingDBData");
         if (!fs.existsSync(fallbackPath)) {
           fs.mkdirSync(fallbackPath, { recursive: true });
@@ -66,7 +64,6 @@ async function startMongoDB() {
         dbPath = fallbackPath;
       }
 
-      // Make sure dbPath exists
       if (!fs.existsSync(dbPath)) {
         fs.mkdirSync(dbPath, { recursive: true });
         console.log(`Created DB directory at: ${dbPath}`);
@@ -120,8 +117,7 @@ async function connectDB() {
     db = client.db(DB_NAME);
     console.log(`Connected to database "${DB_NAME}" at ${uri}`);
 
-    // Create collections if they don't exist
-    await db.createCollection("routes").catch(() => {}); // ignore if exists
+    await db.createCollection("routes").catch(() => {});
     await db.createCollection("buses").catch(() => {});
     await db.createCollection("morningShift").catch(() => {});
     await db.createCollection("dayShift").catch(() => {});
@@ -146,12 +142,6 @@ function createWindow() {
     width: 1920,
     height: 1080,
     autoHideMenuBar: true,
-    // titleBarOverlay: {
-    //   color: '#ffffff',           // ✅ White top bar
-    //   symbolColor: '#000000',     // ✅ Black icons (close/minimize/max)
-    //   height: 30
-    // },
-    // titleBarStyle: 'hidden', 
     icon: path.join(__dirname, "../src/assets/bcpsc.png"),
     webPreferences: {
       nodeIntegration: true,
@@ -195,13 +185,11 @@ function cleanup() {
   });
 }
 
-// 🟢 App ready
 app.whenReady().then(async () => {
   try {
     const dbConnected = await connectDB();
     if (!dbConnected) throw new Error("Database connection failed");
 
-    // Register IPC handlers (routes, buses, updates, deletes etc.)
     ipcMain.handle("fetch-routes-morning", async () => {
       try {
         const routes = await db.collection("morningShift").find({}).toArray();
@@ -376,14 +364,12 @@ app.whenReady().then(async () => {
       "update-route",
       async (event, { name, stands, totalBoys, totalGirls }) => {
         try {
-          // Validate input
           if (!name || !Array.isArray(stands) || 
               typeof totalBoys !== 'number' || 
               typeof totalGirls !== 'number') {
             return { success: false, error: "Invalid input data" };
           }
     
-          // Update the route
           const result = await db.collection("dayShift").updateOne(
             { name: name },
             { 
@@ -396,7 +382,6 @@ app.whenReady().then(async () => {
             }
           );
     
-          // Check if document was found and updated
           if (result.matchedCount === 0) {
             return { success: false, error: "Route not found" };
           }
@@ -494,17 +479,14 @@ app.whenReady().then(async () => {
       }
     });
 
-    // Bengali Translation handler
     ipcMain.handle("translate-to-bengali", async (event, text) => {
       try {
         const { spawn } = require('child_process');
         const path = require('path');
         const fs = require('fs');
         
-        // Use the local translator script
         const translatorScript = path.join(process.cwd(), 'translator.py');
         
-        // Check if translator script exists
         if (!fs.existsSync(translatorScript)) {
           console.warn('Translator script not found, using fallback translation');
           return {
@@ -566,7 +548,6 @@ app.whenReady().then(async () => {
       }
     });
 
-    // Fallback translation function
     function fallbackTranslate(text) {
       const translations = {
         'bus': 'বাস',
@@ -595,7 +576,6 @@ app.whenReady().then(async () => {
 
       let translated = text.toLowerCase();
       
-      // Replace common phrases first
       for (const [english, bengali] of Object.entries(translations)) {
         translated = translated.replace(new RegExp(english, 'gi'), bengali);
       }
@@ -603,7 +583,6 @@ app.whenReady().then(async () => {
       return translated;
     }
 
-    // TTS Announcement handler
     ipcMain.handle("generate-tts-announcement", async (event, { text, shift }) => {
       try {
         const { spawn } = require('child_process');
@@ -611,19 +590,15 @@ app.whenReady().then(async () => {
         const fs = require('fs');
         const os = require('os');
         
-        // Get the path to the TTS main script
         const ttsScriptPath = path.join(process.cwd(), 'main.py');
         
-        // Check if TTS script exists
         if (!fs.existsSync(ttsScriptPath)) {
           throw new Error('TTS script not found');
         }
 
-        // Generate unique filename for this announcement
         const timestamp = Date.now();
         const outputDir = path.join(os.tmpdir(), 'bus-announcements');
         
-        // Ensure output directory exists
         if (!fs.existsSync(outputDir)) {
           fs.mkdirSync(outputDir, { recursive: true });
         }
@@ -633,7 +608,6 @@ app.whenReady().then(async () => {
         console.log('Generating TTS for Bengali text:', text);
         
         return new Promise((resolve, reject) => {
-          // Spawn Python process to generate TTS with Bengali text
           const pythonProcess = spawn('python', [ttsScriptPath, text], {
             stdio: ['pipe', 'pipe', 'pipe'],
             cwd: process.cwd()
@@ -652,7 +626,6 @@ app.whenReady().then(async () => {
 
           pythonProcess.on('close', (code) => {
             if (code === 0) {
-              // Try to find the generated audio file
               const lines = output.split('\n');
               let audioPath = null;
               
@@ -714,7 +687,6 @@ app.whenReady().then(async () => {
   });
 });
 
-// 🧹 Cleanup events
 app.on("window-all-closed", async () => {
   await cleanup();
   if (process.platform !== "darwin") app.quit();
@@ -733,14 +705,7 @@ function createNewWindow(data) {
     width: 1920,
     height: 1080,
     title: "Final Print",
-    // frame: false,
-    autoHideMenuBar: true,
-    // titleBarOverlay: {
-    //   color: '#ffffff',           // ✅ White top bar
-    //   symbolColor: '#000000',     // ✅ Black icons (close/minimize/max)
-    //   height: 30
-    // },
-    // titleBarStyle: 'hidden', 
+    autoHideMenuBar: true, 
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,

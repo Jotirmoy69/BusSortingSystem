@@ -12,66 +12,63 @@ import { IoClose } from "react-icons/io5";
 
 const Settings = () => {
   const navigate = useNavigate();
-  // State declarations for all application components
-  const [input, setInput] = useState(""); // Day shift stand input
-  const [input2, setInput2] = useState(""); // Morning shift stand input
-  const [inputCollege, setInputCollege] = useState(""); // College shift stand input
-  const [routeName, setRouteName] = useState(""); // Day shift route name
-  const [routeName2, setRouteName2] = useState(""); // Morning shift route name
-  const [routeNameCollege, setRouteNameCollege] = useState(""); // College shift route name
-  const [routes, setRoutes] = useState([]); // Day shift routes
-  const [routes2, setRoutes2] = useState([]); // Morning shift routes
-  const [routesCollege, setRoutesCollege] = useState([]); // College shift routes
-  const [standName, setStandName] = useState([]); // Day shift stands
-  const [standName2, setStandName2] = useState([]); // Morning shift stands
-  const [standNameCollege, setStandNameCollege] = useState([]); // College shift stands
-  const [boysCount, setBoysCount] = useState(""); // Day shift boys count
-  const [boysCount2, setBoysCount2] = useState(""); // Morning shift boys count
-  const [girlsCount, setGirlsCount] = useState(""); // Day shift girls count
-  const [boysCountCollege, setBoysCountCollege] = useState(""); // College shift boys count
-  const [girlsCountCollege, setGirlsCountCollege] = useState(""); // College shift girls count
-  const [isShow, setIsShow] = useState(0); // Active tab state
-  const [totalBusCapacity, setTotalBusCapacity] = useState(0); // Total bus capacity
-  const [activeBusCapacity, setActiveBusCapacity] = useState(0); // Active bus capacity
-  const [totalDayStudents, setTotalDayStudents] = useState(0); // Total day students
-  const [totalMorningStudents, setTotalMorningStudents] = useState(0); // Total morning students
-  const [totalCollegeStudents, setTotalCollegeStudents] = useState(0); // Total college students
-  const [lastUpdatedDay, setLastUpdatedDay] = useState(null); // Last updated time for day shift
-  const [lastUpdatedMorning, setLastUpdatedMorning] = useState(null); // Last updated time for morning shift
-  const [lastUpdatedCollege, setLastUpdatedCollege] = useState(null); // Last updated time for college shift
-  const [daySeatsNeeded, setDaySeatsNeeded] = useState(0); // Additional seats needed for day shift
-  const [morningSeatsNeeded, setMorningSeatsNeeded] = useState(0); // Additional seats needed for morning shift
-  const [collegeSeatsNeeded, setCollegeSeatsNeeded] = useState(0); // Additional seats needed for college shift
-  const [dummy, setDummy] = useState(false); // State trigger for updates
-  const [dummy2, setDummy2] = useState(false); // Secondary state trigger
-  const [dummy3, setDummy3] = useState(false); // Tertiary state trigger
-  const [dummyCollege, setDummyCollege] = useState(false); // College shift state trigger
-  const [selectedRoute, setSelectedRoute] = useState(""); // Selected day route for update
-  const [updatedStands, setUpdatedStands] = useState([]); // Updated day stands
-  const [newStandName, setNewStandName] = useState(""); // New stand name for day route
-  const [newBoysCount, setNewBoysCount] = useState(""); // New boys count for day route
-  const [newGirlsCount, setNewGirlsCount] = useState(""); // New girls count for day route
-  const [selectedRouteMorning, setSelectedRouteMorning] = useState(""); // Selected morning route for update
-  const [updatedStandsMorning, setUpdatedStandsMorning] = useState([]); // Updated morning stands
-  const [newStandNameMorning, setNewStandNameMorning] = useState(""); // New stand name for morning route
-  const [newBoysCountMorning, setNewBoysCountMorning] = useState(""); // New boys count for morning route
-  const [selectedRouteCollege, setSelectedRouteCollege] = useState(""); // Selected college route for update
-  const [updatedStandsCollege, setUpdatedStandsCollege] = useState([]); // Updated college stands
-  const [newStandNameCollege, setNewStandNameCollege] = useState(""); // New stand name for college route
-  const [newBoysCountCollege, setNewBoysCountCollege] = useState(""); // New boys count for college route
-  const [newGirlsCountCollege, setNewGirlsCountCollege] = useState(""); // New girls count for college route
-  const [busNumber, setBusNumber] = useState(""); // Bus number input
-  const [busCapacity, setBusCapacity] = useState(""); // Bus capacity input
-  const [buses, setBuses] = useState([]); // Bus list
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false); // Delete confirmation state
-  const [itemToDelete, setItemToDelete] = useState(null); // Item to be deleted
-  const [deleteType, setDeleteType] = useState(""); // Type of item to delete
-  const [showDeleteConfirm2, setShowDeleteConfirm2] = useState(false); // Secondary delete confirmation
-  const [itemToDelete2, setItemToDelete2] = useState(null); // Secondary item to delete
-  const mainContentRef = useRef(null); // Ref for main content area
-  const { setActiveBuses } = useAppContext(); // Context for active buses
-
-  // Tab configuration with icons
+  const [input, setInput] = useState("");
+  const [input2, setInput2] = useState("");
+  const [inputCollege, setInputCollege] = useState("");
+  const [routeName, setRouteName] = useState("");
+  const [routeName2, setRouteName2] = useState("");
+  const [routeNameCollege, setRouteNameCollege] = useState("");
+  const [routes, setRoutes] = useState([]);
+  const [routes2, setRoutes2] = useState([]);
+  const [routesCollege, setRoutesCollege] = useState([]);
+  const [standName, setStandName] = useState([]);
+  const [standName2, setStandName2] = useState([]);
+  const [standNameCollege, setStandNameCollege] = useState([]);
+  const [boysCount, setBoysCount] = useState("");
+  const [boysCount2, setBoysCount2] = useState("");
+  const [girlsCount, setGirlsCount] = useState("");
+  const [boysCountCollege, setBoysCountCollege] = useState("");
+  const [girlsCountCollege, setGirlsCountCollege] = useState("");
+  const [isShow, setIsShow] = useState(0);
+  const [totalBusCapacity, setTotalBusCapacity] = useState(0);
+  const [activeBusCapacity, setActiveBusCapacity] = useState(0);
+  const [totalDayStudents, setTotalDayStudents] = useState(0);
+  const [totalMorningStudents, setTotalMorningStudents] = useState(0);
+  const [totalCollegeStudents, setTotalCollegeStudents] = useState(0);
+  const [lastUpdatedDay, setLastUpdatedDay] = useState(null);
+  const [lastUpdatedMorning, setLastUpdatedMorning] = useState(null);
+  const [lastUpdatedCollege, setLastUpdatedCollege] = useState(null);
+  const [daySeatsNeeded, setDaySeatsNeeded] = useState(0);
+  const [morningSeatsNeeded, setMorningSeatsNeeded] = useState(0);
+  const [collegeSeatsNeeded, setCollegeSeatsNeeded] = useState(0);
+  const [dummy, setDummy] = useState(false);
+  const [dummy2, setDummy2] = useState(false);
+  const [dummy3, setDummy3] = useState(false);
+  const [dummyCollege, setDummyCollege] = useState(false);
+  const [selectedRoute, setSelectedRoute] = useState("");
+  const [updatedStands, setUpdatedStands] = useState([]);
+  const [newStandName, setNewStandName] = useState("");
+  const [newBoysCount, setNewBoysCount] = useState("");
+  const [newGirlsCount, setNewGirlsCount] = useState("");
+  const [selectedRouteMorning, setSelectedRouteMorning] = useState("");
+  const [updatedStandsMorning, setUpdatedStandsMorning] = useState([]);
+  const [newStandNameMorning, setNewStandNameMorning] = useState("");
+  const [newBoysCountMorning, setNewBoysCountMorning] = useState("");
+  const [selectedRouteCollege, setSelectedRouteCollege] = useState("");
+  const [updatedStandsCollege, setUpdatedStandsCollege] = useState([]);
+  const [newStandNameCollege, setNewStandNameCollege] = useState("");
+  const [newBoysCountCollege, setNewBoysCountCollege] = useState("");
+  const [newGirlsCountCollege, setNewGirlsCountCollege] = useState("");
+  const [busNumber, setBusNumber] = useState("");
+  const [busCapacity, setBusCapacity] = useState("");
+  const [buses, setBuses] = useState([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+  const [deleteType, setDeleteType] = useState("");
+  const [showDeleteConfirm2, setShowDeleteConfirm2] = useState(false);
+  const [itemToDelete2, setItemToDelete2] = useState(null);
+  const mainContentRef = useRef(null);
+  const { setActiveBuses } = useAppContext();
   const tabs = [
     { id: 0, label: "Day Shift", icon: "➤" },
     { id: 4, label: "Morning Shift", icon: "➤" },
@@ -83,7 +80,6 @@ const Settings = () => {
     { id: 3, label: "Clear Database", icon: "➤" },
   ];
 
-  // Helper function to get IPC renderer for Electron communication
   const getIpcRenderer = () => {
     if (window.require) {
       return window.require("electron").ipcRenderer;
@@ -100,14 +96,13 @@ const Settings = () => {
   useEffect(() => {
     const handleEsc = (event) => {
       if (event.key === "Escape") {
-        navigate("/"); // same as <Link to="/" />
+        navigate("/");
       }
     };
 
     window.addEventListener("keydown", handleEsc);
     return () => window.removeEventListener("keydown", handleEsc);
   }, [navigate]);
-  // Effect to calculate college student totals
   useEffect(() => {
     const collegeStudentsTotal = routesCollege.reduce(
       (acc, route) => acc + (route.totalBoys || 0) + (route.totalGirls || 0),
@@ -116,7 +111,6 @@ const Settings = () => {
     setTotalCollegeStudents(collegeStudentsTotal);
   }, [routesCollege]);
 
-  // Function to calculate all seat capacity differences
   const calculateSeatCapacity = () => {
     const daySeatsNeeded = Math.max(0, totalDayStudents - activeBusCapacity);
     const morningSeatsNeeded = Math.max(0, totalMorningStudents - activeBusCapacity);
@@ -127,27 +121,22 @@ const Settings = () => {
     setCollegeSeatsNeeded(collegeSeatsNeeded);
   };
 
-  // Effect to calculate seat capacity differences when data changes
   useEffect(() => {
     calculateSeatCapacity();
   }, [totalDayStudents, totalMorningStudents, totalCollegeStudents, activeBusCapacity]);
 
-  // Effect to recalculate when tab changes
   useEffect(() => {
     calculateSeatCapacity();
   }, [isShow]);
 
-  // Effect to recalculate when routes data changes
   useEffect(() => {
     calculateSeatCapacity();
   }, [routes, routes2, routesCollege]);
 
-  // Effect to recalculate when buses data changes
   useEffect(() => {
     calculateSeatCapacity();
   }, [buses]);
 
-  // Initial data fetching
   useEffect(() => {
     fetchBuses();
     fetchRoutes();
@@ -155,7 +144,6 @@ const Settings = () => {
     fetchRoutesCollege();
   }, []);
 
-  // Effect to load college stands when route is selected
   useEffect(() => {
     if (selectedRouteCollege && isShow === 7) {
       const route = routesCollege.find((r) => r.name === selectedRouteCollege);
@@ -165,30 +153,25 @@ const Settings = () => {
     }
   }, [selectedRouteCollege, isShow]);
 
-  // Effect to calculate various totals
   useEffect(() => {
-    // Calculate total bus capacity
     const busCapacityTotal = buses.reduce(
       (acc, bus) => acc + (bus.capacity || 0),
       0
     );
     setTotalBusCapacity(busCapacityTotal);
 
-    // Calculate active bus capacity
     const activeCapacity = buses.reduce(
       (acc, bus) => acc + (bus.isActive ? bus.capacity || 0 : 0),
       0
     );
     setActiveBusCapacity(activeCapacity);
 
-    // Calculate total day shift students
     const dayStudentsTotal = routes.reduce(
       (acc, route) => acc + (route.totalBoys || 0) + (route.totalGirls || 0),
       0
     );
     setTotalDayStudents(dayStudentsTotal);
 
-    // Calculate total morning shift students
     const morningStudentsTotal = routes2.reduce(
       (acc, route) => acc + (route.totalBoys || 0),
       0
@@ -196,7 +179,6 @@ const Settings = () => {
     setTotalMorningStudents(morningStudentsTotal);
   }, [routes, routes2, buses]);
 
-  // Effect to load stands when day route is selected
   useEffect(() => {
     if (selectedRoute && isShow === 2) {
       const route = routes.find((r) => r.name === selectedRoute);
@@ -206,7 +188,6 @@ const Settings = () => {
     }
   }, [selectedRoute, isShow]);
 
-  // Effect to load stands when morning route is selected
   useEffect(() => {
     if (selectedRouteMorning && isShow === 5) {
       const route = routes2.find((r) => r.name === selectedRouteMorning);
@@ -216,7 +197,6 @@ const Settings = () => {
     }
   }, [selectedRouteMorning, isShow]);
 
-  // College Shift handlers
   const handleKeyDownCollege = (e) => {
     if (e.key === "Enter" || e.key === "NumpadEnter" || e.key === ",") {
       e.preventDefault();
@@ -531,7 +511,6 @@ const Settings = () => {
     setUpdatedStandsCollege((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Day shift handlers
   const handleDayShiftUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -593,7 +572,6 @@ const Settings = () => {
     reader.readAsBinaryString(file);
   };
 
-  // Bus management handlers
   const handleBusUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -632,7 +610,6 @@ const Settings = () => {
     reader.readAsBinaryString(file);
   };
 
-  // Morning shift handlers
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -684,7 +661,6 @@ const Settings = () => {
     reader.readAsBinaryString(file);
   };
 
-  // Data fetching functions
   const fetchRoutes = async () => {
     try {
       const ipcRenderer = getIpcRenderer();
@@ -719,24 +695,20 @@ const Settings = () => {
     }
   };
 
-  // Initialize data on mount
   useEffect(() => {
     fetchRoutes();
     fetchRoutes2();
   }, []);
 
-  // Fetch buses when relevant tabs are active
   useEffect(() => {
     if (isShow === 1 || isShow === 2 || isShow === 5) {
       fetchBuses();
     }
   }, [isShow]);
 
-  // Route name change handlers
   const handleChangeRouteName = (e) => setRouteName(e.target.value);
   const handleChangeRouteName2 = (e) => setRouteName2(e.target.value);
 
-  // Day shift input handlers
   const handleKeyDown = (e) => {
     if (e.key === "Enter" || e.key === "NumpadEnter" || e.key === ",") {
       e.preventDefault();
@@ -797,7 +769,6 @@ const Settings = () => {
     }
   };
 
-  // Morning shift input handlers
   const handleKeyDown2 = (e) => {
     if (e.key === "Enter" || e.key === "NumpadEnter" || e.key === ",") {
       e.preventDefault();
@@ -862,7 +833,6 @@ const Settings = () => {
     setStandName2((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Route creation functions
   const handleAddRoute = async () => {
     const routeNameValue = routeName.trim().toLowerCase();
 
@@ -944,7 +914,6 @@ const Settings = () => {
     }
   };
 
-  // Deletion handlers
   const handleDeleteRoute = (index) => {
     const routeToDelete = routes[index];
     if (!routeToDelete) return;
@@ -979,7 +948,6 @@ const Settings = () => {
     setShowDeleteConfirm(true);
   };
 
-  // Bus status toggle
   const handleToggleBusStatus = async (busNumber, newStatus) => {
     try {
       const ipcRenderer = getIpcRenderer();
@@ -1001,7 +969,6 @@ const Settings = () => {
     }
   };
 
-  // Confirm deletion dialog
   const confirmDeletion = async () => {
     if (!itemToDelete) return;
 
@@ -1088,7 +1055,6 @@ const Settings = () => {
     }
   };
 
-  // Cancel deletion
   const cancelDeletion = () => {
     setShowDeleteConfirm(false);
     setItemToDelete(null);
@@ -1105,7 +1071,6 @@ const Settings = () => {
     }
   };
 
-  // Bus management
   const handleAddBus = async () => {
     const totalBusCapacity = buses.reduce(
       (acc, bus) => acc + (bus.capacity || 0),
@@ -1150,7 +1115,6 @@ const Settings = () => {
     }
   };
 
-  // Route update handlers
   const handleUpdateRoute = async () => {
     if (!selectedRoute) {
       toast.error("Please select a route");
@@ -1194,7 +1158,6 @@ const Settings = () => {
     }
   };
 
-  // Form reset
   const resetForm = () => {
     setSelectedRoute("");
     setUpdatedStands([]);
@@ -1203,7 +1166,6 @@ const Settings = () => {
     setNewGirlsCount("");
   };
 
-  // Add new stand to route
   const handleAddNewStand = () => {
     const trimmedName = newStandName.trim().toLowerCase();
 
@@ -1256,7 +1218,6 @@ const Settings = () => {
     setNewGirlsCount("");
   };
 
-  // Update stand counts
   const handleUpdateStandCount = (index, type, value) => {
     const newValue = parseInt(value);
     if (isNaN(newValue)) return;
@@ -1268,12 +1229,10 @@ const Settings = () => {
     );
   };
 
-  // Remove stand from update list
   const handleRemoveUpdatedStand = (index) => {
     setUpdatedStands((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Morning shift route update
   const handleUpdateRouteMorning = async () => {
     if (!selectedRouteMorning) {
       toast.error("Please select a route");
@@ -1314,7 +1273,6 @@ const Settings = () => {
     }
   };
 
-  // Add new stand to morning route
   const handleAddNewStandMorning = () => {
     const trimmedName = newStandNameMorning.trim().toLowerCase();
 
@@ -1360,7 +1318,6 @@ const Settings = () => {
     setNewBoysCountMorning("");
   };
 
-  // Update morning stand count
   const handleUpdateStandCountMorning = (index, value) => {
     const newValue = parseInt(value);
     if (isNaN(newValue)) return;
@@ -1372,12 +1329,10 @@ const Settings = () => {
     );
   };
 
-  // Remove morning stand
   const handleRemoveUpdatedStandMorning = (index) => {
     setUpdatedStandsMorning((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Database reset
   const handleResetDatabase = async () => {
     try {
       const ipcRenderer = getIpcRenderer();
@@ -1503,9 +1458,7 @@ const Settings = () => {
         </motion.div>
       )}
 
-      {/* Info sections */}
       <div className="fixed top-3 right-20 z-50 flex gap-2">
-        {/* Last updated time info */}
         <div className="bg-white rounded-lg shadow-md p-3 min-w-[200px]">
           <div className="text-xs text-gray-600 mb-1">Last Updated:</div>
           <div className="text-sm font-medium text-gray-800">
@@ -1526,29 +1479,64 @@ const Settings = () => {
           </div>
         </div>
 
-        {/* Seat capacity info */}
         <div className="bg-white rounded-lg shadow-md p-3 min-w-[200px]">
           <div className="text-xs text-gray-600 mb-1">Seat Status:</div>
           <div className="text-sm font-medium">
             {isShow === 0 && (
-              <span className={daySeatsNeeded > 0 ? "text-red-600" : "text-green-600"}>
-                {daySeatsNeeded > 0 
+              <span className={
+                buses.length === 0 || activeBusCapacity === 0
+                  ? "text-gray-500" 
+                  : totalDayStudents === 0 
+                    ? "text-gray-500" 
+                    : daySeatsNeeded > 0 
+                      ? "text-red-600" 
+                      : "text-green-600"
+              }>
+                {buses.length === 0 || activeBusCapacity === 0
+                  ? "No bus added"
+                  : totalDayStudents === 0
+                    ? "No data"
+                    : daySeatsNeeded > 0 
                   ? `${daySeatsNeeded} more seats needed`
                   : "Seats are sufficient"
                 }
               </span>
             )}
             {isShow === 4 && (
-              <span className={morningSeatsNeeded > 0 ? "text-red-600" : "text-green-600"}>
-                {morningSeatsNeeded > 0 
+              <span className={
+                buses.length === 0 || activeBusCapacity === 0
+                  ? "text-gray-500" 
+                  : totalMorningStudents === 0 
+                    ? "text-gray-500" 
+                    : morningSeatsNeeded > 0 
+                      ? "text-red-600" 
+                      : "text-green-600"
+              }>
+                {buses.length === 0 || activeBusCapacity === 0
+                  ? "No bus added"
+                  : totalMorningStudents === 0
+                    ? "No data"
+                    : morningSeatsNeeded > 0 
                   ? `${morningSeatsNeeded} more seats needed`
                   : "Seats are sufficient"
                 }
               </span>
             )}
             {isShow === 6 && (
-              <span className={collegeSeatsNeeded > 0 ? "text-red-600" : "text-green-600"}>
-                {collegeSeatsNeeded > 0 
+              <span className={
+                buses.length === 0 || activeBusCapacity === 0
+                  ? "text-gray-500" 
+                  : totalCollegeStudents === 0 
+                    ? "text-gray-500" 
+                    : collegeSeatsNeeded > 0 
+                      ? "text-red-600" 
+                      : "text-green-600"
+              }>
+                {buses.length === 0 || activeBusCapacity === 0
+                  ? "No bus added"
+                  : totalCollegeStudents === 0
+                    ? "No data"
+                    : collegeSeatsNeeded > 0 
                   ? `${collegeSeatsNeeded} more seats needed`
                   : "Seats are sufficient"
                 }
@@ -1561,7 +1549,6 @@ const Settings = () => {
         </div>
       </div>
 
-      {/* Back button */}
       <Link
         to="/"
         className="fixed top-5 right-5 z-50 bg-purple-500 text-white rounded-full w-11 h-11 flex items-center justify-center shadow-md hover:bg-purple-600 transition-colors"
@@ -1570,7 +1557,6 @@ const Settings = () => {
         <FaArrowLeftLong />
       </Link>
 
-      {/* Sidebar navigation */}
       <div className="w-64 bg-purple-100 shadow-md fixed h-screen p-5 z-10">
         <div className="text-center pb-5 border-b border-gray-200 mb-5">
           <img
@@ -1582,7 +1568,6 @@ const Settings = () => {
         </div>
 
         <ul className="space-y-2">
-          {/* Main tabs */}
           {tabs.slice(0, 3).map((tab) => (
             <motion.li
               key={tab.id}
@@ -1609,7 +1594,6 @@ const Settings = () => {
             </motion.li>
           ))}
 
-          {/* Bottom tabs */}
           <div className="fixed left-6 bottom-10 w-52">
             {tabs.slice(3).map((tab) => (
               <motion.li
@@ -1640,7 +1624,6 @@ const Settings = () => {
         </ul>
       </div>
 
-      {/* College Shift Panel */}
       <AnimatePresence mode="wait">
         <motion.div
           key={isShow}
@@ -1854,7 +1837,6 @@ const Settings = () => {
         </motion.div>
       </AnimatePresence>
 
-      {/* Update College Shift Route Panel */}
       <AnimatePresence mode="wait">
         <motion.div
           key={isShow}
@@ -2038,7 +2020,6 @@ const Settings = () => {
         </motion.div>
       </AnimatePresence>
 
-      {/* Day Shift Panel */}
       <AnimatePresence mode="wait">
         <motion.div
           key={isShow}
@@ -2252,7 +2233,6 @@ const Settings = () => {
         </motion.div>
       </AnimatePresence>
 
-      {/* Bus Management Panel */}
       <AnimatePresence mode="wait">
         <motion.div
           key={isShow}
@@ -2414,7 +2394,6 @@ const Settings = () => {
         </motion.div>
       </AnimatePresence>
 
-      {/* Update Day Shift Route Panel */}
       <AnimatePresence mode="wait">
         <motion.div
           key={isShow}
@@ -2599,7 +2578,6 @@ const Settings = () => {
         </motion.div>
       </AnimatePresence>
 
-      {/* Reset Data Panel */}
       <AnimatePresence mode="wait">
         <motion.div
           key={isShow}
@@ -2653,7 +2631,6 @@ const Settings = () => {
         </motion.div>
       </AnimatePresence>
 
-      {/* Morning Shift Panel */}
       <AnimatePresence mode="wait">
         <motion.div
           key={isShow}
@@ -2844,7 +2821,6 @@ const Settings = () => {
         </motion.div>
       </AnimatePresence>
 
-      {/* Update Morning Shift Route Panel */}
       <AnimatePresence mode="wait">
         <motion.div
           key={isShow}
@@ -3013,8 +2989,6 @@ const Settings = () => {
         </motion.div>
       </AnimatePresence>
 
-      {/* Excel Upload Modals */}
-      {/* College Excel Modal */}
       <AnimatePresence>
         {dummyCollege && (
           <motion.div
@@ -3047,7 +3021,6 @@ const Settings = () => {
         )}
       </AnimatePresence>
 
-      {/* Morning Shift Excel Modal */}
       <AnimatePresence>
         {dummy && (
           <motion.div
@@ -3080,7 +3053,6 @@ const Settings = () => {
         )}
       </AnimatePresence>
 
-      {/* Bus Excel Modal */}
       <AnimatePresence>
         {dummy2 && (
           <motion.div
@@ -3113,7 +3085,6 @@ const Settings = () => {
         )}
       </AnimatePresence>
 
-      {/* Day Shift Excel Modal */}
       <AnimatePresence>
         {dummy3 && (
           <motion.div

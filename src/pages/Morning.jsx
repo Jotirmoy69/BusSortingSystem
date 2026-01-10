@@ -6,33 +6,29 @@ import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
 import AssignmentTable from "../components/AssignmentTable";
 import { motion, AnimatePresence } from "framer-motion";
+import { getAvailableBuses, getBusId, calculateOccupancy } from "../utils/busUtils";
 
 export default function Morning() {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const handleEsc = (event) => {
-      if (event.key === "Escape") {
-        navigate("/"); // same as <Link to="/" />
-      }
-    };
-
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
-  }, [navigate]);
   const [selected, setSelected] = useState({});
   const [tempSelect, setTempSelect] = useState([]);
   const [saving, setSaving] = useState(false);
-  const [manualOverload, setManualOverload] = useState(27); // Default overload value
-  
+  const [manualOverload, setManualOverload] = useState(27);
 
   const {
     activeBuses,
     stands2,
     assignedBuses,
     setAssignedBuses,
-    automationAssignments,
   } = useAppContext();
+
+  useEffect(() => {
+    const handleEsc = (event) => {
+      if (event.key === "Escape") navigate("/");
+    };
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [navigate]);
 
   const getAssignedStandNames = () => {
     const standsFromAssignedBuses = assignedBuses.flatMap((bus) =>
@@ -42,35 +38,36 @@ export default function Morning() {
     return [...new Set([...standsFromAssignedBuses, ...standsFromTempSelect])];
   };
 
-  const getAvailableBuses = () => {
-    const assignedBusIds = assignedBuses.map((bus) => bus.id);
-    return activeBuses.filter((bus) => !assignedBusIds.includes(bus.number));
-  };
+  const isBusSelected = Object.keys(selected).length > 0;
+  const availableBusesList = getAvailableBuses(activeBuses, assignedBuses);
+  const assignedStandNames = getAssignedStandNames();
 
   const handleStandSelect = (stand) => {
-    if (!stand) return toast.error("Invalid stand data!");
-    if (!isBusSelected)
-      return toast.error("Please select a bus before adding stands!");
-    if (getAssignedStandNames().includes(stand.name))
-      return toast.error("This stand is already assigned!");
+    if (!stand) {
+      toast.error("Invalid stand data!");
+      return;
+    }
 
-    const totalStudents = (stand.boys || 0) + (stand.girls || 0);
-    const newTotal =
-      tempSelect.reduce((sum, s) => sum + s.students, 0) + totalStudents;
+    if (!isBusSelected) {
+      toast.error("Please select a bus before adding stands!");
+      return;
+    }
 
-    // Use manualOverload value for capacity check
-    if (newTotal > selected.capacity + manualOverload)
-      return toast.error(
-        `Cannot exceed bus capacity by more than ${manualOverload} students!`
-      );
+    if (assignedStandNames.includes(stand.name)) {
+      toast.error("This stand is already assigned!");
+      return;
+    }
 
-    setTempSelect((prev) => [
-      ...prev,
-      {
-        name: stand.name,
-        students: totalStudents,
-      },
-    ]);
+    const totalStudents = Number(stand.boys || 0) + Number(stand.girls || 0);
+    const currentTotal = tempSelect.reduce((sum, s) => sum + s.students, 0);
+    const maxCapacity = Number(selected.capacity || 0) + manualOverload;
+
+    if (currentTotal + totalStudents > maxCapacity) {
+      toast.error(`Cannot exceed bus capacity by more than ${manualOverload} students!`);
+      return;
+    }
+
+    setTempSelect((prev) => [...prev, { name: stand.name, students: totalStudents }]);
   };
 
   const handleRemoveSelected = (standName) => {
@@ -82,17 +79,16 @@ export default function Morning() {
       name: stand.name || stand.stand,
       students: stand.total,
     }));
-    setAssignedBuses((prev) => prev.filter((b) => b.id !== bus.id));
-    setSelected({
-      ...bus,
-      number: bus.number || bus.id,
-    });
+    const busId = getBusId(bus);
+    setAssignedBuses((prev) => prev.filter((b) => getBusId(b) !== busId));
+    setSelected({ ...bus, number: bus.number || bus.id });
     setTempSelect(standsToReturn);
   };
 
   const handleRemoveBus = (busId) => {
-    setAssignedBuses((prev) => prev.filter((bus) => bus.id !== busId));
-    if (selected.id === busId) {
+    const id = String(busId);
+    setAssignedBuses((prev) => prev.filter((bus) => getBusId(bus) !== id));
+    if (getBusId(selected) === id) {
       setSelected({});
       setTempSelect([]);
     }
@@ -107,8 +103,9 @@ export default function Morning() {
     const totalStudents = tempSelect.reduce((sum, s) => sum + s.students, 0);
 
     const newAssignment = {
-      id: selected.id || selected.number,
-      capacity: selected.capacity,
+      id: getBusId(selected),
+      number: selected.number || selected.id,
+      capacity: Number(selected.capacity),
       assigned: totalStudents,
       stands: tempSelect.map((stand) => ({
         name: stand.name,
@@ -117,10 +114,11 @@ export default function Morning() {
       route: "Manual Assignment",
     };
 
+    const busNumber = selected.number || selected.id;
     setAssignedBuses((prev) => [...prev, newAssignment]);
     setSelected({});
     setTempSelect([]);
-    toast.success(`Bus ${selected.number} assigned successfully!`);
+    toast.success(`Bus ${busNumber} assigned successfully!`);
   };
 
   const handleReassign = () => {
@@ -134,32 +132,20 @@ export default function Morning() {
     setTempSelect([]);
   };
 
-  const isBusSelected = Object.keys(selected).length !== 0;
-  const availableBuses = getAvailableBuses();
-  const assignedStandNames = getAssignedStandNames();
-
-  const availableStands =
-    stands2?.map((route) => ({
+  const availableStands = (stands2 || []).map((route) => ({
       ...route,
-      stands: route.stands.filter(
-        (stand) => !assignedStandNames.includes(stand.name)
-      ),
-    })) || [];
+    stands: route.stands.filter((stand) => !assignedStandNames.includes(stand.name)),
+  }));
 
-  // Calculate occupancy percentage using manualOverload
-  const totalSelectedStudents = tempSelect.reduce(
-    (sum, s) => sum + s.students,
-    0
-  );
-  const maxCapacity = isBusSelected ? selected.capacity + manualOverload : 0;
+  const totalSelectedStudents = tempSelect.reduce((sum, s) => sum + s.students, 0);
+  const maxCapacity = isBusSelected ? Number(selected.capacity || 0) + manualOverload : 0;
   const occupancyPercentage = isBusSelected
-    ? Math.min(100, (totalSelectedStudents / maxCapacity) * 100)
+    ? calculateOccupancy(totalSelectedStudents, Number(selected.capacity || 0)) 
     : 0;
 
   return (
     <div className="min-h-screen bg-gray-50 pt-14 font-sans p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
@@ -171,7 +157,6 @@ export default function Morning() {
           </div>
 
           <div className="flex flex-wrap w- gap-3">
-            {/* Overload Input */}
             <div className="bg-gray-100 px-4 py-3 items-center rounded-lg flex gap-4 w- max-w-md">
               <label className="text-sm font-medium w-40 text-gray-700">
                 Overload Allowed:{" "}
@@ -216,16 +201,14 @@ export default function Morning() {
           </div>
         </div>
 
-        {/* Bus Selection Area */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* Bus Selection Card */}
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-gray-800">
                 Bus Selection
               </h2>
               <span className="text-xs font-medium px-2 py-1 bg-purple-100 text-purple-800 rounded-full">
-                {availableBuses.length} available
+                {availableBusesList.length} available
               </span>
             </div>
 
@@ -249,7 +232,7 @@ export default function Morning() {
                     className="w-full p-3 rounded-lg border border-gray-200 bg-gray-50 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
                   >
                     <option value="">Select a bus</option>
-                    {availableBuses.map((bus) => (
+                    {availableBusesList.map((bus) => (
                       <option key={bus.number} value={bus.number}>
                         Bus #{bus.number} • {bus.capacity} seats
                       </option>
@@ -270,7 +253,7 @@ export default function Morning() {
                         <span className="bg-purple-600 text-white p-1 px-2.5 rounded-lg">
                           {selected.number}
                         </span>
-                        <span>{selected.capacity} Seats</span>
+                        <span>{selected.capacity || 0} Seats</span>
                       </h3>
                       <p className="text-sm text-gray-500 mt-1">
                         {tempSelect.length} stand
@@ -289,27 +272,26 @@ export default function Morning() {
                     </button>
                   </div>
 
-                  {/* Occupancy bar */}
                   <div className="mt-5">
                     <div className="flex justify-between text-sm font-medium mb-1">
                       <span className="text-gray-600">Occupancy</span>
                       <span
                         className={`${
-                          totalSelectedStudents > selected.capacity
+                          totalSelectedStudents > Number(selected.capacity || 0)
                             ? "text-red-600"
                             : "text-gray-600"
                         }`}
                       >
-                        {totalSelectedStudents}/{selected.capacity} +{" "}
+                        {totalSelectedStudents}/{selected.capacity || 0} +{" "}
                         {manualOverload} (max:{" "}
-                        {selected.capacity + manualOverload})
+                        {Number(selected.capacity || 0) + manualOverload})
                       </span>
                     </div>
 
                     <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
                       <motion.div
                         className={`h-full ${
-                          totalSelectedStudents > selected.capacity
+                          totalSelectedStudents > Number(selected.capacity || 0)
                             ? "bg-red-500"
                             : "bg-gradient-to-r from-purple-500 to-indigo-600"
                         }`}
@@ -319,10 +301,10 @@ export default function Morning() {
                       />
                     </div>
 
-                    {totalSelectedStudents > selected.capacity && (
+                    {totalSelectedStudents > Number(selected.capacity || 0) && (
                       <p className="text-red-600 text-xs font-medium mt-2">
                         Overloaded by{" "}
-                        {totalSelectedStudents - selected.capacity} students
+                        {totalSelectedStudents - Number(selected.capacity || 0)} students
                         (allowed: +{manualOverload})
                       </p>
                     )}
@@ -332,7 +314,6 @@ export default function Morning() {
             </AnimatePresence>
           </div>
 
-          {/* Selected Stands Card */}
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-gray-800">
@@ -395,7 +376,6 @@ export default function Morning() {
           </div>
         </div>
 
-        {/* Available Stands Section */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-100">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold text-gray-800">
@@ -474,7 +454,6 @@ export default function Morning() {
           </div>
         </div>
 
-        {/* Assignment Table */}
         <AssignmentTable
           assignedBuses={assignedBuses}
           mode="manual"
@@ -482,7 +461,6 @@ export default function Morning() {
           onRemove={handleRemoveBus}
         />
 
-        {/* Navigation Button */}
         <Link to="/" className="fixed top-6 right-6 z-50">
           <motion.div
             whileHover={{ scale: 1.1 }}

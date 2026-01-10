@@ -6,21 +6,18 @@ import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
 import AssignmentTable from "../components/AssignmentTable";
 import { motion, AnimatePresence } from "framer-motion";
+import { 
+  normalizeStandName, 
+  getAvailableBuses, 
+  getAssignedStandNames,
+  getBusId,
+  getStudentCount,
+  calculateOccupancy
+} from "../utils/busUtils";
 
 export default function College() {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const handleEsc = (event) => {
-      if (event.key === "Escape") {
-        navigate("/"); // same as <Link to="/" />
-      }
-    };
-
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
-  }, [navigate]);
-  const [activeGender, setActiveGender] = useState("boys"); // "boys" | "girls"
+  const [activeGender, setActiveGender] = useState("boys");
   const [selected, setSelected] = useState({});
   const [tempSelect, setTempSelect] = useState([]);
   const [saving, setSaving] = useState(false);
@@ -33,100 +30,65 @@ export default function College() {
     setAssignedBusesCollege,
   } = useAppContext();
 
-  // Normalize names: "Stop A (boys part)" -> "Stop A"
-  const normalizeStandName = (name) =>
-    String(name || "").trim().replace(/\s*KATEX_INLINE_OPEN.*?KATEX_INLINE_CLOSE\s*$/, "");
-
-  // Build assigned name sets per gender (from saved + in-progress)
-  const getAssignedStandNames = () => {
-    const editingBusId = String(selected.id ?? selected.number ?? "");
-    const boysAssigned = new Set();
-    const girlsAssigned = new Set();
-
-    (assignedBusesCollege || []).forEach((bus) => {
-      const busId = String(bus.id ?? bus.number ?? "");
-      if (busId === editingBusId) return; // skip bus being edited
-
-      (bus.stands || []).forEach((stand) => {
-        const base = normalizeStandName(stand.originalName ?? stand.name);
-        if (stand.gender === "girls") girlsAssigned.add(base);
-        else boysAssigned.add(base);
-      });
-    });
-
-    (tempSelect || []).forEach((stand) => {
-      if (!stand?.name) return;
-      const base = normalizeStandName(stand.name);
-      if (stand.gender === "girls") girlsAssigned.add(base);
-      else boysAssigned.add(base);
-    });
-
-    return {
-      boys: Array.from(boysAssigned),
-      girls: Array.from(girlsAssigned),
+  useEffect(() => {
+    const handleEsc = (event) => {
+      if (event.key === "Escape") navigate("/");
     };
-  };
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [navigate]);
 
-  // Available buses = active - already assigned (keep current if selected)
-  const getAvailableBuses = () => {
-    const editingBusId = String(selected.id ?? selected.number ?? "");
-    const assignedIds = (assignedBusesCollege || []).map((b) =>
-      String(b.id ?? b.number)
-    );
-    const assignedFiltered = assignedIds.filter((id) => id !== editingBusId);
-    return (activeBuses || []).filter((bus) => {
-      const id = String(bus.number ?? bus.id);
-      return !assignedFiltered.includes(id);
-    });
-  };
+  const editingBusId = getBusId(selected);
+  const isBusSelected = Object.keys(selected).length > 0;
+  const availableBusesList = getAvailableBuses(activeBuses, assignedBusesCollege, editingBusId);
+  const assignedStandNames = getAssignedStandNames(assignedBusesCollege, tempSelect, editingBusId);
 
   const handleStandSelect = (stand) => {
-    if (!stand) return toast.error("Invalid stand data!");
-    if (!isBusSelected)
-      return toast.error(
-        `Please select a bus before adding stands for ${activeGender}!`
-      );
+    if (!stand) {
+      toast.error("Invalid stand data!");
+      return;
+    }
 
-    const assignedNames = getAssignedStandNames();
+    if (!isBusSelected) {
+      toast.error(`Please select a bus before adding stands for ${activeGender}!`);
+      return;
+    }
+
     const baseName = normalizeStandName(stand.name);
+    const assignedNames = assignedStandNames[activeGender] || [];
 
-    const isAlreadyAssigned = (assignedNames[activeGender] || []).includes(
-      baseName
+    if (assignedNames.includes(baseName)) {
+      toast.error("This stand is already assigned/selected for this gender!");
+      return;
+    }
+
+    const isAlreadySelected = tempSelect.some(
+      (s) => normalizeStandName(s.name) === baseName && (s.gender || "boys") === activeGender
     );
-    if (isAlreadyAssigned)
-      return toast.error(
-        "This stand is already assigned/selected for this gender!"
-      );
+    if (isAlreadySelected) {
+      toast.error("This stand is already selected!");
+      return;
+    }
 
-    const alreadyInTemp = tempSelect.some(
-      (s) =>
-        normalizeStandName(s.name) === baseName &&
-        (s.gender || "boys") === activeGender
-    );
-    if (alreadyInTemp) return toast.error("This stand is already selected!");
-
-    const studentsCount =
-      activeGender === "boys" ? Number(stand.boys || 0) : Number(stand.girls || 0);
-    if (studentsCount <= 0)
-      return toast.error("No students available at this stand for this gender!");
+    const studentsCount = getStudentCount(stand, activeGender);
+    if (studentsCount <= 0) {
+      toast.error("No students available at this stand for this gender!");
+      return;
+    }
 
     const currentTotal = tempSelect
       .filter((s) => (s.gender || "boys") === activeGender)
       .reduce((sum, s) => sum + Number(s.students || 0), 0);
 
-    const newTotal = currentTotal + studentsCount;
-    if (newTotal > (Number(selected.capacity) || 0) + overloadSize)
-      return toast.error(
-        `Cannot exceed bus capacity by more than ${overloadSize} students!`
-      );
+    const maxCapacity = Number(selected.capacity || 0) + overloadSize;
+    if (currentTotal + studentsCount > maxCapacity) {
+      toast.error(`Cannot exceed bus capacity by more than ${overloadSize} students!`);
+      return;
+    }
 
     setTempSelect((prev) => [
       ...prev,
-      {
-        name: baseName,
-        students: studentsCount,
-        gender: activeGender,
-      },
+      { name: baseName, students: studentsCount, gender: activeGender },
     ]);
   };
 
@@ -152,41 +114,36 @@ export default function College() {
       gender: stand.gender ?? null,
     }));
 
+    const busId = getBusId(bus);
     setAssignedBusesCollege((prev) =>
-      (prev || []).filter(
-        (b) => String(b.id ?? b.number) !== String(bus.id ?? bus.number)
-      )
+      (prev || []).filter((b) => getBusId(b) !== busId)
     );
-    setSelected({
-      ...bus,
-      number: bus.number || bus.id,
-    });
+    setSelected({ ...bus, number: bus.number || bus.id });
     setTempSelect(stands);
   };
 
   const handleRemoveBus = (busId) => {
     const id = String(busId);
     setAssignedBusesCollege((prev) =>
-      (prev || []).filter(
-        (bus) => String(bus.id ?? bus.number) !== id
-      )
+      (prev || []).filter((bus) => getBusId(bus) !== id)
     );
-    if (String(selected.id ?? selected.number) === id) {
+    if (getBusId(selected) === id) {
       setSelected({});
       setTempSelect([]);
     }
     toast.success("Bus assignment removed");
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setSaving(true);
+
     if (!isBusSelected) {
-      toast.error(`Please select a bus first!`);
+      toast.error("Please select a bus first!");
       setSaving(false);
       return;
     }
 
-    const standsToSave = (tempSelect || []).filter(
+    const standsToSave = tempSelect.filter(
       (s) => (s.gender || "boys") === activeGender
     );
 
@@ -203,10 +160,11 @@ export default function College() {
     }));
 
     const totalStudents = allStands.reduce((sum, s) => sum + (s.total || 0), 0);
+    const busNumber = selected.number || selected.id;
 
     const newAssignment = {
-      id: selected.id || selected.number,
-      number: selected.number || selected.id,
+      id: getBusId(selected),
+      number: busNumber,
       capacity: Number(selected.capacity),
       assigned: totalStudents,
       stands: allStands,
@@ -215,14 +173,9 @@ export default function College() {
     };
 
     setAssignedBusesCollege((prev) => [...(prev || []), newAssignment]);
-
-    setTempSelect((prev) =>
-      prev.filter((s) => (s.gender || "boys") !== activeGender)
-    );
+    setTempSelect((prev) => prev.filter((s) => (s.gender || "boys") !== activeGender));
     setSelected({});
-    toast.success(
-      `Bus ${selected.number} assigned successfully for ${activeGender}!`
-    );
+    toast.success(`Bus ${busNumber} assigned successfully for ${activeGender}!`);
     setSaving(false);
   };
 
@@ -237,66 +190,39 @@ export default function College() {
     setTempSelect([]);
   };
 
-  const isBusSelected = Object.keys(selected).length !== 0;
-  const availableBuses = getAvailableBuses();
-  const assignedStandNames = getAssignedStandNames();
+  const selectedForGender = tempSelect.filter((s) => (s.gender || "boys") === activeGender);
+  const totalSelectedStudents = selectedForGender.reduce((sum, s) => sum + Number(s.students || 0), 0);
+  const occupancyPercentage = isBusSelected ? calculateOccupancy(totalSelectedStudents, selected.capacity) : 0;
 
-  // Build available stands list per gender
-  const availableStands =
-    (stands3 || []).map((route) => ({
+  const availableStands = (stands3 || []).map((route) => ({
       ...route,
       stands: (route.stands || []).map((stand) => ({
         ...stand,
-        students:
-          activeGender === "boys" ? Number(stand.boys || 0) : Number(stand.girls || 0),
-      })),
-    })) || [];
+      students: getStudentCount(stand, activeGender),
+    })),
+  }));
 
-  const selectedForGender = (tempSelect || []).filter(
-    (s) => (s.gender || "boys") === activeGender
-  );
-
-  const totalSelectedStudents = selectedForGender.reduce(
-    (sum, s) => sum + Number(s.students || 0),
-    0
-  );
-
-  const occupancyPercentage =
-    isBusSelected && selected.capacity
-      ? Math.min(100, (totalSelectedStudents / Number(selected.capacity)) * 100)
-      : 0;
-
-  // Are there any stands with students left unassigned for this gender?
-  const hasAvailableStands = (stands3 || []).some((route) =>
-    (route.stands || []).some((stand) => {
-      const studentCount =
-        activeGender === "boys" ? Number(stand.boys || 0) : Number(stand.girls || 0);
+  const getFilteredStands = (route) => {
+    return (route.stands || []).filter((stand) => {
+      const studentCount = getStudentCount(stand, activeGender);
       const isAssigned = (assignedStandNames[activeGender] || []).includes(
         normalizeStandName(stand.name)
       );
       return studentCount > 0 && !isAssigned;
-    })
-  );
+    });
+  };
 
-  const availableStandCount = (stands3 || []).reduce((acc, route) => {
-    const count = (route.stands || []).filter((stand) => {
-      const studentCount =
-        activeGender === "boys" ? Number(stand.boys || 0) : Number(stand.girls || 0);
-      const isAssigned = (assignedStandNames[activeGender] || []).includes(
-        normalizeStandName(stand.name)
-      );
-      return studentCount > 0 && !isAssigned;
-    }).length;
-    return acc + count;
+  const availableStandCount = availableStands.reduce((acc, route) => {
+    return acc + getFilteredStands(route).length;
   }, 0);
 
+  const hasAvailableStands = availableStands.some((route) => getFilteredStands(route).length > 0);
   const allStandsAssigned = !hasAvailableStands;
-  const noAvailableBuses = availableBuses.length === 0;
+  const noAvailableBuses = availableBusesList.length === 0;
 
   return (
     <div className="min-h-screen bg-gray-50 pt-14 font-sans p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-gray-800">College Bus Assignment</h1>
@@ -304,7 +230,6 @@ export default function College() {
           </div>
 
           <div className="flex flex-wrap gap-3 items-center">
-            {/* Overload size only shows when a bus is selected */}
             {isBusSelected && (
               <div className="bg-gray-100 px-4 py-3 items-center rounded-lg flex gap-4 w- max-w-md">
                 <label className="text-sm font-medium w-40 text-gray-700">
@@ -322,7 +247,6 @@ export default function College() {
               </div>
             )}
 
-            {/* Gender Toggle — now permanent (always visible) */}
             <div className="bg-white border border-gray-200 rounded-lg p-1 flex">
               <button
                 onClick={() => setActiveGender("boys")}
@@ -352,7 +276,6 @@ export default function College() {
               onClick={handleSave}
               className={`px-5 py-2.5 rounded-lg font-medium text-sm flex items-center gap-2
                 ${saving ? "bg-purple-400 cursor-not-allowed" : "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md hover:shadow-lg"}`}
-              // Enabled when a bus is selected and at least one stand is chosen for current gender
               disabled={saving || !isBusSelected || selectedForGender.length === 0}
             >
               {saving ? "Saving..." : "Save Assignment"}
@@ -370,13 +293,11 @@ export default function College() {
           </div>
         </div>
 
-        {/* Bus Selection Area */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* Bus Selection Card */}
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-gray-800">Bus Selection</h2>
-              <span className="text-xs font-medium px-2 py-1 bg-purple-100 text-purple-800 rounded-full">{availableBuses.length} available</span>
+              <span className="text-xs font-medium px-2 py-1 bg-purple-100 text-purple-800 rounded-full">{availableBusesList.length} available</span>
             </div>
 
             <AnimatePresence mode="wait">
@@ -392,7 +313,7 @@ export default function College() {
                     disabled={noAvailableBuses}
                   >
                     <option value="">Select a bus</option>
-                    {availableBuses.map((bus) => (
+                    {availableBusesList.map((bus) => (
                       <option key={bus.number ?? bus.id} value={bus.number ?? bus.id}>
                         Bus #{bus.number} • {bus.capacity} seats
                       </option>
@@ -407,7 +328,7 @@ export default function College() {
                     <div>
                       <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                         <span className="bg-purple-600 text-white p-1 px-2.5 rounded-lg">{selected.number}</span>
-                        <span>{selected.capacity} Seats</span>
+                        <span>{selected.capacity || 0} Seats</span>
                       </h3>
                       <p className="text-sm text-gray-500 mt-1">
                         {selectedForGender.length} stand{selectedForGender.length !== 1 ? "s" : ""} selected
@@ -425,26 +346,25 @@ export default function College() {
                     </button>
                   </div>
 
-                  {/* Occupancy bar */}
                   <div className="mt-5">
                     <div className="flex justify-between text-sm font-medium mb-1">
                       <span className="text-gray-600">Occupancy</span>
-                      <span className={`${totalSelectedStudents > selected.capacity ? "text-red-600" : "text-gray-600"}`}>
-                        {totalSelectedStudents}/{selected.capacity} students
+                      <span className={`${totalSelectedStudents > Number(selected.capacity || 0) ? "text-red-600" : "text-gray-600"}`}>
+                        {totalSelectedStudents}/{selected.capacity || 0} students
                       </span>
                     </div>
 
                     <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
                       <motion.div
-                        className={`h-full ${totalSelectedStudents > selected.capacity ? "bg-red-500" : "bg-gradient-to-r from-purple-500 to-indigo-600"}`}
+                        className={`h-full ${totalSelectedStudents > Number(selected.capacity || 0) ? "bg-red-500" : "bg-gradient-to-r from-purple-500 to-indigo-600"}`}
                         initial={{ width: "0%" }}
                         animate={{ width: `${occupancyPercentage}%` }}
                         transition={{ duration: 0.6, ease: "easeOut" }}
                       />
                     </div>
 
-                    {totalSelectedStudents > selected.capacity && (
-                      <p className="text-red-600 text-xs font-medium mt-2">Warning: Over capacity by {totalSelectedStudents - selected.capacity} students</p>
+                    {totalSelectedStudents > Number(selected.capacity || 0) && (
+                      <p className="text-red-600 text-xs font-medium mt-2">Warning: Over capacity by {totalSelectedStudents - Number(selected.capacity || 0)} students</p>
                     )}
                   </div>
                 </motion.div>
@@ -452,7 +372,6 @@ export default function College() {
             </AnimatePresence>
           </div>
 
-          {/* Selected Stands Card */}
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-gray-800">Selected Stands</h2>
@@ -490,7 +409,6 @@ export default function College() {
           </div>
         </div>
 
-        {/* Available Stands Section */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-100">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold text-gray-800">Available Stands</h2>
@@ -520,16 +438,7 @@ export default function College() {
               </div>
             ) : (
               availableStands.map((route, idx) => {
-                const filteredStands = (route.stands || []).filter((stand) => {
-                  const studentCount = Number(
-                    activeGender === "boys" ? (stand.boys || 0) : (stand.girls || 0)
-                  );
-                  const isAssigned =
-                    (assignedStandNames[activeGender] || []).includes(
-                      normalizeStandName(stand.name)
-                    );
-                  return studentCount > 0 && !isAssigned;
-                });
+                const filteredStands = getFilteredStands(route);
 
                 if (filteredStands.length === 0) {
                   return (
@@ -577,7 +486,6 @@ export default function College() {
           </div>
         </div>
 
-        {/* Assignment Table */}
         <AssignmentTable
           assignedBuses={assignedBusesCollege || []}
           mode="college"
@@ -586,7 +494,6 @@ export default function College() {
           showGender={false}
         />
 
-        {/* Navigation Button */}
         <Link to="/" className="fixed top-6 right-6 z-50">
           <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg">
             <FaArrowLeftLong className="text-xl" />

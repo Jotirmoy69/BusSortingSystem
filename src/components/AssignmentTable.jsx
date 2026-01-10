@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useLocation } from "react-router-dom";
-import AudioControls from "./AudioControls";
+import { useLocation } from "react-router-dom"; 
 
 const AssignmentTable = ({
   assignedBuses = [],
@@ -15,20 +14,17 @@ const AssignmentTable = ({
     location.pathname
   );
   const showStats = !isNew;
-
-  // ✅ 90vh scroll container + auto-scroll state
+ 
   const scrollRef = useRef(null);
-  const [countdown, setCountdown] = useState(null); // number | null
+  const [countdown, setCountdown] = useState(null);  
   const [isOverflowing, setIsOverflowing] = useState(false);
   const [atBottom, setAtBottom] = useState(false);
   const [isChecked, setIsChecked] = useState(true);
-
-  // ✅ Font size for bus number
+ 
   const [fontSize, setFontSize] = useState(() => {
     return localStorage.getItem("tableFontSize") || "text-base";
   });
-
-  // ✅ Font size for stand names
+ 
   const [standFontSize, setStandFontSize] = useState(() => {
     return localStorage.getItem("standFontSize") || "text-sm";
   });
@@ -48,15 +44,14 @@ const AssignmentTable = ({
     stand.total || (stand.boys || 0) + (stand.girls || 0);
 
   const showGender = mode === "day-shift";
-
-  // Determine shift type based on mode and location
+ 
   const getShiftType = () => {
     if (location.pathname === "/morning") return "morning";
     if (location.pathname === "/day") return "day";
     if (location.pathname === "/college") return "college";
     if (mode === "day-shift") return "day";
     if (mode === "college") return "college";
-    return "morning"; // default
+    return "morning";  
   };
 
   const shiftType = getShiftType();
@@ -93,12 +88,10 @@ const AssignmentTable = ({
 
   const columnCount =
     1 + (showStats ? 3 : 0) + (showGender ? 1 : 0) + 1 + (showActions ? 1 : 0);
-
-  // ===== Auto-scroll helpers/effects (only on /new) =====
+ 
   const isAtBottom = (el) =>
     el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
-
-  // Track overflow + bottom status
+ 
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
@@ -108,7 +101,7 @@ const AssignmentTable = ({
       setIsOverflowing(overflow);
       setAtBottom(isAtBottom(el));
       if (!isNew || !overflow) {
-        setCountdown(null); // stop if not needed or not on /new
+        setCountdown(null);  
       }
     };
 
@@ -126,29 +119,25 @@ const AssignmentTable = ({
       el.removeEventListener("scroll", update);
     };
   }, [assignedBuses, isNew]);
-
-  // Countdown + action (down one page; at bottom -> back to top)
+ 
   useEffect(() => {
     const el = scrollRef.current;
     if (!isNew || !isOverflowing || !el) {
       return;
     }
-
-    // Start countdown if idle
+ 
     if (countdown === null) {
       setCountdown(10);
       return;
     }
-
-    // Tick countdown
+ 
     if (countdown > 0) {
       const t = setTimeout(() => {
         setCountdown((c) => (c !== null ? c - 1 : c));
       }, 1000);
       return () => clearTimeout(t);
     }
-
-    // countdown === 0 => perform action
+ 
     const action = isAtBottom(el) ? "top" : "down";
     if (action === "down") {
       const nextTop = Math.min(
@@ -156,12 +145,10 @@ const AssignmentTable = ({
         el.scrollHeight - el.clientHeight
       );
       el.scrollTo({ top: nextTop, behavior: "smooth" });
-    } else {
-      // back to top
+    } else { 
       el.scrollTo({ top: 0, behavior: "smooth" });
     }
-
-    // After smooth scroll finishes, re-arm countdown
+ 
     const reset = setTimeout(() => {
       if (isNew && isOverflowing) setCountdown(10);
     }, 700);
@@ -175,18 +162,7 @@ const AssignmentTable = ({
   };
 
   return (
-    <div className="mt-2">
-      {/* ✅ Audio Controls */}
-      <div className="mb-4">
-        <AudioControls 
-          assignedBuses={assignedBuses}
-          shift={shiftType}
-          compact={true}
-          className="justify-end"
-        />
-      </div>
-
-      {/* ✅ Font size selectors */}
+    <div className="mt-2"> 
       <div className="mb-3 flex items-center transition-all duration-300 gap-4">
         {isChecked && (
           <>
@@ -221,8 +197,7 @@ const AssignmentTable = ({
           </>
         )}
       </div>
-
-      {/* ✅ 90vh scroll area on /new; auto-scroll countdown overlays here */}
+ 
       <div
         ref={scrollRef}
         className={`relative overflow-x-auto overflow-y-auto scroll-camo no-scrollbar  ${
@@ -246,10 +221,7 @@ const AssignmentTable = ({
                   <th className="border border-gray-500 p-2">Assigned</th>
                   <th className="border border-gray-500 p-2">Utilization</th>
                 </>
-              )}
-              {/* {showGender && (
-                <th className="border border-gray-500 p-2">Gender</th>
-              )} */}
+              )} 
               <th className="border border-gray-500 p-2">Stands</th>
               {showActions && (
                 <th className="border border-gray-500 p-2">Actions</th>
@@ -287,8 +259,7 @@ const AssignmentTable = ({
                         backgroundColor: "rgba(249, 250, 251, 0.8)",
                       }}
                       transition={{ type: "spring", stiffness: 300 }}
-                    >
-                      {/* ✅ Bus font size applied */}
+                    > 
                       <td
                         className={`border border-gray-300 p-3 font-medium text-center  capitalize  ${fontSize}`}
                       >
@@ -342,8 +313,7 @@ const AssignmentTable = ({
                           </td>
                         </>
                       )}
-
-                      {/* ✅ Stand font size applied */}
+ 
                       <td
                         className={`border border-gray-300 p-3 cursor-pointer`}
                       >
@@ -406,8 +376,7 @@ const AssignmentTable = ({
             )}
           </tbody>
         </motion.table>
-
-        {/* ✅ Countdown bubble */}
+ 
       </div>
       {isNew && countdown !== null && isOverflowing && (
         <div className="absolute bottom-5 right-5 bg-black/70 text-white text-2xl px-8 py-4 rounded-full shadow-lg">
@@ -419,17 +388,7 @@ const AssignmentTable = ({
         <div className="flex justify-between items-center gap-2 fixed bottom-1">
           <div className=" text-gray-500 flex items-center">
             Developed By Jotirmoy || Designed By Raiyan || Copyright{" "}
-            {/* <span className="flex items-center" >
-              <label class="inline-flex items-center  cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isChecked}
-                  onChange={handleChange}
-                  className="sr-only peer"
-                />
-                <div className="relative w-11 h-6 bg-gray-200 rounded-full peer     peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600 dark:peer-checked:bg-purple-600"></div>
-              </label>
-            </span> */}
+             
             <div 
                   checked={isChecked}
                   onClick={handleChange} className={`flex transition-all duration-300  items-center cursor-pointer ${isChecked ? "ml-5 text-purple-500":""} mx-1`}>©</div>2025
