@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { useAppContext } from "../context/context";
 import AssignmentTable from "../components/AssignmentTable";
 import {
@@ -259,15 +260,67 @@ const Automation = () => {
     };
 
   return (
-    <div className="w-full font-[gilroy] min-h-screen px-10 lg:px-40 py-10 md:py-20 bg-white">
-      <nav className="flex flex-col md:flex-row items-center  justify-between gap-4"> 
-          <div className="bg-gray-100 px-4 items-center rounded-lg flex   gap-2 w- max-w-md">
-            <label className="text-sm font-medium w-40 text-gray-700">
-              {button === 5 ? "Morning" : button === 2 ? "Day" : "College"} Overload:{" "}
-              <span className="font-bold">
+    <div className="min-h-screen bg-slate-50 font-[gilroy] text-slate-900 selection:bg-indigo-100">
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-slate-200/50 px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 flex justify-between items-center">
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
+          <button
+            onClick={() => navigate("/")}
+            className="p-1.5 sm:p-2 hover:bg-slate-100 rounded-lg sm:rounded-xl transition-colors text-slate-500"
+          >
+            <FaArrowLeftLong size={18} className="sm:w-5 sm:h-5" />
+          </button>
+          <div>
+            <h1 className="text-base sm:text-lg md:text-xl font-bold tracking-tight text-slate-900">
+              Auto <span className="text-indigo-600">Assigner</span>
+            </h1>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
+          <div className="flex bg-slate-100 p-0.5 sm:p-1 rounded-lg sm:rounded-xl border border-slate-200">
+            {[
+              { id: 5, label: "Morning" },
+              { id: 2, label: "Day" },
+              { id: 3, label: "College" }
+            ].map((shift) => (
+              <button
+                key={shift.id}
+                onClick={() => setButton(shift.id)}
+                className={`px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
+                  button === shift.id
+                    ? "bg-white text-indigo-600 shadow-sm"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                {shift.label}
+              </button>
+            ))}
+          </div>
+          
+          <motion.button
+            onClick={handleAssign}
+            whileHover={{ scale: 1.05, y: -1 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            className="premium-button-primary py-1.5 sm:py-2 px-4 sm:px-6 md:px-8 shadow-indigo-100 text-xs sm:text-sm"
+          >
+            Run Assigner
+          </motion.button>
+        </div>
+      </nav>
+
+      <main className="pt-20 sm:pt-24 md:pt-28 pb-6 sm:pb-8 md:pb-12 px-3 sm:px-4 md:px-6 max-w-7xl mx-auto">
+        {/* Controls Bar */}
+        <div className="premium-card p-3 sm:p-4 mb-4 sm:mb-6 md:mb-8 flex flex-wrap items-center gap-4 sm:gap-6 md:gap-8">
+          <div className="flex-1 flex items-center gap-6">
+            <div className="space-y-1 min-w-[140px]">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Overload Limit</p>
+              <p className="text-xl font-black text-indigo-600 tabular-nums">
                 {button === 5 ? morningOverload : button === 2 ? dayOverload : collegeOverload}
-              </span>
-            </label>
+                <span className="text-xs font-bold text-slate-400 ml-1 uppercase">Pax</span>
+              </p>
+            </div>
             <input
               type="range"
               min="0"
@@ -284,102 +337,74 @@ const Automation = () => {
                 const setOverload = overloadMap[button];
                 if (setOverload) setOverload(value);
               }}
-              className="w-32 h-10 accent-purple-500"
+              className="flex-1 h-1.5 bg-slate-100 rounded-full appearance-none cursor-pointer accent-indigo-600"
             />
           </div>
-        <div className="flex flex-wrap justify-end   w-full h-10 gap-2">
 
-          <button
-            onClick={() => setButton(3)}
-            className={`px-4 py-2 rounded-md transition-all cursor-pointer duration-200 text-white  ${
-              button === 3 ? "bg-green-500" : "bg-gray-500"
-            } hover:bg-green-600`}
-          >
-            College Shift
-          </button>
+          <div className="w-px h-10 bg-slate-100"></div>
 
-          <button
-            onClick={() => setButton(2)}
-            className={`px-4 py-2 rounded-md cursor-pointer transition-all duration-200 text-white  ${
-              button === 2 ? "bg-sky-500" : "bg-gray-500"
-            } hover:bg-sky-600`}
-          >
-            Day Shift
-          </button>
-
-          <button
-            onClick={() => setButton(5)}
-            className={`px-4 py-2 rounded-md transition-all cursor-pointer duration-200 text-white  ${
-              button === 5 ? "bg-purple-500 -500" : "bg-gray-500"
-            } hover:bg-purple-600 -600`}
-          >
-            Morning Shift
-          </button>
-
-          <button
-            onClick={handleAssign}
-            className="px-4 py-2 bg-[#CCFF01] hover:bg-[#9eff01] cursor-pointer transition-all duration-200 rounded-md text-[#191917] font-semibold"
-          >
-            Assign
-          </button>
-        </div>
-
-        <Link
-          to="/"
-          className="fixed top-5 right-5 z-50 bg-purple-500 text-white rounded-full w-11 h-11 flex items-center justify-center shadow-md hover:bg-purple-400 transition-colors"
-          title="Go Back"
-        >
-          <FaArrowLeftLong />
-        </Link>
-      </nav>
-
-      <div className="mt-10">
-        <div className="mb-6 p-4 bg-white rounded-md shadow-md">
-          <h3 className="text-xl font-bold mb-4">Summary</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="p-4 bg-purple-100 rounded-md shadow-sm">
-              <p className="text-sm text-gray-600">Total Buses</p>
-              <p className="text-lg font-semibold">{summary.totalBuses}</p>
+          <div className="flex gap-8">
+            <div className="space-y-1">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 text-right">Fleet Capacity</p>
+              <p className="text-xl font-black text-slate-900 text-right tabular-nums">{summary.totalCapacity}</p>
             </div>
-            <div className="p-4 bg-yellow-100 rounded-md shadow-sm">
-              <p className="text-sm text-gray-600">Buses with empty seats</p>
-              <p className="text-lg font-semibold">
-                {summary.underfilledBuses.length > 0
-                  ? summary.underfilledBuses
-                      .map(
-                        (bus) =>
-                          `${bus.id || bus.number} (${
-                            Number(bus.capacity) - Number(bus.assigned)
-                          })`
-                      )
-                      .join(", ")
-                  : "None"}
-              </p>
-            </div>
-            <div className="p-4 bg-pink-100 rounded-md shadow-sm">
-              <p className="text-sm text-gray-600">Overloaded Buses</p>
-              <p className="text-lg font-semibold">
-                {summary.overloadedBuses.length > 0
-                  ? summary.overloadedBuses
-                      .map(
-                        (bus) =>
-                          `${bus.id || bus.number} (+${
-                            Number(bus.assigned) - Number(bus.capacity)
-                          })`
-                      )
-                      .join(", ")
-                  : "None"}
-              </p>
+            <div className="space-y-1">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 text-right">Total Assigned</p>
+              <p className="text-xl font-black text-slate-900 text-right tabular-nums">{summary.totalAssigned}</p>
             </div>
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          <div className="premium-card p-6 border-l-4 border-l-indigo-500">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Buses</p>
+            <p className="text-3xl font-black text-slate-900">{summary.totalBuses}</p>
+          </div>
+          
+          <div className={`premium-card p-6 border-l-4 ${summary.underfilledBuses.length > 0 ? 'border-l-amber-400' : 'border-l-slate-200'}`}>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Underfilled Units</p>
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {summary.underfilledBuses.length > 0 ? (
+                summary.underfilledBuses.map(b => (
+                  <span key={b.id} className="px-2 py-0.5 rounded bg-amber-50 text-amber-700 text-[10px] font-black border border-amber-100">
+                    #{b.id || b.number} (-{Number(b.capacity) - Number(b.assigned)})
+                  </span>
+                ))
+              ) : (
+                <span className="text-sm font-medium text-slate-400 italic">None found</span>
+              )}
+            </div>
+            </div>
+
+          <div className={`premium-card p-6 border-l-4 ${summary.overloadedBuses.length > 0 ? 'border-l-rose-500' : 'border-l-slate-200'}`}>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Critical Overloads</p>
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {summary.overloadedBuses.length > 0 ? (
+                summary.overloadedBuses.map(b => (
+                  <span key={b.id} className="px-2 py-0.5 rounded bg-rose-50 text-rose-700 text-[10px] font-black border border-rose-100">
+                    #{b.id || b.number} (+{Number(b.assigned) - Number(b.capacity)})
+                  </span>
+                ))
+              ) : (
+                <span className="text-sm font-medium text-slate-400 italic">None found</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <div className="flex items-center gap-4 px-2">
+            <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Assignment Map</h2>
+            <div className="h-px flex-1 bg-slate-200"></div>
         </div>
 
         <AssignmentTable
-          assignedBuses={currentAssignments}
+            assignedBuses={currentAssignments}
           mode="automation"
           onRemove={handleRemove}
         />
       </div>
+      </main>
     </div>
   );
 };

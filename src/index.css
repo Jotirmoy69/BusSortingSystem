@@ -1,4 +1,5 @@
 @import "tailwindcss";
+
 @font-face {
   font-family: 'clash';
   src: url('./assets/fonts/ClashDisplay-Variable.ttf') format('truetype');
@@ -12,48 +13,179 @@
   font-weight: 900;
   font-style: normal;
 }
+
 @font-face {
   font-family: 'gilroy';
   src: url('./assets/fonts/Gilroy-ExtraBold.otf') format('opentype'); 
   font-style: normal;
 }
-*{
-  font-family: 'gilroy';
-  scroll-behavior: smooth;
-}
-/* Hide scrollbar background (track) */
-.no-scrollbar::-webkit-scrollbar {
-  width: 8px; /* or 0 if you want it hidden */
+
+:root {
+  --primary: #6366f1;
+  --secondary: #a855f7;
+  --background: #f8fafc;
+  --foreground: #0f172a;
 }
 
-.no-scrollbar::-webkit-scrollbar-track {
+* {
+  font-family: 'gilroy', sans-serif;
+  scroll-behavior: smooth;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: rgba(99, 102, 241, 0.15);
+  color: #4338ca;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.no-scrollbar::-webkit-scrollbar-thumb {
-  background-color: gray; /* optional: sky-400 color */
-  border-radius: 9999px;
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
 }
 
-/* Firefox */
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .no-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: #38bdf8 transparent;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  transition: backdrop-filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .perspective {
-  perspective: 800px;
+  perspective: 1000px;
 }
 
-.flip {
-  display: inline-block;
-  transition: transform 0.6s ease;
-  transform-style: preserve-3d;
-  transform-origin: center;
-  cursor: pointer;
+.premium-card {
+  @apply bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100/50;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, box-shadow;
 }
 
-.flip:hover {
-  transform: rotateY(180deg);
+.premium-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0_12px_40px_rgb(0,0,0,0.08);
+}
+
+.premium-input {
+  @apply w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: border-color, box-shadow;
+}
+
+.premium-button-primary {
+  @apply px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-semibold shadow-lg shadow-indigo-200;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, background-color, box-shadow;
+}
+
+.premium-button-primary:hover {
+  @apply bg-indigo-700 shadow-indigo-300;
+  transform: translateY(-1px) scale(1.02);
+}
+
+.premium-button-primary:active {
+  transform: translateY(0) scale(0.98);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.premium-button-secondary {
+  @apply px-6 py-2.5 bg-white text-slate-700 border border-slate-200 rounded-xl font-semibold shadow-sm;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, border-color, background-color;
+}
+
+.premium-button-secondary:hover {
+  @apply border-slate-300 bg-slate-50;
+  transform: translateY(-1px) scale(1.02);
+}
+
+.premium-button-secondary:active {
+  transform: translateY(0) scale(0.98);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-fade-in-scale {
+  animation: fadeInScale 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, a {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
  

@@ -60,30 +60,69 @@ const AssignmentTable = ({
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { when: "beforeChildren", staggerChildren: 0.1 },
+      transition: { 
+        when: "beforeChildren", 
+        staggerChildren: 0.06,
+        delayChildren: 0.1,
+      },
     },
   };
   const rowVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 15, scale: 0.98 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.3, type: "spring", stiffness: 100 },
+      scale: 1,
+      transition: { 
+        type: "spring", 
+        stiffness: 300,
+        damping: 25,
+        mass: 0.8,
+      },
     },
-    exit: { opacity: 0, y: -20 },
+    exit: { 
+      opacity: 0, 
+      y: -10,
+      scale: 0.98,
+      transition: { 
+        duration: 0.2,
+        ease: [0.4, 0, 0.2, 1],
+      },
+    },
   };
   const progressBarVariants = {
-    hidden: { width: 0 },
-    visible: { width: "100%", transition: { duration: 0.8, ease: "easeOut" } },
+    hidden: { width: 0, opacity: 0 },
+    visible: { 
+      width: "100%", 
+      opacity: 1,
+      transition: { 
+        duration: 0.8, 
+        ease: [0.4, 0, 0.2, 1],
+        opacity: { duration: 0.3 },
+      },
+    },
   };
   const standItemVariants = {
-    hidden: { opacity: 0, x: -10 },
+    hidden: { opacity: 0, x: -8, scale: 0.95 },
     visible: {
       opacity: 1,
       x: 0,
-      transition: { type: "spring", stiffness: 200 },
+      scale: 1,
+      transition: { 
+        type: "spring", 
+        stiffness: 400,
+        damping: 25,
+      },
     },
-    hover: { scale: 1.05, boxShadow: "0 2px 5px rgba(0,0,0,0.1)" },
+    hover: { 
+      scale: 1.05, 
+      y: -2,
+      transition: {
+        type: "spring",
+        stiffness: 400,
+        damping: 20,
+      },
+    },
   };
 
   const columnCount =
@@ -162,16 +201,16 @@ const AssignmentTable = ({
   };
 
   return (
-    <div className="mt-2"> 
-      <div className="mb-3 flex items-center transition-all duration-300 gap-4">
+    <div className="w-full">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         {isChecked && (
-          <>
-            <div className="flex items-center gap-2">
-              <label className="font-medium">Bus Font Size:</label>
+          <div className="flex items-center gap-6 p-1.5 bg-slate-100 rounded-2xl">
+            <div className="flex items-center gap-3 px-3">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Bus ID Font:</label>
               <select
                 value={fontSize}
                 onChange={(e) => setFontSize(e.target.value)}
-                className="border border-gray-300 rounded p-1"
+                className="bg-transparent border-none text-sm font-semibold focus:ring-0 cursor-pointer"
               >
                 <option value="text-sm">Small</option>
                 <option value="text-base">Medium</option>
@@ -180,12 +219,14 @@ const AssignmentTable = ({
               </select>
             </div>
 
-            <div className="flex items-center gap-2">
-              <label className="font-medium">Stand Font Size:</label>
+            <div className="w-px h-4 bg-slate-300"></div>
+
+            <div className="flex items-center gap-3 px-3">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Stands Font:</label>
               <select
                 value={standFontSize}
                 onChange={(e) => setStandFontSize(e.target.value)}
-                className="border border-gray-300 rounded p-1"
+                className="bg-transparent border-none text-sm font-semibold focus:ring-0 cursor-pointer"
               >
                 <option value="text-xs">Extra Small</option>
                 <option value="text-sm">Small</option>
@@ -194,49 +235,49 @@ const AssignmentTable = ({
                 <option value="text-3xl">Extra Large</option>
               </select>
             </div>
-          </>
+          </div>
         )}
       </div>
  
       <div
         ref={scrollRef}
-        className={`relative overflow-x-auto overflow-y-auto scroll-camo no-scrollbar  ${
-          isNew ? (isChecked ? "h-[91vh]" : "h-[94vh]") : ""
+        className={`relative overflow-x-auto rounded-2xl sm:rounded-3xl border border-slate-200/60 bg-white shadow-sm scroll-camo no-scrollbar ${
+          isNew ? (isChecked ? "h-[70vh] sm:h-[75vh] md:h-[85vh]" : "h-[75vh] sm:h-[80vh] md:h-[90vh]") : ""
         }`}
       >
         <motion.table
-          className={`w-full shadow-lg rounded-md overflow-hidden ${
-            isNew ? "text-lg md:text-xl" : ""
+          className={`w-full border-collapse ${
+            isNew ? "text-lg md:text-xl" : "text-sm"
           }`}
           initial="hidden"
           animate="visible"
           variants={tableVariants}
         >
-          <thead className="bg-[#8B5DFF] text-white">
-            <tr>
-              <th className="border border-gray-500 p-2">Bus ID</th>
+          <thead>
+            <tr className="bg-slate-50/80 border-b border-slate-200/60">
+              <th className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 text-left text-[10px] sm:text-xs font-bold uppercase tracking-widest text-slate-500">Bus Information</th>
               {showStats && (
                 <>
-                  <th className="border border-gray-500 p-2">Capacity</th>
-                  <th className="border border-gray-500 p-2">Assigned</th>
-                  <th className="border border-gray-500 p-2">Utilization</th>
+                  <th className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 text-left text-[10px] sm:text-xs font-bold uppercase tracking-widest text-slate-500">Capacity</th>
+                  <th className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 text-left text-[10px] sm:text-xs font-bold uppercase tracking-widest text-slate-500">Assigned</th>
+                  <th className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 text-left text-[10px] sm:text-xs font-bold uppercase tracking-widest text-slate-500">Utilization</th>
                 </>
               )} 
-              <th className="border border-gray-500 p-2">Stands</th>
+              <th className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 text-left text-[10px] sm:text-xs font-bold uppercase tracking-widest text-slate-500">Stands Coverage</th>
               {showActions && (
-                <th className="border border-gray-500 p-2">Actions</th>
+                <th className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 text-center text-[10px] sm:text-xs font-bold uppercase tracking-widest text-slate-500">Actions</th>
               )}
             </tr>
           </thead>
 
-          <tbody className="bg-[#F5F5FF]">
+          <tbody className="divide-y divide-slate-100">
             {assignedBuses.length === 0 ? (
               <motion.tr variants={rowVariants}>
                 <td
                   colSpan={columnCount}
-                  className="text-center p-4 text-gray-500"
+                  className="px-3 sm:px-4 md:px-6 py-6 sm:py-8 md:py-12 text-center text-xs sm:text-sm text-slate-400 italic font-medium"
                 >
-                  No buses assigned yet
+                  No bus assignments found for this shift
                 </td>
               </motion.tr>
             ) : (
@@ -254,38 +295,39 @@ const AssignmentTable = ({
                       initial="hidden"
                       animate="visible"
                       exit="exit"
-                      className="hover:bg-gray-50"
-                      whileHover={{
-                        backgroundColor: "rgba(249, 250, 251, 0.8)",
-                      }}
-                      transition={{ type: "spring", stiffness: 300 }}
+                      className="hover:bg-slate-50/50 transition-colors duration-200 group"
                     > 
-                      <td
-                        className={`border border-gray-300 p-3 font-medium text-center  capitalize  ${fontSize}`}
-                      >
-                        <div className="flex flex-col text-center h-full w-full items-center justify-center">
-                          <span>{bus.number || bus.id || "N/A"}</span>
-                          <span>{bus.gender && `(${bus.gender})`}</span>
+                      <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-5">
+                        <div className="flex flex-col">
+                          <span className={`font-bold text-slate-900 ${fontSize}`}>
+                            {bus.number || bus.id || "N/A"}
+                          </span>
+                          {bus.gender && (
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-500 mt-0.5">
+                              {bus.gender}
+                            </span>
+                          )}
                         </div>
                       </td>
 
                       {showStats && (
                         <>
-                          <td className="border border-gray-300 p-3">
-                            {bus.capacity || 0}
+                          <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-5 text-slate-600 font-semibold text-sm sm:text-base">
+                          {bus.capacity || 0}
                           </td>
-                          <td className="border border-gray-300 p-3">
-                            {bus.assigned || 0}
+                          <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-5 font-bold text-slate-900 text-sm sm:text-base">
+                          {bus.assigned || 0}
                           </td>
-                          <td className="border border-gray-300 p-3">
-                            <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-5 min-w-[120px] sm:min-w-[140px] md:min-w-[160px]">
+                            <div className="flex items-center gap-3">
+                              <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
                               <motion.div
-                                className={`h-2.5 rounded-full ${
+                                  className={`h-full rounded-full ${
                                   isOverloaded
-                                    ? "bg-red-600"
+                                      ? "bg-rose-500"
                                     : utilization < 80
-                                    ? "bg-yellow-500"
-                                    : "bg-green-600"
+                                      ? "bg-amber-400"
+                                      : "bg-emerald-500"
                                 }`}
                                 initial="hidden"
                                 animate="visible"
@@ -296,76 +338,51 @@ const AssignmentTable = ({
                                 }}
                               />
                             </div>
-                            <motion.span
-                              className={`text-sm ${
-                                isOverloaded
-                                  ? "text-red-600"
-                                  : utilization < 80
-                                  ? "text-yellow-600"
-                                  : "text-green-600"
-                              }`}
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              transition={{ delay: 0.5 }}
-                            >
-                              {utilization}% {isOverloaded && " (Overloaded)"}
-                            </motion.span>
+                              <span className={`text-xs font-bold tabular-nums min-w-[40px] ${
+                                isOverloaded ? "text-rose-600" : "text-slate-500"
+                              }`}>
+                                {utilization}%
+                              </span>
+                            </div>
                           </td>
                         </>
                       )}
  
-                      <td
-                        className={`border border-gray-300 p-3 cursor-pointer`}
-                      >
+                      <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-5">
                         {bus.stands && bus.stands.length > 0 ? (
-                          <motion.ul
-                            className="flex flex-wrap gap-2"
-                            initial="hidden"
-                            animate="visible"
-                            transition={{ staggerChildren: 0.05 }}
-                          >
+                          <div className="flex flex-wrap gap-1.5">
                             {bus.stands.map((stand, index) => (
-                              <motion.li
+                              <motion.span
                                 key={index}
                                 variants={standItemVariants}
-                                className={
-                                  location.pathname === "/new"
-                                    ? `${standFontSize}`
-                                    : `bg-purple-100 cursor-pointer px-3 py-1 rounded-full flex items-center whitespace-nowrap border border-purple-200 ${standFontSize}`
-                                }
+                                className={`inline-flex items-center px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-slate-700 font-medium ${standFontSize} group-hover:border-slate-300 transition-colors shadow-sm`}
                               >
-                                <span className="w-2 h-2 bg-purple-500 rounded-full mr-2" />
-                                {getStandName(stand) +
-                                  (index === bus.stands.length - 1 ? "." : ",")}
-                              </motion.li>
+                                {getStandName(stand)}
+                              </motion.span>
                             ))}
-                          </motion.ul>
+                          </div>
                         ) : (
-                          "No stands"
+                          <span className="text-slate-400 italic text-xs">No stands assigned</span>
                         )}
                       </td>
 
                       {showActions && (
-                        <td className="border border-gray-300 p-3">
-                          <div className="flex space-x-2">
-                            <motion.button
+                        <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-5">
+                          <div className="flex items-center justify-center gap-2">
+                            <button
                               onClick={() => onEdit(bus)}
-                              className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-                              title="Edit this assignment"
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
+                              className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                              title="Edit"
                             >
-                              Edit
-                            </motion.button>
-                            <motion.button
+                              <HiPencil size={18} />
+                            </button>
+                            <button
                               onClick={() => onRemove(bus.id)}
-                              className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
-                              title="Remove this assignment"
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
+                              className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
+                              title="Delete"
                             >
-                              Remove
-                            </motion.button>
+                              <HiOutlineTrash size={18} />
+                            </button>
                           </div>
                         </td>
                       )}
@@ -376,22 +393,32 @@ const AssignmentTable = ({
             )}
           </tbody>
         </motion.table>
- 
       </div>
+
       {isNew && countdown !== null && isOverflowing && (
-        <div className="absolute bottom-5 right-5 bg-black/70 text-white text-2xl px-8 py-4 rounded-full shadow-lg">
-          {atBottom ? "Back to top in" : "Auto-scroll in"} {countdown}s
+        <div className="fixed bottom-12 right-12 glass border border-slate-200 px-6 py-3 rounded-2xl shadow-xl z-50 flex items-center gap-3">
+          <div className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></div>
+          <span className="text-sm font-bold text-slate-700 uppercase tracking-wider">
+            {atBottom ? "Resetting" : "Scrolling"} in {countdown}s
+          </span>
         </div>
       )}
 
       {location.pathname === "/new" && (
-        <div className="flex justify-between items-center gap-2 fixed bottom-1">
-          <div className=" text-gray-500 flex items-center">
-            Developed By Jotirmoy || Designed By Raiyan || Copyright{" "}
-             
-            <div 
-                  checked={isChecked}
-                  onClick={handleChange} className={`flex transition-all duration-300  items-center cursor-pointer ${isChecked ? "ml-5 text-purple-500":""} mx-1`}>©</div>2025
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+          <span>Developed By Jotirmoy</span>
+          <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+          <span>Designed By Raiyan</span>
+          <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+          <div className="flex items-center gap-1">
+            <span>Copyright</span>
+            <button 
+              onClick={handleChange} 
+              className={`transition-all duration-300 ${isChecked ? "text-indigo-600" : ""}`}
+            >
+              ©
+            </button>
+            <span>2025</span>
           </div>
         </div>
       )}

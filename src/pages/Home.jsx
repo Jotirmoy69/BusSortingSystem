@@ -1,10 +1,11 @@
 import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 import { useAppContext } from "../context/context";
 import AssignmentTable from "../components/AssignmentTable";
 import PrePrint from "../components/PrePrint";
-import { HiOutlineDotsVertical } from "react-icons/hi";
+import { HiOutlineDotsVertical, HiOutlineEye } from "react-icons/hi";
 const Home = () => {
   const printRef = useRef();
   const [prePrintShow, setprePrintShow] = useState(false);
@@ -112,68 +113,32 @@ const Home = () => {
       return;
     }
 
-    if (!printRef.current) return;
-
-    const tableElement = printRef.current.querySelector('table');
-    if (!tableElement) {
-      toast.error("No table found to print");
+    if (!assignedBusesToPrint || assignedBusesToPrint.length === 0) {
+      toast.error("No bus data to print");
       return;
     }
 
-    const tbody = tableElement.querySelector('tbody');
-    if (!tbody) {
-      toast.error("No data found to print");
-      return;
-    }
-
-    const rows = Array.from(tbody.querySelectorAll('tr'));
     let gridHTML = '';
 
-    rows.forEach((row) => {
-      const cells = Array.from(row.querySelectorAll('td'));
-      if (cells.length === 0) return;
-
-      const busCell = cells[0];
-      const standsCell = cells.find(cell => {
-        const ul = cell.querySelector('ul');
-        return ul !== null;
-      });
-
-      if (!busCell || !standsCell) return;
-
-      const busNumber = busCell.textContent.trim() || 'N/A';
-      const genderMatch = busNumber.match(/\(([^)]+)\)/);
-      const gender = genderMatch ? genderMatch[1] : '';
-      const busNum = busNumber.replace(/\s*\([^)]+\)\s*/, '').trim();
-
-      const standItems = Array.from(standsCell.querySelectorAll('li'));
+    assignedBusesToPrint.forEach((bus) => {
+      const busNumber = bus.number || bus.id || 'N/A';
+      const gender = bus.gender || '';
+      
       let standsHTML = '';
       
-      if (standItems.length > 0) {
-        standsHTML = standItems.map(li => {
-          const text = li.textContent.trim().replace(/[.,]$/, '');
-          return `<span class="stand-item">${text}</span>`;
+      if (bus.stands && bus.stands.length > 0) {
+        standsHTML = bus.stands.map((stand) => {
+          const standName = stand.originalName || stand.name || '';
+          return `<span class="stand-item">${standName}</span>`;
         }).join('');
       } else {
-        const standText = standsCell.textContent.trim();
-        if (standText && standText !== 'No stands' && standText !== '') {
-          const stands = standText.split(',').map(s => s.trim()).filter(s => s && s !== 'No stands');
-          if (stands.length > 0) {
-            standsHTML = stands.map(stand => 
-              `<span class="stand-item">${stand}</span>`
-            ).join('');
-          } else {
-            standsHTML = '<span class="stand-item">No stands</span>';
-          }
-        } else {
-          standsHTML = '<span class="stand-item">No stands</span>';
-        }
+        standsHTML = '<span class="stand-item">No stands</span>';
       }
 
       gridHTML += `
         <div class="print-row">
           <div class="print-cell-left">
-            <div>${busNum}</div>
+            <div>${busNumber}</div>
             ${gender ? `<div class="gender-text">(${gender})</div>` : ''}
           </div>
           <div class="print-cell-right">
@@ -275,7 +240,7 @@ const Home = () => {
             }
             @media print {
               .print-row {
-                page-break-inside: avoid;
+              page-break-inside: avoid;
                 break-inside: avoid;
               }
               * {
@@ -302,89 +267,134 @@ const Home = () => {
     printWindow.close();
   };
   return (
-    <div className="p-6 bg-[#FFFFFF] min-h-screen font-[gilroy] lg:px-40 px-16">
-      <nav className="flex justify-between mt-10">
-        <div className="flex items-center gap-5">
-          <img src="./bcpsc.png" className="md:w-25 w-15" alt="" />
-          <h1 className="lg:text-2xl text-xs font-bold mb-2">
-            Bus Management System
+    <div className="min-h-screen bg-slate-50 font-[gilroy] text-slate-900 selection:bg-indigo-100">
+      <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-slate-200/50 px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 flex justify-between items-center">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-slate-50 p-1.5 sm:p-2 md:p-2.5 rounded-2xl shadow-sm">
+            <img src="./bcpsc.png" className="w-full h-full object-contain" alt="BCPSC Logo" />
+          </div>
+          <h1 className="text-base sm:text-lg md:text-xl font-bold tracking-tight text-slate-900 hidden sm:block">
+            Bus Manager <span className="text-indigo-600">Pro</span>
           </h1>
         </div>
 
-        <div className="flex flex-wrap gap-3 mb-6 items-center">
-          <Link
-            to={"/manual"}
-            className="lg:px-6 px-2 lg:py-2 py-1 rounded-lg 
-               bg-purple-600 border border-purple-600/20 
-               backdrop-blur-md 
-               text-white hover:text-purple-900 font-semibold 
-               shadow-md hover:bg-white/20 
-               transition duration-300"
-          >
-            Manual
-          </Link>
-          <Link
-            to={"/automation"}
-            className="lg:px-6 px-2 lg:py-2 py-1 rounded-lg 
-               bg-purple-600 border border-purple-600/20 
-               backdrop-blur-md 
-               text-white hover:text-purple-900 font-semibold 
-               shadow-md hover:bg-white/20 
-               transition duration-300"
-          >
-            Automatic
-          </Link>
-          <button
+        <div className="flex items-center gap-1 sm:gap-2">
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <Link
+              to={"/manual"}
+              className="px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-white border border-slate-200 text-xs sm:text-sm text-slate-700 font-medium hover:border-indigo-600 hover:text-indigo-600 transition-all duration-300 shadow-sm"
+            >
+              Manual
+            </Link>
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <Link
+              to={"/automation"}
+              className="px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-indigo-600 text-xs sm:text-sm text-white font-medium hover:bg-indigo-700 transition-all duration-300 shadow-md shadow-indigo-100"
+            >
+              Automatic
+            </Link>
+          </motion.div>
+          
+          <div className="h-4 sm:h-6 w-px bg-slate-200 mx-1 sm:mx-2"></div>
+          
+          <motion.button
             onClick={handleClick}
-            className="lg:px-6 px-2 lg:py-2 py-1 rounded-lg 
-               bg-purple-600 border border-purple-600/20 
-               backdrop-blur-md 
-               text-white hover:text-purple-900 font-semibold 
-               shadow-md cursor-pointer hover:bg-white/20 
-               transition duration-300"
+            whileHover={{ scale: 1.1, backgroundColor: "rgb(241 245 249)" }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            className="p-1.5 sm:p-2 md:p-2.5 rounded-lg sm:rounded-xl text-slate-500"
+            title="Display Options"
           >
-            Display
-          </button>
-          <button
+            <HiOutlineEye className="text-base sm:text-lg md:text-xl" />
+          </motion.button>
+          <motion.button
             onClick={handlePrint}
-            className="lg:px-6 px-2 lg:py-2 py-1 rounded-lg 
-               bg-purple-600 border border-purple-600/20 
-               backdrop-blur-md 
-               text-white hover:text-purple-900 font-semibold 
-               shadow-md cursor-pointer hover:bg-white/20 
-               transition duration-300"
+            whileHover={{ scale: 1.1, backgroundColor: "rgb(241 245 249)" }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            className="p-1.5 sm:p-2 md:p-2.5 rounded-lg sm:rounded-xl text-slate-500"
+            title="Print Table"
           >
-            Print Table (A4)
-          </button>
+            <span className="text-sm sm:text-base md:text-lg leading-none">🖨️</span>
+          </motion.button>
 
-          <Link
-            to={"/settings"}
-            className="text-4xl hover:rotate-90 transition-all duration-300"
+          <motion.div
+            whileHover={{ rotate: 90, scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
           >
-            <HiOutlineDotsVertical />
-          </Link>
+            <Link
+              to={"/settings"}
+              className="p-1.5 sm:p-2 md:p-2.5 rounded-lg sm:rounded-xl text-slate-500 transition-colors duration-300"
+            >
+              <HiOutlineDotsVertical className="text-base sm:text-lg md:text-xl" />
+            </Link>
+          </motion.div>
         </div>
       </nav>
 
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold mb-4 mt-20">Last Assignments</h2>
-        <button
-          onClick={handleToggle}
-          className="px-6 py-2 mt-20 rounded-lg 
-               bg-purple-600 border border-purple-600/20 
-               backdrop-blur-md 
-               text-white hover:text-purple-900 font-semibold 
-               shadow-md hover:bg-white/20 
-               transition duration-300 cursor-pointer"
+      <main className="pt-20 sm:pt-24 md:pt-32 pb-6 sm:pb-8 md:pb-12 px-3 sm:px-4 md:px-6 max-w-7xl mx-auto">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+          className="flex flex-col md:flex-row justify-between items-end mb-6 sm:mb-8 md:mb-10 gap-4 sm:gap-6"
         >
-          {table === 0
-            ? "Morning Shift"
-            : table === 1
-            ? "Day Shift"
-            : "College Shift"}
-        </button>
-      </div>
-      <div ref={printRef}>
+          <div className="space-y-1 sm:space-y-2">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1, type: "spring", stiffness: 300 }}
+              className="inline-flex items-center px-2 sm:px-3 py-0.5 sm:py-1 rounded-full bg-indigo-50 text-indigo-600 text-[10px] sm:text-xs font-bold uppercase tracking-wider"
+            >
+              Dashboard
+            </motion.div>
+            <motion.h2 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15, type: "spring", stiffness: 300 }}
+              className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900"
+            >
+              Live Assignments
+            </motion.h2>
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="text-xs sm:text-sm md:text-base text-slate-500 max-w-md"
+            >
+              Monitor and manage your bus assignments across all shifts in real-time.
+            </motion.p>
+          </div>
+          
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.25, type: "spring", stiffness: 300 }}
+            className="flex bg-white p-1 sm:p-1.5 rounded-xl sm:rounded-2xl border border-slate-200 shadow-sm"
+          >
+            {[0, 1, 2].map((i) => (
+              <motion.button
+                key={i}
+                onClick={() => setTable(i)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                className={`px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 ${
+                  table === i
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-100"
+                    : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
+                }`}
+              >
+                {i === 0 ? "Morning" : i === 1 ? "Day" : "College"}
+              </motion.button>
+            ))}
+          </motion.div>
+        </motion.div>
+
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden">
+          <div ref={printRef} className="p-2">
         {table === 0 ? (
           <AssignmentTable assignedBuses={assignedBuses} mode="automation" />
         ) : table === 1 ? (
@@ -397,6 +407,8 @@ const Home = () => {
         ) : null}
         {prePrintShow && <PrePrint setprePrintShow={setprePrintShow} />}
       </div>
+        </div>
+      </main>
     </div>
   );
 };

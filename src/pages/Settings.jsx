@@ -9,6 +9,16 @@ import { AnimatePresence, motion } from "framer-motion";
 import * as XLSX from "xlsx";
 import { useAppContext } from "../context/context";
 import { IoClose } from "react-icons/io5";
+import { 
+  HiOutlineTrash, 
+  HiOutlineX,
+  HiOutlineSun,
+  HiOutlineClock,
+  HiOutlineAcademicCap,
+  HiOutlineTruck,
+  HiOutlinePencil,
+  HiOutlineCog
+} from "react-icons/hi";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -70,14 +80,14 @@ const Settings = () => {
   const mainContentRef = useRef(null);
   const { setActiveBuses } = useAppContext();
   const tabs = [
-    { id: 0, label: "Day Shift", icon: "➤" },
-    { id: 4, label: "Morning Shift", icon: "➤" },
-    { id: 6, label: "College Shift", icon: "➤" },
-    { id: 1, label: "Bus Management", icon: "➤" },
-    { id: 2, label: "Day Update", icon: "➤" },
-    { id: 5, label: "Morning Update", icon: "➤" },
-    { id: 7, label: "Collage Update", icon: "➤" },
-    { id: 3, label: "Clear Database", icon: "➤" },
+    { id: 0, label: "Day Shift", icon: HiOutlineSun },
+    { id: 4, label: "Morning Shift", icon: HiOutlineClock },
+    { id: 6, label: "College Shift", icon: HiOutlineAcademicCap },
+    { id: 1, label: "Bus Management", icon: HiOutlineTruck },
+    { id: 2, label: "Day Update", icon: HiOutlinePencil },
+    { id: 5, label: "Morning Update", icon: HiOutlinePencil },
+    { id: 7, label: "College Update", icon: HiOutlinePencil },
+    { id: 3, label: "Maintenance", icon: HiOutlineCog },
   ];
 
   const getIpcRenderer = () => {
@@ -1357,54 +1367,54 @@ const Settings = () => {
     <div
       ref={mainContentRef}
       tabIndex="-1"
-      className="flex min-h-screen overflow-x-hidden font-[gilroy] bg-[#F5F5FF] text-[#2F1C6A] -800"
+      className="flex min-h-screen bg-slate-50 font-[gilroy] text-slate-900 selection:bg-indigo-100"
     >
       {/* Delete Confirmation Modals */}
+      <AnimatePresence>
       {showDeleteConfirm && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 backdrop-blur-lg bg-opacity-50 flex items-center justify-center z-50"
+            className="fixed inset-0 z-[100] backdrop-blur-md bg-black/20 flex items-center justify-center p-6"
+            onClick={cancelDeletion}
         >
           <motion.div
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full"
-          >
-            <h3 className="text-xl font-bold mb-4">
-              {deleteType === "route" ? "Delete Route" : "Delete Bus"}
-            </h3>
-            <p className="mb-6">
-              Are you sure you want to delete "{itemToDelete.name}"?
-            </p>
-            <div className="flex justify-end space-x-3">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="premium-card max-w-md w-full p-8 relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
                 onClick={cancelDeletion}
-                className="px-6 py-2 rounded-lg 
-               bg-purple-600 border border-purple-600/20 
-               backdrop-blur-md 
-               text-white hover:text-purple-900 font-semibold 
-               shadow-md cursor-pointer hover:bg-white/20 
-               transition duration-300"
+                className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all"
+          >
+                <HiOutlineX size={20} />
+              </button>
+              
+              <div className="mb-6">
+                <h3 className="text-2xl font-black text-slate-900 mb-2">
+                  {deleteType === "route" || deleteType === "route-college" ? "Delete Route" : "Delete Bus"}
+            </h3>
+                <p className="text-slate-500 font-medium">
+                  Are you sure you want to delete <span className="font-bold text-slate-900">"{itemToDelete?.name}"</span>? This action cannot be undone.
+            </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                onClick={cancelDeletion}
+                  className="premium-button-secondary flex-1"
               >
                 Cancel
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                </button>
+                <button
                 onClick={confirmDeletion}
-                className="px-6 py-2 rounded-lg 
-               bg-purple-600 border border-purple-600/20 
-               backdrop-blur-md 
-               text-white hover:text-purple-900 font-semibold 
-               shadow-md cursor-pointer hover:bg-white/20 
-               transition duration-300"
+                  className="flex-1 py-3 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 transition-all shadow-lg shadow-rose-100"
               >
                 Delete
-              </motion.button>
+                </button>
             </div>
           </motion.div>
         </motion.div>
@@ -1415,317 +1425,271 @@ const Settings = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 backdrop-blur-lg bg-opacity-50 flex items-center justify-center z-50"
+            className="fixed inset-0 z-[100] backdrop-blur-md bg-black/20 flex items-center justify-center p-6"
+            onClick={cancelDeletion2}
         >
           <motion.div
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full"
-          >
-            <h3 className="text-xl font-bold mb-4">Delete Route</h3>
-            <p className="mb-6">
-              Are you sure you want to delete "{itemToDelete2.name}" route?
-            </p>
-            <div className="flex justify-end space-x-3">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="premium-card max-w-md w-full p-8 relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
                 onClick={cancelDeletion2}
-                className="px-6 py-2 rounded-lg 
-               bg-purple-600 border border-purple-600/20 
-               backdrop-blur-md 
-               text-white hover:text-purple-900 font-semibold 
-               shadow-md cursor-pointer hover:bg-white/20 
-               transition duration-300"
+                className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all"
+          >
+                <HiOutlineX size={20} />
+              </button>
+              
+              <div className="mb-6">
+                <h3 className="text-2xl font-black text-slate-900 mb-2">Delete Route</h3>
+                <p className="text-slate-500 font-medium">
+                  Are you sure you want to delete <span className="font-bold text-slate-900">"{itemToDelete2?.name}"</span> route? This action cannot be undone.
+            </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                onClick={cancelDeletion2}
+                  className="premium-button-secondary flex-1"
               >
                 Cancel
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                </button>
+                <button
                 onClick={confirmDeletion2}
-                className="px-6 py-2 rounded-lg 
-               bg-purple-600 border border-purple-600/20 
-               backdrop-blur-md 
-               text-white hover:text-purple-900 font-semibold 
-               shadow-md cursor-pointer hover:bg-white/20 
-               transition duration-300"
+                  className="flex-1 py-3 bg-rose-600 text-white rounded-xl font-bold hover:bg-rose-700 transition-all shadow-lg shadow-rose-100"
               >
                 Delete
-              </motion.button>
+                </button>
             </div>
           </motion.div>
         </motion.div>
       )}
+      </AnimatePresence>
 
-      <div className="fixed top-3 right-20 z-50 flex gap-2">
-        <div className="bg-white rounded-lg shadow-md p-3 min-w-[200px]">
-          <div className="text-xs text-gray-600 mb-1">Last Updated:</div>
-          <div className="text-sm font-medium text-gray-800">
-            {isShow === 0 && lastUpdatedDay && (
-              <span>Day: {lastUpdatedDay.toLocaleString()}</span>
-            )}
-            {isShow === 4 && lastUpdatedMorning && (
-              <span>Morning: {lastUpdatedMorning.toLocaleString()}</span>
-            )}
-            {isShow === 6 && lastUpdatedCollege && (
-              <span>College: {lastUpdatedCollege.toLocaleString()}</span>
-            )}
-            {((isShow === 0 && !lastUpdatedDay) || 
-              (isShow === 4 && !lastUpdatedMorning) || 
-              (isShow === 6 && !lastUpdatedCollege)) && (
-              <span className="text-gray-500">No data imported yet</span>
-            )}
+      {/* Navigation (Sidebar) */}
+      <aside className="w-64 sm:w-72 bg-white border-r border-slate-200/60 fixed h-screen z-20 flex flex-col shadow-sm">
+        <div className="p-4 sm:p-6 md:p-8 border-b border-slate-100 mb-2 sm:mb-4 flex flex-col items-center">
+          <div className="w-16 h-16 sm:w-18 sm:h-18 md:w-20 md:h-20 bg-slate-50 p-2 sm:p-2.5 md:p-3 rounded-2xl sm:rounded-3xl shadow-sm mb-2 sm:mb-3 md:mb-4">
+            <img src="bcpsc.png" alt="Logo" className="w-full h-full object-contain" />
           </div>
+          <h2 className="text-base sm:text-lg md:text-xl font-black tracking-tight">System <span className="text-indigo-600">Config</span></h2>
+          <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Management Portal</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-3 min-w-[200px]">
-          <div className="text-xs text-gray-600 mb-1">Seat Status:</div>
-          <div className="text-sm font-medium">
-            {isShow === 0 && (
-              <span className={
-                buses.length === 0 || activeBusCapacity === 0
-                  ? "text-gray-500" 
-                  : totalDayStudents === 0 
-                    ? "text-gray-500" 
-                    : daySeatsNeeded > 0 
-                      ? "text-red-600" 
-                      : "text-green-600"
-              }>
-                {buses.length === 0 || activeBusCapacity === 0
-                  ? "No bus added"
-                  : totalDayStudents === 0
-                    ? "No data"
-                    : daySeatsNeeded > 0 
-                  ? `${daySeatsNeeded} more seats needed`
-                  : "Seats are sufficient"
-                }
-              </span>
-            )}
-            {isShow === 4 && (
-              <span className={
-                buses.length === 0 || activeBusCapacity === 0
-                  ? "text-gray-500" 
-                  : totalMorningStudents === 0 
-                    ? "text-gray-500" 
-                    : morningSeatsNeeded > 0 
-                      ? "text-red-600" 
-                      : "text-green-600"
-              }>
-                {buses.length === 0 || activeBusCapacity === 0
-                  ? "No bus added"
-                  : totalMorningStudents === 0
-                    ? "No data"
-                    : morningSeatsNeeded > 0 
-                  ? `${morningSeatsNeeded} more seats needed`
-                  : "Seats are sufficient"
-                }
-              </span>
-            )}
-            {isShow === 6 && (
-              <span className={
-                buses.length === 0 || activeBusCapacity === 0
-                  ? "text-gray-500" 
-                  : totalCollegeStudents === 0 
-                    ? "text-gray-500" 
-                    : collegeSeatsNeeded > 0 
-                      ? "text-red-600" 
-                      : "text-green-600"
-              }>
-                {buses.length === 0 || activeBusCapacity === 0
-                  ? "No bus added"
-                  : totalCollegeStudents === 0
-                    ? "No data"
-                    : collegeSeatsNeeded > 0 
-                  ? `${collegeSeatsNeeded} more seats needed`
-                  : "Seats are sufficient"
-                }
-              </span>
-            )}
-            {![0, 4, 6].includes(isShow) && (
-              <span className="text-gray-500">Not applicable</span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <Link
-        to="/"
-        className="fixed top-5 right-5 z-50 bg-purple-500 text-white rounded-full w-11 h-11 flex items-center justify-center shadow-md hover:bg-purple-600 transition-colors"
-        title="Go back"
-      >
-        <FaArrowLeftLong />
-      </Link>
-
-      <div className="w-64 bg-purple-100 shadow-md fixed h-screen p-5 z-10">
-        <div className="text-center pb-5 border-b border-gray-200 mb-5">
-          <img
-            src="bcpsc.png"
-            alt="School Logo"
-            className="max-w-[50%] mx-auto mb-2"
-          />
-          <div className="text-xl font-bold text-[#2F1C6A]">Settings Menu</div>
-        </div>
-
-        <ul className="space-y-2">
+        <nav className="flex-1 px-2 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4 overflow-y-auto no-scrollbar">
+          <div className="space-y-1">
+            <p className="px-2 sm:px-3 md:px-4 text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 sm:mb-2">Operational Shifts</p>
           {tabs.slice(0, 3).map((tab) => (
-            <motion.li
+              <motion.button
               key={tab.id}
-              initial={false}
-              animate={{
-                backgroundColor:
-                  isShow === tab.id ? "rgb(243 232 255)" : "transparent",
-              }}
-              className={`${
-                isShow === tab.id
-                  ? "text-purple-700 font-medium"
-                  : "text-[#2F1C6A] hover:bg-purple-50"
-              } flex items-center p-3 cursor-pointer relative rounded-lg`}
               onClick={() => setIsShow(tab.id)}
-            >
+              whileHover={{ x: 4, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                className={`w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 rounded-xl sm:rounded-2xl transition-all duration-300 group ${
+                  isShow === tab.id
+                    ? "bg-indigo-50 text-indigo-600 shadow-sm shadow-indigo-100/50"
+                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                }`}
+              >
+                <motion.div
+              animate={{
+                    scale: isShow === tab.id ? 1.1 : 1,
+                    rotate: isShow === tab.id ? 0 : 0,
+                  }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                >
+                  {React.createElement(tab.icon, { 
+                    className: `text-lg transition-transform`,
+                    size: 20
+                  })}
+                </motion.div>
+                <span className="text-sm font-bold tracking-tight">{tab.label}</span>
               {isShow === tab.id && (
                 <motion.div
-                  className="absolute left-0 top-0 bottom-0 w-1 bg-purple-500 rounded-r-lg"
-                  layoutId="leftBorder"
+                    layoutId="activeTab" 
+                    className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-600"
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 />
               )}
-              <span className="mr-2">{tab.icon}</span>
-              {tab.label}
-            </motion.li>
+              </motion.button>
           ))}
+          </div>
 
-          <div className="fixed left-6 bottom-10 w-52">
+          <div className="mt-8 space-y-1">
+            <p className="px-2 sm:px-3 md:px-4 text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 sm:mb-2">Configuration</p>
             {tabs.slice(3).map((tab) => (
-              <motion.li
+              <motion.button
                 key={tab.id}
-                initial={false}
-                animate={{
-                  backgroundColor:
-                    isShow === tab.id ? "rgb(243 232 255)" : "transparent",
-                }}
-                className={`${
-                  isShow === tab.id
-                    ? "text-purple-700 font-medium"
-                    : "text-[#2F1C6A] hover:bg-purple-50"
-                } flex items-center p-3 cursor-pointer relative rounded-lg`}
                 onClick={() => setIsShow(tab.id)}
+                whileHover={{ x: 4, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                className={`w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 rounded-xl sm:rounded-2xl transition-all duration-300 group ${
+                  isShow === tab.id
+                    ? "bg-indigo-50 text-indigo-600 shadow-sm shadow-indigo-100/50"
+                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                }`}
               >
+                <motion.div
+                animate={{
+                    scale: isShow === tab.id ? 1.1 : 1,
+                  }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                >
+                  {React.createElement(tab.icon, { 
+                    className: `text-lg transition-transform`,
+                    size: 20
+                  })}
+                </motion.div>
+                <span className="text-sm font-bold tracking-tight">{tab.label}</span>
                 {isShow === tab.id && (
                   <motion.div
-                    className="absolute left-0 top-0 bottom-0 w-1 bg-purple-500 rounded-r-lg"
-                    layoutId="leftBorder"
+                    layoutId="activeTab" 
+                    className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-600"
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   />
                 )}
-                <span className="mr-2">{tab.icon}</span>
-                {tab.label}
-              </motion.li>
+              </motion.button>
             ))}
           </div>
-        </ul>
+        </nav>
+
+        <div className="p-6 border-t border-slate-100">
+          <Link
+            to="/"
+            className="flex items-center justify-center gap-2 w-full py-3 bg-slate-900 text-white rounded-2xl font-bold text-sm shadow-xl shadow-slate-200 hover:bg-slate-800 transition-all active:scale-[0.98]"
+          >
+            <FaArrowLeftLong /> Exit Settings
+          </Link>
       </div>
+      </aside>
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={isShow}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.2 }}
-          className={`flex-1 ml-64 p-8 ${isShow !== 6 ? "hidden" : ""}`}
-        >
-          <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-200">
-            <h1 className="text-2xl font-bold text-[#2F1C6A] -800">
-              College Shift
-            </h1>
+      {/* Main Content Area */}
+      <main className="flex-1 ml-64 sm:ml-72 min-h-screen relative">
+        {/* Top Floating Info Bar */}
+        <div className="fixed top-3 sm:top-4 md:top-6 right-3 sm:right-4 md:right-8 z-30 flex items-center gap-2 sm:gap-3 md:gap-4">
+          <div className="glass border border-slate-200/50 px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 md:py-2.5 rounded-xl sm:rounded-2xl shadow-xl flex items-center gap-3 sm:gap-4 md:gap-6">
+            <div className="flex flex-col">
+              <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">Last Data Update</span>
+              <div className="text-xs font-bold text-slate-700 mt-1">
+                {isShow === 0 && (lastUpdatedDay ? lastUpdatedDay.toLocaleTimeString() : "No data")}
+                {isShow === 4 && (lastUpdatedMorning ? lastUpdatedMorning.toLocaleTimeString() : "No data")}
+                {isShow === 6 && (lastUpdatedCollege ? lastUpdatedCollege.toLocaleTimeString() : "No data")}
+                {![0, 4, 6].includes(isShow) && "System Ready"}
+              </div>
+            </div>
+            
+            <div className="w-px h-6 bg-slate-200"></div>
+
+            <div className="flex flex-col">
+              <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">Seat Optimization</span>
+              <div className={`text-xs font-bold mt-1 ${
+                (isShow === 0 && daySeatsNeeded > 0) || (isShow === 4 && morningSeatsNeeded > 0) || (isShow === 6 && collegeSeatsNeeded > 0)
+                  ? "text-rose-500" : "text-emerald-500"
+              }`}>
+                {isShow === 0 && (daySeatsNeeded > 0 ? `${daySeatsNeeded} Required` : "Optimized")}
+                {isShow === 4 && (morningSeatsNeeded > 0 ? `${morningSeatsNeeded} Required` : "Optimized")}
+                {isShow === 6 && (collegeSeatsNeeded > 0 ? `${collegeSeatsNeeded} Required` : "Optimized")}
+                {![0, 4, 6].includes(isShow) && "Functional"}
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center">
-                <h1 className="text-xl font-bold mb-5 flex items-center">
-                  Route Management
-                </h1>
+        <div className="p-4 sm:p-6 md:p-8 lg:p-12 pt-16 sm:pt-20 md:pt-24">
+      <AnimatePresence mode="wait">
+            {isShow === 6 && (
+        <motion.div
+                key="college-shift"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="premium-card p-4 sm:p-6 md:p-8 lg:p-10"
+        >
+                <div className="flex justify-between items-center mb-10 pb-6 border-b border-slate-100">
+                  <div>
+                    <h1 className="text-3xl font-black text-slate-900">College Shift</h1>
+                    <p className="text-slate-500 font-medium mt-1 text-sm italic">Manage routes and student counts for higher education units</p>
               </div>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setDummyCollege(true)}
-                className="px-6 py-2 rounded-lg 
-               bg-purple-600 border border-purple-600/20 
-               backdrop-blur-md 
-               text-white hover:text-purple-900 font-semibold 
-               shadow-md cursor-pointer hover:bg-white/20 
-               transition duration-300"
+                    className="premium-button-secondary border-indigo-100 text-indigo-600 hover:bg-indigo-50"
               >
-                Add From Excel
+                    Import Data (.xlsx)
               </motion.button>
             </div>
 
-            <div className="flex gap-5 mb-5">
-              <div className="flex-1">
-                <label className="block mb-2 font-bold">Route Name</label>
+                <div className="space-y-8">
+                  <section>
+                    <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-2">
+                      <span className="w-8 h-px bg-slate-200"></span>
+                      Route Creation
+                    </h3>
+                    <div className="grid grid-cols-1 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Route Designation</label>
                 <input
                   value={routeNameCollege}
                   onChange={(e) => setRouteNameCollege(e.target.value)}
                   type="text"
-                  className="w-full p-3 border border-gray-300 rounded focus:outline-none"
-                  placeholder="e.g., Route 1"
+                          className="premium-input text-lg font-bold"
+                          placeholder="e.g., North-Bound Express"
                 />
               </div>
             </div>
+                  </section>
 
-            <div className="flex flex-wrap -mx-3 mb-6">
-              <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-                <label className="block text-[#2F1C6A] -700 text-sm font-bold mb-2">
-                  Boys Count
-                </label>
+                  <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Boys Enrollment</label>
                 <input
                   type="number"
                   value={boysCountCollege}
                   onChange={(e) => setBoysCountCollege(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded focus:outline-none"
-                  placeholder="e.g., 25"
+                        className="premium-input"
+                        placeholder="0"
                   min="0"
                 />
               </div>
-              <div className="w-full md:w-1/2 px-3">
-                <label className="block text-[#2F1C6A] -700 text-sm font-bold mb-2">
-                  Girls Count
-                </label>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Girls Enrollment</label>
                 <input
                   type="number"
                   value={girlsCountCollege}
                   onChange={(e) => setGirlsCountCollege(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded focus:outline-none"
-                  placeholder="e.g., 25"
+                        className="premium-input"
+                        placeholder="0"
                   min="0"
                 />
               </div>
-            </div>
+                  </section>
 
-            <div className="mb-5">
-              <label className="block mb-2 font-bold">
-                Stands (Separate with Comma or Enter)
+
+                  <section>
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1 mb-2 block">
+                      Stands (Press Enter to add)
               </label>
-              <div className="flex flex-wrap gap-2 p-2 border border-gray-300 rounded min-h-[50px] items-center">
+                    <div className="flex flex-wrap gap-2 p-3 bg-slate-50 border border-slate-200 rounded-2xl min-h-[60px] items-center focus-within:ring-2 focus:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
                 {standNameCollege.map((stand, index) => (
                   <motion.div
                     key={index}
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="flex items-center justify-center bg-[#3498DB] text-white gap-2 border border-gray-300 rounded-full py-3 px-4"
+                          className="flex items-center bg-white text-slate-700 gap-3 border border-slate-200 rounded-xl py-2 px-4 shadow-sm group"
                   >
-                    <span className="font-bold">
-                      {stand.name} ({stand.boys} boys, {stand.girls} girls)
-                    </span>
+                          <span className="text-sm font-bold">{stand.name}</span>
+                          <span className="text-[10px] font-black text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded uppercase">{stand.boys}B / {stand.girls}G</span>
                     <button
                       onClick={() => handleRemoveStandCollege(index)}
-                      className="text-white cursor-pointer"
+                            className="text-slate-300 hover:text-rose-500 transition-colors"
                     >
-                      <ImCross
-                        className="hover:rotate-90 duration-200 transition-all"
-                        size={15}
-                      />
+                            <ImCross size={10} />
                     </button>
                   </motion.div>
                 ))}
@@ -1734,394 +1698,324 @@ const Settings = () => {
                   value={inputCollege}
                   onChange={(e) => setInputCollege(e.target.value)}
                   onKeyDown={handleKeyDownCollege}
-                  className="flex-1 min-w-[100px] p-2 border-none outline-none"
-                  placeholder="Enter stand name"
+                        className="flex-1 min-w-[180px] bg-transparent border-none outline-none text-sm font-bold placeholder:text-slate-300"
+                        placeholder="Type stand name..."
                 />
               </div>
-            </div>
+                  </section>
 
+                  <div className="pt-4">
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleAddRouteCollege}
-              className="px-6 py-2 rounded-lg 
-               bg-purple-600 border border-purple-600/20 
-               backdrop-blur-md 
-               text-white hover:text-purple-900 font-semibold 
-               shadow-md cursor-pointer hover:bg-white/20 
-               transition duration-300"
-            >
-              Add Route
+                      className="premium-button-primary w-full py-4 text-base"
+                    >
+                      Initialize College Route
             </motion.button>
+                  </div>
 
-            <div className="w-full mt-8">
-              <h3 className="mb-4">All Routes List</h3>
-              <table className="w-full mt-5">
-                <thead className="bg-[#8B5DFF]">
-                  <tr className="text-white rounded-tl-lg text-left">
-                    <th className="p-3 border-b-2 border-gray-200">
-                      Route Name
-                    </th>
-                    <th className="p-3 border-b-2 border-gray-200">Stands</th>
-                    <th className="p-3 border-b-2 border-gray-200">Boys</th>
-                    <th className="p-3 border-b-2 border-gray-200">Girls</th>
-                    <th className="p-3 border-b-2 border-gray-200">Delete</th>
+
+                  <section className="pt-10 border-t border-slate-100">
+                    <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-2">
+                      <span className="w-8 h-px bg-slate-200"></span>
+                      Active Route Inventory
+                    </h3>
+                    
+                    <div className="overflow-hidden rounded-2xl border border-slate-100">
+                      <table className="w-full text-sm text-left">
+                        <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] tracking-widest border-b border-slate-100">
+                          <tr>
+                            <th className="px-6 py-4">Designation</th>
+                            <th className="px-6 py-4">Stands Coverage</th>
+                            <th className="px-6 py-4 text-center">B</th>
+                            <th className="px-6 py-4 text-center">G</th>
+                            <th className="px-6 py-4 text-center">Actions</th>
                   </tr>
                 </thead>
-                <tbody>
+                        <tbody className="divide-y divide-slate-50">
                   {routesCollege.length > 0 ? (
                     routesCollege.map((route, index) => (
-                      <tr key={index}>
-                        <td className="p-3 border-b-2 border-gray-200">
-                          {route.name}
+                              <tr key={index} className="hover:bg-slate-50/50 transition-colors">
+                                <td className="px-6 py-4 font-bold text-slate-900">{route.name}</td>
+                                <td className="px-6 py-4">
+                                  <div className="flex flex-wrap gap-1">
+                                    {route.stands.map((s, si) => (
+                                      <span key={si} className="text-[10px] bg-white border border-slate-200 px-1.5 py-0.5 rounded text-slate-500 font-medium whitespace-nowrap">
+                                        {s.name}
+                                      </span>
+                                    ))}
+                                  </div>
                         </td>
-                        <td className="p-3 border-b-2 border-gray-200">
-                          {route.stands.map((stand) => stand.name).join(", ")}
-                        </td>
-                        <td className="p-3 border-b-2 border-gray-200">
-                          {route.totalBoys}
-                        </td>
-                        <td className="p-3 border-b-2 border-gray-200">
-                          {route.totalGirls}
-                        </td>
-                        <td className="p-3 border-b-2 border-gray-200">
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
+                                <td className="px-6 py-4 text-center font-bold text-slate-600">{route.totalBoys}</td>
+                                <td className="px-6 py-4 text-center font-bold text-slate-600">{route.totalGirls}</td>
+                                <td className="px-6 py-4 text-center">
+                                  <button
                             onClick={() => handleDeleteRouteCollege(index)}
-                            className="px-6 py-2 rounded-lg 
-                 border   
-               backdrop-blur-md 
-               text-white   font-semibold 
-                 cursor-pointer   hover:scale-120
-               transition duration-300"
+                                    className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
                           >
-                            <FaRegTrashAlt className="text-black" />
-                          </motion.button>
+                                    <HiOutlineTrash size={18} />
+                                  </button>
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td
-                        colSpan="5"
-                        className="p-3 text-center text-[#2F1C6A] -500"
-                      >
-                        No routes found
-                      </td>
+                              <td colSpan="5" className="px-6 py-12 text-center text-slate-400 italic">No routes registered</td>
                     </tr>
                   )}
                 </tbody>
-                <tfoot>
-                  <tr className="bg-gray-100 font-bold">
-                    <td className="p-3">Total</td>
-                    <td className="p-3"></td>
-                    <td className="p-3">
-                      {routesCollege.reduce(
-                        (acc, route) => acc + (route.totalBoys || 0),
-                        0
-                      )}
+                        {routesCollege.length > 0 && (
+                          <tfoot className="bg-slate-50/50 font-black text-slate-900 border-t border-slate-100">
+                            <tr>
+                              <td className="px-6 py-4">Fleet Summary</td>
+                              <td className="px-6 py-4 text-right opacity-40 uppercase text-[10px]">Cumulative Enrollment</td>
+                              <td className="px-6 py-4 text-center text-indigo-600">
+                                {routesCollege.reduce((acc, route) => acc + (route.totalBoys || 0), 0)}
                     </td>
-                    <td className="p-3">
-                      {routesCollege.reduce(
-                        (acc, route) => acc + (route.totalGirls || 0),
-                        0
-                      )}
+                              <td className="px-6 py-4 text-center text-indigo-600">
+                                {routesCollege.reduce((acc, route) => acc + (route.totalGirls || 0), 0)}
                     </td>
-                    <td className="p-3"></td>
+                              <td className="px-6 py-4"></td>
                   </tr>
                 </tfoot>
+                        )}
               </table>
             </div>
+                  </section>
           </div>
         </motion.div>
-      </AnimatePresence>
+            )}
 
-      <AnimatePresence mode="wait">
+
+            {isShow === 7 && (
         <motion.div
-          key={isShow}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.2 }}
-          className={`flex-1 ml-64 p-8 ${isShow !== 7 ? "hidden" : ""}`}
+                key="college-update"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="premium-card p-4 sm:p-6 md:p-8 lg:p-10"
         >
-          <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-200">
-            <h1 className="text-2xl font-bold text-[#2F1C6A] -800">
-              Update Route (College Shift)
-            </h1>
+                <div className="mb-10 pb-6 border-b border-slate-100">
+                  <h1 className="text-3xl font-black text-slate-900">College Route Update</h1>
+                  <p className="text-slate-500 font-medium mt-1 text-sm italic">Synchronize student headcounts for existing college routes</p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 className="text-xl font-bold mb-5 flex items-center">
-              <span className="mr-2">🔄</span> Update College Shift Route
-            </h2>
-
-            <div className="mb-5">
-              <label className="block mb-2 font-bold">Select Route</label>
+                <div className="space-y-10">
+                  <section className="max-w-xl">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1 mb-2 block">Source Route</label>
               <select
                 value={selectedRouteCollege}
                 onChange={(e) => setSelectedRouteCollege(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded focus:outline-none"
+                      className="premium-input text-lg font-bold"
               >
-                <option value="">Select a route</option>
+                      <option value="">Select a route to modify...</option>
                 {routesCollege.map((route) => (
-                  <option key={route.name} value={route.name}>
-                    {route.name}
-                  </option>
+                        <option key={route.name} value={route.name}>{route.name}</option>
                 ))}
               </select>
-            </div>
+                  </section>
 
             {selectedRouteCollege && (
-              <>
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-3">Stands</h3>
-                  <div className="space-y-3">
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                      <section>
+                        <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-2">
+                          <span className="w-8 h-px bg-slate-200"></span>
+                          Registered Stands
+                        </h3>
+                        <div className="grid grid-cols-1 gap-3">
                     {updatedStandsCollege.map((stand, index) => (
                       <motion.div
                         key={index}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="flex items-center justify-between p-3 border border-gray-200 rounded"
+                              layout
+                              className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-2xl group hover:border-indigo-200 transition-colors"
                       >
-                        <div className="font-bold">{stand.name}</div>
-                        <div className="flex items-center space-x-3">
-                          <div>
-                            <label className="block text-sm mb-1">Boys</label>
+                              <div className="font-bold text-slate-900">{stand.name}</div>
+                              <div className="flex items-center gap-6">
+                                <div className="flex items-center gap-3">
+                                  <span className="text-[10px] font-black uppercase text-slate-400">Boys</span>
                             <input
                               type="number"
                               value={stand.boys}
-                              onChange={(e) =>
-                                handleUpdateStandCountCollege(
-                                  index,
-                                  "boys",
-                                  e.target.value
-                                )
-                              }
-                              className="w-20 p-2 border border-gray-300 rounded"
+                                    onChange={(e) => handleUpdateStandCountCollege(index, "boys", e.target.value)}
+                                    className="w-20 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 outline-none"
                               min="0"
                             />
                           </div>
-                          <div>
-                            <label className="block text-sm mb-1">Girls</label>
+                                <div className="flex items-center gap-3">
+                                  <span className="text-[10px] font-black uppercase text-slate-400">Girls</span>
                             <input
                               type="number"
                               value={stand.girls}
-                              onChange={(e) =>
-                                handleUpdateStandCountCollege(
-                                  index,
-                                  "girls",
-                                  e.target.value
-                                )
-                              }
-                              className="w-20 p-2 border border-gray-300 rounded"
+                                    onChange={(e) => handleUpdateStandCountCollege(index, "girls", e.target.value)}
+                                    className="w-20 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 outline-none"
                               min="0"
                             />
                           </div>
                           <button
-                            onClick={() =>
-                              handleRemoveUpdatedStandCollege(index)
-                            }
-                            className="text-red-500 hover:text-red-700"
+                                  onClick={() => handleRemoveUpdatedStandCollege(index)}
+                                  className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
                           >
-                            <ImCross />
+                                  <ImCross size={12} />
                           </button>
                         </div>
                       </motion.div>
                     ))}
                   </div>
-                </div>
+                      </section>
 
-                <div className="border-t border-gray-200 pt-5">
-                  <h3 className="text-lg font-semibold mb-3">Add New Stand</h3>
-                  <div className="flex flex-wrap -mx-3 mb-4">
-                    <div className="w-full md:w-1/3 px-3 mb-4">
-                      <label className="block mb-2">Stand Name</label>
+                      <section className="bg-slate-50 p-8 rounded-3xl border border-slate-200/60">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600 mb-6">Append New Location</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                          <div className="md:col-span-5">
                       <input
                         type="text"
                         value={newStandNameCollege}
                         onChange={(e) => setNewStandNameCollege(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded"
-                        placeholder="Stand name"
+                              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                              placeholder="New Stand Name"
                       />
                     </div>
-                    <div className="w-full md:w-1/4 px-3 mb-4">
-                      <label className="block mb-2">Boys Count</label>
+                          <div className="md:col-span-2">
                       <input
                         type="number"
                         value={newBoysCountCollege}
                         onChange={(e) => setNewBoysCountCollege(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded"
+                              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 outline-none"
                         placeholder="Boys"
-                        min="0"
                       />
                     </div>
-                    <div className="w-full md:w-1/4 px-3 mb-4">
-                      <label className="block mb-2">Girls Count</label>
+                          <div className="md:col-span-2">
                       <input
                         type="number"
                         value={newGirlsCountCollege}
-                        onChange={(e) =>
-                          setNewGirlsCountCollege(e.target.value)
-                        }
-                        className="w-full p-2 border border-gray-300 rounded"
+                              onChange={(e) => setNewGirlsCountCollege(e.target.value)}
+                              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 outline-none"
                         placeholder="Girls"
-                        min="0"
                       />
                     </div>
-                    <div className="w-full md:w-1/6 px-3 mb-4 flex items-end">
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                          <div className="md:col-span-3">
+                            <button
                         onClick={handleAddNewStandCollege}
-                        className="px-6 py-2 rounded-lg 
-               bg-green-600 border border-green-600/20 
-               backdrop-blur-md 
-               text-white hover:text-green-900 font-semibold 
-               shadow-md cursor-pointer hover:bg-white/20 
-               transition duration-300"
+                              className="w-full py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100"
                       >
-                        Add
-                      </motion.button>
+                              Add Position
+                            </button>
                     </div>
                   </div>
-                </div>
+                      </section>
 
-                <div className="flex space-x-3 mt-6">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                      <div className="flex gap-4 pt-6 border-t border-slate-100">
+                        <button
                     onClick={handleUpdateRouteCollege}
-                    className="px-6 py-2 rounded-lg 
-               bg-purple-600 border border-purple-600/20 
-               backdrop-blur-md 
-               text-white hover:text-purple-900 font-semibold 
-               shadow-md cursor-pointer hover:bg-white/20 
-               transition duration-300"
-                  >
-                    Update
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                          className="premium-button-primary flex-1 py-4 text-base"
+                        >
+                          Commit Route Changes
+                        </button>
+                        <button
                     onClick={() => {
                       setSelectedRouteCollege("");
                       setUpdatedStandsCollege([]);
                     }}
-                    className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded font-bold"
+                          className="premium-button-secondary px-10"
                   >
-                    Reset
-                  </motion.button>
+                          Cancel
+                        </button>
                 </div>
-              </>
+                    </div>
             )}
           </div>
         </motion.div>
-      </AnimatePresence>
+            )}
 
-      <AnimatePresence mode="wait">
+
+            {isShow === 0 && (
         <motion.div
-          key={isShow}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.2 }}
-          className={`flex-1 ml-64 p-8 ${isShow !== 0 ? "hidden" : ""}`}
+                key="day-shift"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="premium-card p-4 sm:p-6 md:p-8 lg:p-10"
         >
-          <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-200">
-            <h1 className="text-2xl font-bold text-[#2F1C6A] -800">
-              Day Shift
-            </h1>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center">
-                <h1 className="text-xl font-bold mb-5 flex items-center">
-                  Route Management
-                </h1>
+                <div className="flex justify-between items-center mb-10 pb-6 border-b border-slate-100">
+                  <div>
+                    <h1 className="text-3xl font-black text-slate-900">Day Shift</h1>
+                    <p className="text-slate-500 font-medium mt-1 text-sm italic">Configure primary day-shift routes and student allocations</p>
               </div>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setDummy3(true)}
-                className="px-6 py-2 rounded-lg 
-               bg-purple-600 border border-purple-600/20 
-               backdrop-blur-md 
-               text-white hover:text-purple-900 font-semibold 
-               shadow-md cursor-pointer hover:bg-white/20 
-               transition duration-300"
+                    className="premium-button-secondary border-indigo-100 text-indigo-600 hover:bg-indigo-50"
               >
-                Add From Excel
+                    Import Day Data (.xlsx)
               </motion.button>
             </div>
 
-            <div className="flex gap-5 mb-5">
-              <div className="flex-1">
-                <label className="block mb-2 font-bold">Route Name</label>
+                <div className="space-y-8">
+                  <section>
+                    <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-2">
+                      <span className="w-8 h-px bg-slate-200"></span>
+                      Route Entry
+                    </h3>
+                    <div className="grid grid-cols-1 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Route Designation</label>
                 <input
                   value={routeName}
                   onChange={handleChangeRouteName}
                   type="text"
-                  className="w-full p-3 border border-gray-300 rounded focus:outline-none"
-                  placeholder="e.g., Route 1"
+                          className="premium-input text-lg font-bold"
+                          placeholder="e.g., Route Alpha"
                 />
               </div>
             </div>
+                  </section>
 
-            <div className="flex flex-wrap -mx-3 mb-6">
-              <div className="w-full md:w-1/2 px-3 mb-6 md:mb-0">
-                <label className="block text-[#2F1C6A] -700 text-sm font-bold mb-2">
-                  Boys Count
-                </label>
+                  <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Boys Capacity</label>
                 <input
                   type="number"
                   value={boysCount}
                   onChange={(e) => setBoysCount(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded focus:outline-none"
-                  placeholder="e.g., 25"
-                  min="0"
+                        className="premium-input font-bold"
+                        placeholder="0"
                 />
               </div>
-              <div className="w-full md:w-1/2 px-3">
-                <label className="block text-[#2F1C6A] -700 text-sm font-bold mb-2">
-                  Girls Count
-                </label>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Girls Capacity</label>
                 <input
                   type="number"
                   value={girlsCount}
                   onChange={(e) => setGirlsCount(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded focus:outline-none"
-                  placeholder="e.g., 25"
-                  min="0"
+                        className="premium-input font-bold"
+                        placeholder="0"
                 />
               </div>
-            </div>
+                  </section>
 
-            <div className="mb-5">
-              <label className="block mb-2 font-bold">
-                Stands (Separate with Comma or Enter)
+                  <section>
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1 mb-2 block">
+                      Stands (Press Enter to append)
               </label>
-              <div className="flex flex-wrap gap-2 p-2 border border-gray-300 rounded min-h-[50px] items-center">
+                    <div className="flex flex-wrap gap-2 p-3 bg-slate-50 border border-slate-200 rounded-2xl min-h-[60px] items-center">
                 {standName.map((stand, index) => (
                   <motion.div
                     key={index}
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="flex items-center justify-center bg-[#3498DB] text-white gap-2 border border-gray-300 rounded-full py-3 px-4"
+                          className="flex items-center bg-white text-slate-700 gap-3 border border-slate-200 rounded-xl py-2 px-4 shadow-sm group"
                   >
-                    <span className="font-bold">
-                      {stand.name} ({stand.boys} boys, {stand.girls} girls)
-                    </span>
+                          <span className="text-sm font-bold">{stand.name}</span>
+                          <span className="text-[10px] font-black text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded uppercase">{stand.boys}B / {stand.girls}G</span>
                     <button
                       onClick={() => handleRemoveStand(index)}
-                      className="text-white cursor-pointer"
+                            className="text-slate-300 hover:text-rose-500 transition-colors"
                     >
-                      <ImCross
-                        className="hover:rotate-90 duration-200 transition-all"
-                        size={15}
-                      />
+                            <ImCross size={10} />
                     </button>
                   </motion.div>
                 ))}
@@ -2130,596 +2024,451 @@ const Settings = () => {
                   value={input}
                   onChange={handleChange}
                   onKeyDown={handleKeyDown}
-                  className="flex-1 min-w-[100px] p-2 border-none outline-none"
-                  placeholder="Enter stand name"
+                        className="flex-1 min-w-[180px] bg-transparent border-none outline-none text-sm font-bold placeholder:text-slate-300"
+                        placeholder="Add stand..."
                 />
               </div>
-            </div>
+                  </section>
 
+                  <div className="pt-4">
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleAddRoute}
-              className="px-6 py-2 rounded-lg 
-               bg-purple-600 border border-purple-600/20 
-               backdrop-blur-md 
-               text-white hover:text-purple-900 font-semibold 
-               shadow-md cursor-pointer hover:bg-white/20 
-               transition duration-300"
+                      className="premium-button-primary w-full py-4 text-base"
             >
-              Add Route
+                      Establish Day Route
             </motion.button>
+                  </div>
 
-            <div className="w-full mt-8">
-              <h3 className="mb-4">All Routes List</h3>
-              <table className="w-full mt-5">
-                <thead className="bg-[#8B5DFF]">
-                  <tr className="text-white  rounded-tl-lg  text-left">
-                    <th className="p-3 border-b-2 border-gray-200">
-                      Route Name
-                    </th>
-                    <th className="p-3 border-b-2 border-gray-200">Stands</th>
-                    <th className="p-3 border-b-2 border-gray-200">Boys</th>
-                    <th className="p-3 border-b-2 border-gray-200">Girls</th>
-                    <th className="p-3 border-b-2 border-gray-200">Delete</th>
+                  <section className="pt-10 border-t border-slate-100">
+                    <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-2">
+                      <span className="w-8 h-px bg-slate-200"></span>
+                      Route Registry
+                    </h3>
+                    
+                    <div className="overflow-hidden rounded-2xl border border-slate-100">
+                      <table className="w-full text-sm text-left">
+                        <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] tracking-widest border-b border-slate-100">
+                          <tr>
+                            <th className="px-6 py-4">Designation</th>
+                            <th className="px-6 py-4">Stands Coverage</th>
+                            <th className="px-6 py-4 text-center">B</th>
+                            <th className="px-6 py-4 text-center">G</th>
+                            <th className="px-6 py-4 text-center">Actions</th>
                   </tr>
                 </thead>
-                <tbody>
+                        <tbody className="divide-y divide-slate-50">
                   {routes.length > 0 ? (
                     routes.map((route, index) => (
-                      <tr key={index}>
-                        <td className="p-3 border-b-2 border-gray-200">
-                          {route.name}
+                              <tr key={index} className="hover:bg-slate-50/50 transition-colors">
+                                <td className="px-6 py-4 font-bold text-slate-900">{route.name}</td>
+                                <td className="px-6 py-4">
+                                  <div className="flex flex-wrap gap-1">
+                                    {route.stands.map((s, si) => (
+                                      <span key={si} className="text-[10px] bg-white border border-slate-200 px-1.5 py-0.5 rounded text-slate-500 font-medium whitespace-nowrap">
+                                        {s.name}
+                                      </span>
+                                    ))}
+                                  </div>
                         </td>
-                        <td className="p-3 border-b-2 border-gray-200">
-                          {route.stands.map((stand) => stand.name).join(", ")}
-                        </td>
-                        <td className="p-3 border-b-2 border-gray-200">
-                          {route.totalBoys}
-                        </td>
-                        <td className="p-3 border-b-2 border-gray-200">
-                          {route.totalGirls}
-                        </td>
-                        <td className="p-3 border-b-2 border-gray-200">
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
+                                <td className="px-6 py-4 text-center font-bold text-slate-600">{route.totalBoys}</td>
+                                <td className="px-6 py-4 text-center font-bold text-slate-600">{route.totalGirls}</td>
+                                <td className="px-6 py-4 text-center">
+                                  <button
                             onClick={() => handleDeleteRoute(index)}
-                            className="px-6 py-2 rounded-lg 
-                 border   
-               backdrop-blur-md 
-               text-white   font-semibold 
-                 cursor-pointer   hover:scale-120
-               transition duration-300"
+                                    className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
                           >
-                            <FaRegTrashAlt className="text-black" />
-                          </motion.button>
+                                    <HiOutlineTrash size={18} />
+                                  </button>
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td
-                        colSpan="5"
-                        className="p-3 text-center text-[#2F1C6A] -500"
-                      >
-                        No routes found
-                      </td>
+                              <td colSpan="5" className="px-6 py-12 text-center text-slate-400 italic">No Day routes registered</td>
                     </tr>
                   )}
                 </tbody>
-                <tfoot>
-                  <tr className="bg-gray-100 font-bold">
-                    <td className="p-3">Total</td>
-                    <td className="p-3"></td>
-                    <td className="p-3">
-                      {routes.reduce(
-                        (acc, route) => acc + (route.totalBoys || 0),
-                        0
-                      )}
+                        {routes.length > 0 && (
+                          <tfoot className="bg-slate-50/50 font-black text-slate-900 border-t border-slate-100">
+                            <tr>
+                              <td className="px-6 py-4 text-indigo-600">Day Summary</td>
+                              <td className="px-6 py-4"></td>
+                              <td className="px-6 py-4 text-center text-indigo-600">
+                                {routes.reduce((acc, route) => acc + (route.totalBoys || 0), 0)}
                     </td>
-                    <td className="p-3">
-                      {routes.reduce(
-                        (acc, route) => acc + (route.totalGirls || 0),
-                        0
-                      )}
+                              <td className="px-6 py-4 text-center text-indigo-600">
+                                {routes.reduce((acc, route) => acc + (route.totalGirls || 0), 0)}
                     </td>
-                    <td className="p-3"></td>
+                              <td className="px-6 py-4"></td>
                   </tr>
                 </tfoot>
+                        )}
               </table>
             </div>
+                  </section>
           </div>
         </motion.div>
-      </AnimatePresence>
+            )}
 
-      <AnimatePresence mode="wait">
+
+            {isShow === 1 && (
         <motion.div
-          key={isShow}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.2 }}
-          className={`flex-1 ml-64 p-8 ${isShow !== 1 ? "hidden" : ""}`}
-          id="bus-management"
-        >
-          <h1 className="text-2xl font-bold mb-4">Bus Management</h1>
-          <div className="border-b border-gray-200 w-full"></div>
+                key="bus-management"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="premium-card p-4 sm:p-6 md:p-8 lg:p-10"
+              >
+                <div className="flex justify-between items-center mb-10 pb-6 border-b border-slate-100">
+                  <div>
+                    <h1 className="text-3xl font-black text-slate-900">Fleet Assets</h1>
+                    <p className="text-slate-500 font-medium mt-1 text-sm italic">Manage your transport vehicles and operational capacity</p>
+                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setDummy2(true)}
+                    className="premium-button-secondary border-indigo-100 text-indigo-600 hover:bg-indigo-50"
+                  >
+                    Import Fleet (.xlsx)
+                  </motion.button>
+                </div>
 
-          <div className="shadow-lg rounded-sm p-10 mb-4 mt-8">
-            <div className="flex gap-5 mb-4">
-              <div className="flex-1">
-                <label className="block font-bold mb-2">Bus Number</label>
+                <div className="space-y-8">
+                  <section>
+                    <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-2">
+                      <span className="w-8 h-px bg-slate-200"></span>
+                      Vehicle Onboarding
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Plate / Unit Number</label>
                 <input
                   type="text"
                   value={busNumber}
                   onChange={(e) => setBusNumber(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded focus:border-purple-500 focus:outline-none"
-                  placeholder="e.g., 01"
+                          className="premium-input text-lg font-bold"
+                          placeholder="e.g., BUS-001"
                 />
               </div>
-              <div className="flex-1">
-                <label className="block font-bold mb-2">Capacity</label>
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Seating Capacity</label>
                 <input
                   type="number"
                   value={busCapacity}
                   onChange={(e) => setBusCapacity(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded focus:border-purple-500 focus:outline-none"
-                  placeholder="e.g., 40"
+                          className="premium-input text-lg font-bold"
+                          placeholder="40"
                   min="1"
                 />
               </div>
             </div>
-
-            <div className="flex gap-5 justify-between">
+                    <div className="mt-6">
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleAddBus}
-                className="px-6 py-2 rounded-lg 
-               bg-purple-600 border border-purple-600/20 
-               backdrop-blur-md 
-               text-white hover:text-purple-900 font-semibold 
-               shadow-md cursor-pointer hover:bg-white/20 
-               transition duration-300"
-              >
-                Add Bus
-              </motion.button>
-
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setDummy2(true)}
-                className="px-6 py-2 rounded-lg 
-               bg-purple-600 border border-purple-600/20 
-               backdrop-blur-md 
-               text-white hover:text-purple-900 font-semibold 
-               shadow-md cursor-pointer hover:bg-white/20 
-               transition duration-300"
-              >
-                Add Bus from Excel
+                        className="premium-button-primary w-full py-4"
+                      >
+                        Register New Vehicle
               </motion.button>
             </div>
+                  </section>
 
-            <div className="mt-8 mb-4 flex justify-between text-lg font-semibold">
-              <h1>All Buses List</h1>
-              <div className="flex gap-4">
-                <div className="bg-purple-5 shadow-2xl border-3 border-[#673DE6] px-3 py-1 rounded">
-                  Active Capacity: {activeBusCapacity}
+                  <section className="pt-10 border-t border-slate-100">
+                    <div className="flex justify-between items-end mb-8">
+                      <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                        <span className="w-8 h-px bg-slate-200"></span>
+                        Operational Fleet
+                      </h3>
+                      <div className="flex gap-3">
+                        <div className="bg-indigo-50 border border-indigo-100 px-4 py-2 rounded-xl">
+                          <p className="text-[9px] font-black text-indigo-400 uppercase leading-none mb-1">Active Cap</p>
+                          <p className="text-sm font-black text-indigo-600 leading-none">{activeBusCapacity} PAX</p>
                 </div>
-                <div className="bg-purple-500 drop-shadow-2xl text-white px-3 py-2 rounded">
-                  Total Capacity: {totalBusCapacity}
+                        <div className="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl">
+                          <p className="text-[9px] font-black text-slate-500 uppercase leading-none mb-1">Total Cap</p>
+                          <p className="text-sm font-black text-white leading-none">{totalBusCapacity} PAX</p>
                 </div>
               </div>
             </div>
-            <table className="w-full mt-5">
-              <thead className="bg-[#8B5DFF] ">
-                <tr className="bg-gray-10 text-white">
-                  <th className="p-3 text-left font-bold border-b-2 border-gray-200">
-                    Bus Number
-                  </th>
-                  <th className="p-3 text-left font-bold border-b-2 border-gray-200">
-                    Capacity
-                  </th>
-                  <th className="p-3 text-left font-bold border-b-2 border-gray-200">
-                    Status
-                  </th>
-                  <th className="p-3 text-left font-bold border-b-2 border-gray-200">
-                    Delete
-                  </th>
+
+                    <div className="overflow-hidden rounded-2xl border border-slate-100 shadow-sm">
+                      <table className="w-full text-sm text-left">
+                        <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] tracking-widest border-b border-slate-100">
+                          <tr>
+                            <th className="px-6 py-4">Unit Identification</th>
+                            <th className="px-6 py-4">Payload (PAX)</th>
+                            <th className="px-6 py-4">Operational Status</th>
+                            <th className="px-6 py-4 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+                        <tbody className="divide-y divide-slate-50">
                 {buses.length > 0 ? (
                   buses.map((bus, index) => {
-                    const isActive =
-                      typeof bus.isActive === "boolean" ? bus.isActive : true;
-
+                              const isActive = typeof bus.isActive === "boolean" ? bus.isActive : true;
                     return (
-                      <tr key={index} className="border-b border-gray-200">
-                        <td className="p-3">{bus.number}</td>
-                        <td className="p-3 fot">{bus.capacity} Students</td>
-                        <td className="p-3 flex items-center">
+                                <tr key={index} className="hover:bg-slate-50/50 transition-colors group">
+                                  <td className="px-6 py-4 font-black text-slate-900 text-base">{bus.number}</td>
+                                  <td className="px-6 py-4 font-bold text-slate-600">{bus.capacity} Students</td>
+                                  <td className="px-6 py-4">
+                                    <div className="flex items-center gap-3">
                           <Switch
                             checked={isActive}
-                            onChange={() =>
-                              handleToggleBusStatus(bus.number, !isActive)
-                            }
+                                        onChange={() => handleToggleBusStatus(bus.number, !isActive)}
                             className={`${
-                              isActive ? "bg-purple-600" : "bg-gray-400"
-                            } relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
-                          >
-                            <span className="sr-only">Toggle bus status</span>
-                            <span
-                              className={`${
-                                isActive ? "translate-x-6" : "translate-x-1"
-                              } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
-                            />
+                                          isActive ? "bg-indigo-600" : "bg-slate-200"
+                                        } relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20`}
+                                      >
+                                        <span className={`${isActive ? "translate-x-6" : "translate-x-1"} inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200`} />
                           </Switch>
-                          <span className="ml-2 text-sm">
-                            {isActive ? "Active" : "Inactive"}
+                                      <span className={`text-[10px] font-black uppercase tracking-widest ${isActive ? "text-indigo-600" : "text-slate-400"}`}>
+                                        {isActive ? "Active" : "OOS"}
                           </span>
+                                    </div>
                         </td>
-                        <td className="p-3">
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
+                                  <td className="px-6 py-4 text-center">
+                                    <button
                             onClick={() => handleDeleteBus(bus.number)}
-                            className="px-6 py-2 rounded-lg 
-                  
-               backdrop-blur-md 
-               text-white   font-semibold 
-                 cursor-pointer   hover:scale-120
-               transition duration-300"
+                                      className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
                           >
-                            <FaRegTrashAlt className="text-black" />
-                          </motion.button>
+                                      <HiOutlineTrash size={18} />
+                                    </button>
                         </td>
                       </tr>
                     );
                   })
                 ) : (
                   <tr>
-                    <td
-                      colSpan="4"
-                      className="p-3 text-center text-[#2F1C6A] -500"
-                    >
-                      No buses found
-                    </td>
+                              <td colSpan="4" className="px-6 py-12 text-center text-slate-400 italic">No vehicles registered in fleet</td>
                   </tr>
                 )}
               </tbody>
             </table>
+                    </div>
+                  </section>
           </div>
         </motion.div>
-      </AnimatePresence>
+            )}
 
-      <AnimatePresence mode="wait">
+            {isShow === 2 && (
         <motion.div
-          key={isShow}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.2 }}
-          className={`flex-1 ml-64 p-8 ${isShow !== 2 ? "hidden" : ""}`}
+                key="day-update"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="premium-card p-4 sm:p-6 md:p-8 lg:p-10"
         >
-          <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-200">
-            <h1 className="text-2xl font-bold text-[#2F1C6A] -800">
-              Update Route (Day Shift)
-            </h1>
+                <div className="mb-10 pb-6 border-b border-slate-100">
+                  <h1 className="text-3xl font-black text-slate-900">Day Route Sync</h1>
+                  <p className="text-slate-500 font-medium mt-1 text-sm italic">Adjust headcounts for specific Day shift routes</p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 className="text-xl font-bold mb-5 flex items-center">
-              <span className="mr-2">🔄</span> Update Route
-            </h2>
-
-            <div className="mb-5">
-              <label className="block mb-2 font-bold">Select Route</label>
+                <div className="space-y-10">
+                  <section className="max-w-xl">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1 mb-2 block">Active Route</label>
               <select
                 value={selectedRoute}
                 onChange={(e) => setSelectedRoute(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded focus:outline-none"
+                      className="premium-input text-lg font-bold"
               >
-                <option value="">Select a route</option>
+                      <option value="">Choose route to update...</option>
                 {routes.map((route) => (
-                  <option key={route.name} value={route.name}>
-                    {route.name}
-                  </option>
+                        <option key={route.name} value={route.name}>{route.name}</option>
                 ))}
               </select>
-            </div>
+                  </section>
 
             {selectedRoute && (
-              <>
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-3">Stands</h3>
-                  <div className="space-y-3">
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                      <section>
+                        <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-2">
+                          <span className="w-8 h-px bg-slate-200"></span>
+                          Configured Locations
+                        </h3>
+                        <div className="grid grid-cols-1 gap-3">
                     {updatedStands.map((stand, index) => (
                       <motion.div
                         key={index}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="flex items-center justify-between p-3 border border-gray-200 rounded"
+                              layout
+                              className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-2xl hover:border-indigo-200 transition-colors"
                       >
-                        <div className="font-bold">{stand.name}</div>
-                        <div className="flex items-center space-x-3">
-                          <div>
-                            <label className="block text-sm mb-1">Boys</label>
+                              <div className="font-bold text-slate-900">{stand.name}</div>
+                              <div className="flex items-center gap-6">
+                                <div className="flex items-center gap-3">
+                                  <span className="text-[10px] font-black uppercase text-slate-400">B</span>
                             <input
                               type="number"
                               value={stand.boys}
-                              onChange={(e) =>
-                                handleUpdateStandCount(
-                                  index,
-                                  "boys",
-                                  e.target.value
-                                )
-                              }
-                              className="w-20 p-2 border border-gray-300 rounded"
+                                    onChange={(e) => handleUpdateStandCount(index, "boys", e.target.value)}
+                                    className="w-20 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 outline-none"
                               min="0"
                             />
                           </div>
-                          <div>
-                            <label className="block text-sm mb-1">Girls</label>
+                                <div className="flex items-center gap-3">
+                                  <span className="text-[10px] font-black uppercase text-slate-400">G</span>
                             <input
                               type="number"
                               value={stand.girls}
-                              onChange={(e) =>
-                                handleUpdateStandCount(
-                                  index,
-                                  "girls",
-                                  e.target.value
-                                )
-                              }
-                              className="w-20 p-2 border border-gray-300 rounded"
+                                    onChange={(e) => handleUpdateStandCount(index, "girls", e.target.value)}
+                                    className="w-20 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 outline-none"
                               min="0"
                             />
                           </div>
                           <button
                             onClick={() => handleRemoveUpdatedStand(index)}
-                            className="text-red-500 hover:text-red-700"
+                                  className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
                           >
-                            <ImCross />
+                                  <ImCross size={12} />
                           </button>
                         </div>
                       </motion.div>
                     ))}
                   </div>
-                </div>
+                      </section>
 
-                <div className="border-t border-gray-200 pt-5">
-                  <h3 className="text-lg font-semibold mb-3">Add New Stand</h3>
-                  <div className="flex flex-wrap -mx-3 mb-4">
-                    <div className="w-full md:w-1/3 px-3 mb-4">
-                      <label className="block mb-2">Stand Name</label>
+                      <section className="bg-slate-50 p-8 rounded-3xl border border-slate-200/60">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600 mb-6">Register New Stand</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                          <div className="md:col-span-5">
                       <input
                         type="text"
                         value={newStandName}
                         onChange={(e) => setNewStandName(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded"
-                        placeholder="Stand name"
+                              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                              placeholder="Stand Name"
                       />
                     </div>
-                    <div className="w-full md:w-1/4 px-3 mb-4">
-                      <label className="block mb-2">Boys Count</label>
+                          <div className="md:col-span-2">
                       <input
                         type="number"
                         value={newBoysCount}
                         onChange={(e) => setNewBoysCount(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded"
-                        placeholder="Boys"
-                        min="0"
+                              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                              placeholder="B"
                       />
                     </div>
-                    <div className="w-full md:w-1/4 px-3 mb-4">
-                      <label className="block mb-2">Girls Count</label>
+                          <div className="md:col-span-2">
                       <input
                         type="number"
                         value={newGirlsCount}
                         onChange={(e) => setNewGirlsCount(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded"
-                        placeholder="Girls"
-                        min="0"
+                              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                              placeholder="G"
                       />
                     </div>
-                    <div className="w-full md:w-1/6 px-3 mb-4 flex items-end">
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                          <div className="md:col-span-3">
+                            <button
                         onClick={handleAddNewStand}
-                        className="px-6 py-2 rounded-lg 
-               bg-green-600 border border-green-600/20 
-               backdrop-blur-md 
-               text-white hover:text-green-900 font-semibold 
-               shadow-md cursor-pointer hover:bg-white/20 
-               transition duration-300"
+                              className="w-full py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100"
                       >
-                        Add
-                      </motion.button>
+                              Add Stand
+                            </button>
                     </div>
                   </div>
-                </div>
+                      </section>
 
-                <div className="flex space-x-3 mt-6">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                      <div className="flex gap-4 pt-6 border-t border-slate-100">
+                        <button
                     onClick={handleUpdateRoute}
-                    className="px-6 py-2 rounded-lg 
-               bg-purple-600 border border-purple-600/20 
-               backdrop-blur-md 
-               text-white hover:text-purple-900 font-semibold 
-               shadow-md cursor-pointer hover:bg-white/20 
-               transition duration-300"
-                  >
-                    Update
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                          className="premium-button-primary flex-1 py-4"
+                        >
+                          Push Synchronized Data
+                        </button>
+                        <button
                     onClick={() => {
                       setSelectedRoute("");
                       setUpdatedStands([]);
                     }}
-                    className="px-6 py-2 rounded-lg 
-               bg-gray-600 border border-gray-600/20 
-               backdrop-blur-md 
-               text-white hover:text-gray-900 font-semibold 
-               shadow-md cursor-pointer hover:bg-white/20 
-               transition duration-300"
+                          className="premium-button-secondary px-10"
                   >
-                    Reset
-                  </motion.button>
+                          Discard
+                        </button>
                 </div>
-              </>
+                    </div>
             )}
           </div>
         </motion.div>
-      </AnimatePresence>
+            )}
 
-      <AnimatePresence mode="wait">
+
+            {isShow === 4 && (
         <motion.div
-          key={isShow}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.2 }}
-          className={`flex-1 ml-64 p-8 ${isShow !== 3 ? "hidden" : ""}`}
+                key="morning-shift"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="premium-card p-4 sm:p-6 md:p-8 lg:p-10"
         >
-          <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-200">
-            <h1 className="text-2xl font-bold text-[#2F1C6A] -800">
-              Reset Data
-            </h1>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 className="text-xl font-bold mb-5 flex items-center">
-              <span className="mr-2">⚠️</span> Reset Database
-            </h2>
-
-            <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-6">
-              <p className="text-yellow-700">
-                Warning: This operation will delete all route and bus data. Use
-                this only when you are sure you want to reset all data.
-              </p>
-            </div>
-
-            <div className="flex flex-col items-center justify-center py-10">
-              <div className="text-5xl mb-6">🔄</div>
-              <h3 className="text-2xl font-bold mb-4">Reset Database</h3>
-              <p className="text-[#2F1C6A] -600 mb-8 text-center max-w-md">
-                Clicking this button will permanently delete all route and bus
-                data. Previously saved data cannot be recovered.
-              </p>
-
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleResetDatabase}
-                className="px-6 py-2 rounded-lg 
-               bg-red-600 border border-red-600/20 
-               backdrop-blur-md 
-               text-white hover:text-red-900 font-semibold 
-               shadow-md cursor-pointer hover:bg-white/20 
-               transition duration-300"
-              >
-                Reset Database
-              </motion.button>
-            </div>
-          </div>
-        </motion.div>
-      </AnimatePresence>
-
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={isShow}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.2 }}
-          className={`flex-1 ml-64 p-8 ${isShow !== 4 ? "hidden" : ""}`}
-        >
-          <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-200">
-            <h1 className="text-2xl font-bold text-[#2F1C6A] -800">
-              Morning Shift
-            </h1>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <div className="flex justify-between  items-center">
-              <div className="flex items-center">
-                <h1 className="text-xl font-bold mb-5 flex items-center">
-                  Route Management
-                </h1>
+                <div className="flex justify-between items-center mb-10 pb-6 border-b border-slate-100">
+                  <div>
+                    <h1 className="text-3xl font-black text-slate-900">Morning Shift</h1>
+                    <p className="text-slate-500 font-medium mt-1 text-sm italic">Manage early morning transit routes and student headcounts</p>
               </div>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setDummy(!dummy)}
-                className="px-6 py-2 rounded-lg 
-               bg-purple-600 border border-purple-600/20 
-               backdrop-blur-md 
-               text-white hover:text-purple-900 font-semibold 
-               shadow-md cursor-pointer hover:bg-white/20 
-               transition duration-300"
+                    className="premium-button-secondary border-indigo-100 text-indigo-600 hover:bg-indigo-50"
               >
-                Add From Excel
+                    Import Morning Data (.xlsx)
               </motion.button>
             </div>
 
-            <div className="flex gap-5 mb-5">
-              <div className="flex-1">
-                <label className="block mb-2 font-bold">Route Name</label>
+                <div className="space-y-8">
+                  <section>
+                    <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-2">
+                      <span className="w-8 h-px bg-slate-200"></span>
+                      Route Creation
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Route Name</label>
                 <input
                   value={routeName2}
                   onChange={handleChangeRouteName2}
                   type="text"
-                  className="w-full p-3 border border-gray-300 rounded focus:outline-none"
-                  placeholder="e.g., Route 1"
+                          className="premium-input text-lg font-bold"
+                          placeholder="e.g., Morning Route 1"
                 />
               </div>
-            </div>
-
-            <div className="flex flex-wrap -mx-3 mb-6">
-              <div className="w-full md:w-2/2 px-3 mb-6 md:mb-0">
-                <label className="block text-[#2F1C6A] -700 text-sm font-bold mb-2">
-                  Student Number
-                </label>
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Total Students</label>
                 <input
                   type="number"
                   value={boysCount2}
                   onChange={(e) => setBoysCount2(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded focus:outline-none"
-                  placeholder="e.g., 25"
-                  min="0"
+                          className="premium-input text-lg font-bold"
+                          placeholder="0"
                 />
               </div>
             </div>
+                  </section>
 
-            <div className="mb-5">
-              <label className="block mb-2 font-bold">
-                Stands (Separate with Comma or Enter)
+                  <section>
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1 mb-2 block">
+                      Stands (Press Enter to add)
               </label>
-              <div className="flex flex-wrap gap-2 p-2 border border-gray-300 rounded min-h-[50px] items-center">
+                    <div className="flex flex-wrap gap-2 p-3 bg-slate-50 border border-slate-200 rounded-2xl min-h-[60px] items-center focus-within:ring-2 focus:ring-indigo-500/20 transition-all">
                 {standName2.map((stand, index) => (
                   <motion.div
                     key={index}
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="flex items-center justify-center bg-[#3498DB] text-white gap-2 border border-gray-300 rounded-full py-3 px-4"
+                          className="flex items-center bg-white text-slate-700 gap-3 border border-slate-200 rounded-xl py-2 px-4 shadow-sm"
                   >
-                    <span className="font-bold">
-                      {stand.name} ({stand.boys} students)
-                    </span>
+                          <span className="text-sm font-bold">{stand.name}</span>
+                          <span className="text-[10px] font-black text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded uppercase">{stand.boys} Pax</span>
                     <button
                       onClick={() => handleRemoveStand2(index)}
-                      className="text-white cursor-pointer"
+                            className="text-slate-300 hover:text-rose-500 transition-colors"
                     >
-                      <ImCross
-                        className="hover:rotate-90 duration-200 transition-all"
-                        size={15}
-                      />
+                            <ImCross size={10} />
                     </button>
                   </motion.div>
                 ))}
@@ -2728,266 +2477,249 @@ const Settings = () => {
                   value={input2}
                   onChange={handleChange2}
                   onKeyDown={handleKeyDown2}
-                  className="flex-1 min-w-[100px] p-2 border-none outline-none"
-                  placeholder="Enter stand name"
+                        className="flex-1 min-w-[180px] bg-transparent border-none outline-none text-sm font-bold placeholder:text-slate-300"
+                        placeholder="Add location..."
                 />
               </div>
-            </div>
+                  </section>
 
+                  <div className="pt-4">
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleAddRoute2}
-              className="px-6 py-2 rounded-lg 
-               bg-purple-600 border border-purple-600/20 
-               backdrop-blur-md 
-               text-white hover:text-purple-900 font-semibold 
-               shadow-md cursor-pointer hover:bg-white/20 
-               transition duration-300"
-            >
-              Add Route
+                      className="premium-button-primary w-full py-4 text-base"
+                    >
+                      Register Morning Route
             </motion.button>
+                  </div>
 
-            <div className="w-full mt-8">
-              <h3 className="mb-4">All Routes List</h3>
-              <table className="w-full mt-5">
-                <thead className="bg-[#8B5DFF]">
-                  <tr className="bg-ray-100 text-white text-left">
-                    <th className="p-3 border-b-2 border-gray-200">
-                      Route Name
-                    </th>
-                    <th className="p-3 border-b-2 border-gray-200">Stands</th>
-                    <th className="p-3 border-b-2 border-gray-200">Students</th>
-                    <th className="p-3 border-b-2 border-gray-200">Delete</th>
+                  <section className="pt-10 border-t border-slate-100">
+                    <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-2">
+                      <span className="w-8 h-px bg-slate-200"></span>
+                      Morning Inventory
+                    </h3>
+                    
+                    <div className="overflow-hidden rounded-2xl border border-slate-100 shadow-sm">
+                      <table className="w-full text-sm text-left">
+                        <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] tracking-widest border-b border-slate-100">
+                          <tr>
+                            <th className="px-6 py-4">Designation</th>
+                            <th className="px-6 py-4">Stands Coverage</th>
+                            <th className="px-6 py-4 text-center">Total Students</th>
+                            <th className="px-6 py-4 text-center">Actions</th>
                   </tr>
                 </thead>
-                <tbody>
+                        <tbody className="divide-y divide-slate-50">
                   {routes2.length > 0 ? (
                     routes2.map((route, index) => (
-                      <tr key={index}>
-                        <td className="p-3 border-b-2 border-gray-200">
-                          {route.name}
+                              <tr key={index} className="hover:bg-slate-50/50 transition-colors">
+                                <td className="px-6 py-4 font-black text-slate-900">{route.name}</td>
+                                <td className="px-6 py-4">
+                                  <div className="flex flex-wrap gap-1">
+                                    {route.stands.map((s, si) => (
+                                      <span key={si} className="text-[10px] bg-white border border-slate-200 px-1.5 py-0.5 rounded text-slate-500 font-medium">
+                                        {s.name}
+                                      </span>
+                                    ))}
+                                  </div>
                         </td>
-                        <td className="p-3 border-b-2  border-gray-200">
-                          {route.stands.map((stand) => stand.name).join(", ")}
-                        </td>
-                        <td className="p-3 border-b-2 text-end border-gray-200">
-                          {route.totalBoys}
-                        </td>
-                        <td className="p-3 border-b-2 border-gray-200">
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
+                                <td className="px-6 py-4 text-center font-black text-slate-600">{route.totalBoys}</td>
+                                <td className="px-6 py-4 text-center">
+                                  <button
                             onClick={() => handleDeleteRoute2(index)}
-                            className="px-6 py-2 rounded-lg 
-                 border   
-               backdrop-blur-md 
-               text-white   font-semibold 
-                 cursor-pointer   hover:scale-120
-               transition duration-300"
+                                    className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
                           >
-                            <FaRegTrashAlt className="text-black" />
-                          </motion.button>
+                                    <HiOutlineTrash size={18} />
+                                  </button>
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td
-                        colSpan="4"
-                        className="p-3 text-center text-[#2F1C6A] -500"
-                      >
-                        No routes found
-                      </td>
+                              <td colSpan="4" className="px-6 py-12 text-center text-slate-400 italic">No morning routes registered</td>
                     </tr>
                   )}
                 </tbody>
-                <tfoot>
-                  <tr className="bg-gray-100 font-bold">
-                    <td className="p-3">Total</td>
-                    <td className="p-3"></td>
-                    <td className="p-3 text-end">
-                      {routes2.reduce(
-                        (acc, route) => acc + (route.totalBoys || 0),
-                        0
-                      )}
+                        {routes2.length > 0 && (
+                          <tfoot className="bg-slate-50/50 font-black text-slate-900 border-t border-slate-100">
+                            <tr>
+                              <td className="px-6 py-4 text-indigo-600">Total Shift Capacity</td>
+                              <td className="px-6 py-4"></td>
+                              <td className="px-6 py-4 text-center text-indigo-600">
+                                {routes2.reduce((acc, route) => acc + (route.totalBoys || 0), 0)} PAX
                     </td>
-                    <td className="p-3"></td>
+                              <td className="px-6 py-4"></td>
                   </tr>
                 </tfoot>
+                        )}
               </table>
             </div>
+                  </section>
           </div>
         </motion.div>
-      </AnimatePresence>
+            )}
 
-      <AnimatePresence mode="wait">
+            {isShow === 5 && (
         <motion.div
-          key={isShow}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.2 }}
-          className={`flex-1 ml-64 p-8 ${isShow !== 5 ? "hidden" : ""}`}
+                key="morning-update"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="premium-card p-4 sm:p-6 md:p-8 lg:p-10"
         >
-          <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-200">
-            <h1 className="text-2xl font-bold text-[#2F1C6A] -800">
-              Update Route (Morning Shift)
-            </h1>
+                <div className="mb-10 pb-6 border-b border-slate-100">
+                  <h1 className="text-3xl font-black text-slate-900">Morning Route Sync</h1>
+                  <p className="text-slate-500 font-medium mt-1 text-sm italic">Adjust student headcounts for early morning transit lines</p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 className="text-xl font-bold mb-5 flex items-center">
-              <span className="mr-2">🔄</span> Update Morning Shift Route
-            </h2>
-
-            <div className="mb-5">
-              <label className="block mb-2 font-bold">Select Route</label>
+                <div className="space-y-10">
+                  <section className="max-w-xl">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1 mb-2 block">Source Morning Route</label>
               <select
                 value={selectedRouteMorning}
                 onChange={(e) => {
                   setSelectedRouteMorning(e.target.value);
                   if (e.target.value) {
-                    const route = routes2.find(
-                      (r) => r.name === e.target.value
-                    );
+                          const route = routes2.find((r) => r.name === e.target.value);
                     setUpdatedStandsMorning(route ? [...route.stands] : []);
                   }
                 }}
-                className="w-full p-3 border border-gray-300 rounded focus:outline-none"
+                      className="premium-input text-lg font-bold"
               >
-                <option value="">Select a route</option>
+                      <option value="">Select a route to modify...</option>
                 {routes2.map((route) => (
-                  <option key={route.name} value={route.name}>
-                    {route.name}
-                  </option>
+                        <option key={route.name} value={route.name}>{route.name}</option>
                 ))}
               </select>
-            </div>
+                  </section>
 
             {selectedRouteMorning && (
-              <>
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-3">Stands</h3>
-                  <div className="space-y-3">
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                      <section>
+                        <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-2">
+                          <span className="w-8 h-px bg-slate-200"></span>
+                          Configured Locations
+                        </h3>
+                        <div className="grid grid-cols-1 gap-3">
                     {updatedStandsMorning.map((stand, index) => (
                       <motion.div
                         key={index}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="flex items-center justify-between p-3 border border-gray-200 rounded"
+                              layout
+                              className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-2xl hover:border-indigo-200 transition-colors"
                       >
-                        <div className="font-bold">{stand.name}</div>
-                        <div className="flex items-center space-x-3">
-                          <div>
-                            <label className="block text-sm mb-1">
-                              Student Number
-                            </label>
+                              <div className="font-bold text-slate-900">{stand.name}</div>
+                              <div className="flex items-center gap-6">
+                                <div className="flex items-center gap-3">
+                                  <span className="text-[10px] font-black uppercase text-slate-400">Total PAX</span>
                             <input
                               type="number"
                               value={stand.boys}
-                              onChange={(e) =>
-                                handleUpdateStandCountMorning(
-                                  index,
-                                  e.target.value
-                                )
-                              }
-                              className="w-20 p-2 border border-gray-300 rounded"
+                                    onChange={(e) => handleUpdateStandCountMorning(index, e.target.value)}
+                                    className="w-24 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 outline-none"
                               min="0"
                             />
                           </div>
                           <button
-                            onClick={() =>
-                              handleRemoveUpdatedStandMorning(index)
-                            }
-                            className="text-red-500 hover:text-red-700"
+                                  onClick={() => handleRemoveUpdatedStandMorning(index)}
+                                  className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
                           >
-                            <ImCross />
+                                  <ImCross size={12} />
                           </button>
                         </div>
                       </motion.div>
                     ))}
                   </div>
-                </div>
+                      </section>
 
-                <div className="border-t border-gray-200 pt-5">
-                  <h3 className="text-lg font-semibold mb-3">Add New Stand</h3>
-                  <div className="flex flex-wrap -mx-3 mb-4">
-                    <div className="w-full md:w-1/2 px-3 mb-4">
-                      <label className="block mb-2">Stand Name</label>
+                      <section className="bg-slate-50 p-8 rounded-3xl border border-slate-200/60">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600 mb-6">Append New Stand</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                          <div className="md:col-span-6">
                       <input
                         type="text"
                         value={newStandNameMorning}
                         onChange={(e) => setNewStandNameMorning(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded"
-                        placeholder="Stand name"
+                              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                              placeholder="New Stand Name"
                       />
                     </div>
-                    <div className="w-full md:w-1/3 px-3 mb-4">
-                      <label className="block mb-2">Student Number</label>
+                          <div className="md:col-span-3">
                       <input
                         type="number"
                         value={newBoysCountMorning}
                         onChange={(e) => setNewBoysCountMorning(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded"
-                        placeholder="Students"
-                        min="0"
+                              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                              placeholder=" PAX"
                       />
                     </div>
-                    <div className="w-full md:w-1/6 px-3 mb-4 flex items-end">
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                          <div className="md:col-span-3">
+                            <button
                         onClick={handleAddNewStandMorning}
-                        className="px-6 py-2 rounded-lg 
-               bg-green-600 border border-green-600/20 
-               backdrop-blur-md 
-               text-white hover:text-green-900 font-semibold 
-               shadow-md cursor-pointer hover:bg-white/20 
-               transition duration-300"
+                              className="w-full py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100"
                       >
-                        Add
-                      </motion.button>
+                              Add Position
+                            </button>
                     </div>
                   </div>
-                </div>
+                      </section>
 
-                <div className="flex space-x-3 mt-6">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                      <div className="flex gap-4 pt-6 border-t border-slate-100">
+                        <button
                     onClick={handleUpdateRouteMorning}
-                    className="px-6 py-2 rounded-lg 
-               bg-purple-600 border border-purple-600/20 
-               backdrop-blur-md 
-               text-white hover:text-purple-900 font-semibold 
-               shadow-md cursor-pointer hover:bg-white/20 
-               transition duration-300"
-                  >
-                    Update
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                          className="premium-button-primary flex-1 py-4"
+                        >
+                          Push Synchronized Data
+                        </button>
+                        <button
                     onClick={() => {
                       setSelectedRouteMorning("");
                       setUpdatedStandsMorning([]);
                     }}
-                    className="px-6 py-2 rounded-lg 
-               bg-gray-600 border border-gray-600/20 
-               backdrop-blur-md 
-               text-white hover:text-gray-900 font-semibold 
-               shadow-md cursor-pointer hover:bg-white/20 
-               transition duration-300"
+                          className="premium-button-secondary px-10"
                   >
-                    Reset
-                  </motion.button>
+                          Discard
+                        </button>
                 </div>
-              </>
+                    </div>
             )}
           </div>
         </motion.div>
+            )}
+
+            {isShow === 3 && (
+              <motion.div
+                key="maintenance"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+                className="premium-card p-10 flex flex-col items-center justify-center text-center py-20 bg-white"
+              >
+                <div className="w-24 h-24 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mb-8 animate-pulse">
+                  <HiOutlineX size={48} />
+                </div>
+                <h1 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">System Maintenance</h1>
+                <p className="text-slate-500 max-w-md mx-auto mb-10 font-medium">
+                  Warning: Performing a hard reset will permanently purge all route configurations, fleet data, and current assignments. This action is irreversible.
+                </p>
+                
+                <div className="p-8 bg-rose-50/50 rounded-3xl border border-rose-100 max-w-lg w-full">
+                  <h3 className="text-rose-600 font-black uppercase tracking-widest text-[10px] mb-6">Dangerous Operations</h3>
+                  <button
+                    onClick={handleResetDatabase}
+                    className="w-full py-4 bg-rose-600 text-white rounded-2xl font-black text-sm hover:bg-rose-700 transition-all shadow-xl shadow-rose-100 active:scale-[0.98]"
+                  >
+                    Nuke Entire Database
+                  </button>
+                </div>
+              </motion.div>
+            )}
       </AnimatePresence>
+        </div>
+      </main>
+
 
       <AnimatePresence>
         {dummyCollege && (
