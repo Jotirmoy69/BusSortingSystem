@@ -1,0 +1,107 @@
+{
+  "_readme": "Reference index for Cursor rules to reason about. Scope is intentionally narrow: ONLY registries that install through the actual shadcn CLI/MCP (`npx shadcn add ...`), nothing that needs its own separate CLI, and nothing that's copy-paste-only. Does NOT make a registry installable on its own — that's controlled by components.json. Confidence levels below reflect vendor-docs checks done 2026-07-13.",
+
+  "_scope": "Only registries confirmed to work via `npx shadcn add @namespace/component` (or, for 21st.dev, a direct shadcn-compatible URL) are listed. Libraries with their own separate CLI (e.g. a `magicui-cli`/`vengeance-cli`-style tool that ISN'T the shadcn CLI), pure copy-paste sites, and non-component reference sites (design inspiration, DESIGN.md libraries) have been deliberately excluded — they don't belong in a 'shadcn-only' registry list even if they were useful as general references.",
+
+  "_confidence_levels": {
+    "confirmed": "Checked the vendor's own install/docs page directly.",
+    "unverified": "Not confirmed against the vendor's own docs — excluded from this file until checked."
+  },
+
+  "_default_policy": {
+    "free_tier_only": true,
+    "note": "Unless the user explicitly asks for a paid/pro component or confirms a license key is configured, only install from each registry's free tier. Registries with a requires_key_for field have paid components that must NOT be installed by default."
+  },
+
+  "registries": [
+    {
+      "name": "shadcn/ui",
+      "installable": true,
+      "confidence": "confirmed",
+      "requires_key": false,
+      "categories": ["primitives", "forms", "layout", "navigation", "overlays", "blocks"],
+      "docs_url": "https://ui.shadcn.com/docs/components/{name}",
+      "notes": "The base registry. Configured by default via `shadcn init`. Always free. Includes official blocks (login, dashboard, marketing sections) at https://ui.shadcn.com/blocks — check there before anything else for structural pieces like navbars, sidebars, login forms."
+    },
+    {
+      "name": "@shadcn-space",
+      "installable": true,
+      "confidence": "confirmed",
+      "requires_key_for": ["premium"],
+      "categories": ["blocks", "cards", "login", "marketing", "dashboard"],
+      "registry_url": "https://shadcnspace.com/r/{name}.json",
+      "docs_url": "https://shadcnspace.com/blocks/{category}/{name}",
+      "notes": "Free + premium split. Free components install via the standard @shadcn-space/{name} namespace once added to components.json. Premium requires email + license key — do not install by default."
+    },
+    {
+      "name": "@unlumen-ui",
+      "installable": true,
+      "confidence": "confirmed",
+      "requires_key_for": ["pro"],
+      "categories": ["animated-navigation", "landing-pages", "glassmorphism", "hero", "dock", "command-menu", "buttons", "text-effects", "backgrounds"],
+      "docs_url": "https://ui.unlumen.com/docs/ui/{category}/{name}",
+      "notes": "Free tier installs with no key. Pro requires UNLUMEN_LICENSE_KEY — do not install by default."
+    },
+    {
+      "name": "@smoothui",
+      "installable": true,
+      "confidence": "confirmed",
+      "requires_key": false,
+      "categories": ["motion", "inputs", "popovers", "orbs", "micro-interactions"],
+      "registry_url": "https://smoothui.dev/r/{name}.json",
+      "docs_url": "https://smoothui.dev/docs/components/{name}",
+      "notes": "Official shadcn registry, built into the CLI — @smoothui namespace works with no components.json entry needed. Fully free."
+    },
+    {
+      "name": "@magic-ui",
+      "installable": true,
+      "confidence": "confirmed",
+      "requires_key": false,
+      "categories": ["hero", "landing-pages", "backgrounds", "text-effects", "cards"],
+      "registry_url": "https://magicui.design/r/{name}.json",
+      "docs_url": "https://magicui.design/docs/components/{name}",
+      "notes": "Open source shadcn registry, confirmed real registry.json. Fully free (Magic UI Pro templates are a separate paid product — do not confuse with this free component registry)."
+    },
+    {
+      "name": "@react-bits",
+      "installable": true,
+      "confidence": "confirmed",
+      "requires_key": false,
+      "categories": ["animated", "interactive", "backgrounds", "text-effects"],
+      "registry_url": "https://reactbits.dev/r/{name}.json",
+      "docs_url": "https://reactbits.dev/components/{category}/{name}",
+      "notes": "docs_url category segment unverified (exact slug per category not checked) — confirm before trusting a generated link. Registry itself confirmed free."
+    },
+    {
+      "name": "@vengeanceui",
+      "installable": true,
+      "confidence": "confirmed",
+      "requires_key": false,
+      "categories": ["buttons", "hover-effects", "tooltips", "bento-layouts", "navbars", "loaders"],
+      "docs_url": "https://www.vengenceui.com/components",
+      "notes": "Confirmed via their own site: `npx shadcn add @vengeanceui/[component]`. Individual component doc URL pattern not confirmed."
+    },
+    {
+      "name": "21st.dev",
+      "installable": true,
+      "confidence": "confirmed",
+      "requires_key": false,
+      "categories": ["community", "forms", "navigation", "data-viz", "hooks"],
+      "install_pattern": "npx shadcn add \"https://21st.dev/r/{author}/{slug}\"",
+      "docs_url": "https://21st.dev/community/components/{author}/{slug}",
+      "notes": "Not a simple namespace registry — installs via a full per-component URL through the shadcn CLI, not a components.json shortcut. Community-submitted, so quality/free-vs-paid varies by author; check each item."
+    }
+  ],
+
+  "_excluded_deliberately": [
+    "aceternity-ui — its /components section is copy-paste only (no shadcn registry endpoint), and its /blocks section's shadcn-compatibility was never confirmed against Aceternity's own docs. Excluded until verified.",
+    "dark.design, styles.refero.design — not component registries at all (inspiration / design-token references). Out of scope for a shadcn-only list.",
+    "supahero.io, getlayers.ai — install method never confirmed. Excluded rather than guessed."
+  ],
+
+  "_how_to_add_a_registry": [
+    "1. Confirm on the vendor's OWN docs (not an aggregator) that it installs via `npx shadcn add` — that's the bar for inclusion in this file.",
+    "2. Add the registry to components.json with its registry_url (and auth headers if it requires a key). This is what makes it functionally installable — this file is reference only.",
+    "3. Add an entry here with confidence: 'confirmed' only after that direct check, and set requires_key_for if any part of it is paid."
+  ]
+}
