@@ -1,0 +1,78 @@
+---
+description: AUIES — treat screenshots/Figma sketches as content+structure specs, not pixel specs
+globs:
+alwaysApply: true
+---
+
+# When the user provides an image of a design
+
+If the user pastes a screenshot, wireframe, or Figma export and asks you to
+build it, treat the image as two separable things:
+
+1. **Structure & content** — which regions exist (sidebar, navbar, cards,
+   etc.), what's inside each one (specific buttons, labels, menu items,
+   fields, icons), and their order/hierarchy. This is what you must
+   preserve exactly.
+2. **Visual styling** — colors, spacing, border weight, corner radius,
+   whatever the sketch happens to look like. This is NOT a spec. A rough
+   box with "Settings / Profile / Logout" scrawled in it means "a sidebar
+   containing exactly these three items," not "a gray rectangle with black
+   text in this exact font."
+
+Never reproduce (1) as (2). The output should look like a properly designed
+product, built from real components, containing every item the user
+actually drew — not a pixel-accurate recreation of a rough sketch.
+
+# Step-by-step
+
+1. **Decompose the image into named regions.** Use the same vocabulary as
+   `01-planner.mdc` (sidebar, navbar, hero, cards, table, footer, modal,
+   etc.) — don't describe raw shapes ("a rectangle at the top"), describe
+   what the region functionally is.
+
+2. **For each region, extract its actual content as a list.** This is the
+   part that must not get lost. Example:
+
+   ```
+   Region: Sidebar
+   Content:
+   - Logo / app name (top)
+   - Nav items: Dashboard, Projects, Settings
+   - User avatar + name (bottom)
+   - Logout button
+   ```
+
+   Write this list out visibly in your response before building anything —
+   it's the checklist you'll verify against at the end.
+
+3. **Feed each region into the plan** (per `01-planner.mdc`) as its own
+   item, then run registry search (`02-registry-search.mdc`) and, if
+   multiple registries have a candidate, show links per
+   `03-show-candidates.mdc` — exactly as you would for a typed request.
+   A screenshot doesn't skip the pipeline, it's just where the plan items
+   came from.
+
+4. **Map the extracted content onto the real component's API.** Once a
+   component is installed, its actual props/slots/children determine what
+   it can hold — don't assume it magically supports the exact content list.
+   Concretely:
+   - If the installed sidebar takes a `items: {label, icon, href}[]` prop,
+     populate it with the nav items you extracted, not placeholder data.
+   - If a chosen component can't represent something in the extracted list
+     (e.g. it has no slot for a bottom user-profile block), say so
+     explicitly and either pick a different candidate or extend the
+     component — don't silently drop the item.
+
+5. **Verify against the checklist.** Before finishing, re-read the content
+   list from step 2 and confirm every item made it into the final markup.
+   If something didn't, say what's missing rather than presenting the
+   result as complete.
+
+# What this rule does not do
+
+It does not give Cursor actual computer vision beyond what the underlying
+model already has from the image — if the screenshot is low-res or
+ambiguous, say what you're unsure about rather than inventing content that
+isn't there. It also doesn't replace registry search: an extracted "sidebar"
+still goes through the same install-vs-generate decision as any other plan
+item.
