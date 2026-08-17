@@ -7,7 +7,12 @@ export const getBusNumber = (bus) => {
 };
 
 export const normalizeStandName = (name) => {
-  return String(name || "").trim().replace(/\s*KATEX_INLINE_OPEN.*?KATEX_INLINE_CLOSE\s*$/, "");
+  return String(name || "")
+    .trim()
+    .replace(/\s*\((boys|girls)\s+part\s+\d+\)\s*$/i, "")
+    .replace(/\s*\(part\s+\d+\)\s*$/i, "")
+    .replace(/\s*\((boys|girls)\s+part\)\s*$/i, "")
+    .replace(/\s*\(part\)\s*$/i, "");
 };
 
 export const getAvailableBuses = (activeBuses, assignedBuses, editingBusId = "") => {
