@@ -29,42 +29,58 @@ const Home = () => {
   const fetchBuses = async () => {
     try {
       const res = await ipcRenderer.invoke("fetch-buses");
+      if (res?.error) {
+        toast.error(`Failed to load buses: ${res.error}`);
+        return;
+      }
       const busData = res.data || [];
       const activeBuses = busData.filter((bus) => bus.isActive === true);
       setActiveBuses(activeBuses);
     } catch (err) {
       console.error("Error fetching buses:", err);
-      toast.error("বাস লোড করতে সমস্যা হয়েছে");
+      toast.error("Failed to load bus data. Please restart the application.");
     }
   };
 
   const fetchRoutes2 = async () => {
     try {
       const res = await ipcRenderer.invoke("fetch-routes-morning");
+      if (res?.error) {
+        toast.error(`Failed to load morning routes: ${res.error}`);
+        return;
+      }
       setStands2(res.data || []);
     } catch (err) {
       console.error("Error fetching routes:", err);
-      toast.error("রুট লোড করতে সমস্যা হয়েছে");
+      toast.error("Failed to load morning route data.");
     }
   };
   const fetchRoutes3 = async () => {
     try {
       const res = await ipcRenderer.invoke("fetch-routes-college");
+      if (res?.error) {
+        toast.error(`Failed to load college routes: ${res.error}`);
+        return;
+      }
       setStands3(res.data || []);
     } catch (err) {
       console.error("Error fetching routes:", err);
-      toast.error("রুট লোড করতে সমস্যা হয়েছে");
+      toast.error("Failed to load college route data.");
     }
   };
 
   const fetchRoutes = async () => {
     try {
       const res = await ipcRenderer.invoke("fetch-routes");
+      if (res?.error) {
+        toast.error(`Failed to load day routes: ${res.error}`);
+        return;
+      }
       const routeData = res.data || [];
       setStands(routeData);
     } catch (err) {
       console.error("Error fetching routes:", err);
-      toast.error("রুট লোড করতে সমস্যা হয়েছে");
+      toast.error("Failed to load day route data.");
     }
   };
 
@@ -91,15 +107,15 @@ const Home = () => {
     let assignedBusesToPrint;
 
     if (table === 0) {
-      assignedBusesToPrint = assignedBuses; // Day Shift buses
+      assignedBusesToPrint = assignedBuses;
       if (!assignedBusesToPrint || assignedBusesToPrint.length === 0) {
-        toast.error("No Bus assigned to Day Shift");
+        toast.error("No Bus assigned to Morning Shift");
         return;
       }
     } else if (table === 1) {
-      assignedBusesToPrint = assignedBusesDay; // Morning Shift buses
+      assignedBusesToPrint = assignedBusesDay;
       if (!assignedBusesToPrint || assignedBusesToPrint.length === 0) {
-        toast.error("No Bus assigned to Morning Shift");
+        toast.error("No Bus assigned to Day Shift");
         return;
       }
     } else if (table === 2) {
