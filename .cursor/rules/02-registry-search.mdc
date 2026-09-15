@@ -1,0 +1,114 @@
+---
+description: AUIES registry search — how to check and use configured registries
+globs:
+alwaysApply: true
+---
+
+# Registry search, per plan item
+
+For each item in the plan (from `01-planner.mdc`), do this before writing
+code:
+
+1. Read `registries/registries.json` to see which registries are configured
+   and what each one lists as its strengths/categories. This file is a
+   reference index, not the source of truth for installability.
+2. Use the shadcn MCP tools to check what's actually available/installable
+   for this item in the configured registries (`components.json` is the
+   real source of truth for what can be installed).
+3. If something usable exists:
+   - Prefer an already-installed project component over installing a new
+     one, if one already fits.
+   - Otherwise install from the registry via MCP/CLI.
+4. If nothing usable exists in any configured registry:
+   - Say so explicitly in your response.
+   - Write custom code for that piece only, following the project's
+     existing conventions (Tailwind classes, component structure, etc.)
+     found elsewhere in the codebase.
+
+# Scope: shadcn-compatible registries only
+
+This project's `registries.json` deliberately lists ONLY registries that
+install through the actual shadcn CLI/MCP (`npx shadcn add @namespace/x`,
+or a direct shadcn-compatible URL for 21st.dev). Do not reach for a UI
+library outside this list, even if you know of one, unless the user
+explicitly names it. If asked to use something not in `registries.json`,
+say it's outside the configured shadcn-only scope and ask whether to add it
+properly (per `_how_to_add_a_registry` in that file) or proceed without it.
+
+# Default: no reference given
+
+If the user asks for UI (e.g. "build a landing page") with no screenshot,
+Figma sketch, or named library, default to this order:
+
+1. `shadcn/ui` — start with its own blocks (login, dashboard, marketing
+   sections) and primitives for structure.
+2. The other confirmed registries in `registries.json`, matched to what's
+   actually needed (e.g. animation-heavy sections → `@smoothui`,
+   `@magic-ui`, `@unlumen-ui`, `@react-bits`, `@vengeanceui`).
+3. Custom code only where no registry item fits.
+
+# Free tier only by default
+
+`registries.json` sets `_default_policy.free_tier_only: true`. Several
+registries here (`@unlumen-ui`, `@shadcn-space`) have a paid tier gated by a
+license key. Unless the user explicitly asks for a paid/pro component, or a
+license key is already configured in the project's env, only install from
+each registry's free components. If a free registry has no good match and
+the only candidate is a paid one, say so and ask before installing it —
+don't install it by default and don't substitute a different paid option
+without asking either.
+
+# Matching request qualifiers to registry categories
+
+If the user's request includes a style/quality qualifier — "animated",
+"glassmorphic", "minimal", "dark mode", "3D", etc. — treat that as a filter,
+not just flavor text. Before searching, check which registries in
+`registries.json` list a matching or closely related tag in their
+`categories` field, and search those first / weight them higher when
+presenting candidates in `03-show-candidates.mdc`.
+
+Example: "build a landing page with animated components" —
+`registries.json` shows `@unlumen-ui`, `@magic-ui`, `@smoothui`,
+`@react-bits`, and `@vengeanceui` all carry motion/animation-related
+categories (`"motion"`, `"animated-navigation"`, `"micro-interactions"`,
+`"text-effects"`, etc.), while base `shadcn/ui` doesn't. For an "animated"
+request, search the former group first; only fall back to plain shadcn/ui
+components for pieces where no animated registry has a match.
+
+Say explicitly which qualifier you matched against which registries, e.g.
+"searching @unlumen-ui, @magicui, @smoothui first since you asked for
+animated components" — don't silently apply the filter.
+
+# What NOT to do
+
+- Do not say a component "isn't available" without having actually checked
+  via the MCP tool — don't infer availability from `registries.json` alone,
+  since that file only records that a registry is configured, not its full
+  catalog.
+- Do not install a component from a registry that requires a license key
+  (e.g. `@unlumen-ui` or `@shadcn-space` premium tiers) without confirming
+  the required key is present in the project's env config. If it's missing,
+  tell the user instead of failing silently or substituting a different
+  paid component.
+- Do not treat a registry with `"installable": false` as something you can
+  install from — these are reference-only; recreate patterns from docs if
+  asked to use them, and say that's what you're doing.
+- Do not treat a registry with `"installable": "unverified"` as either
+  installable or not — say explicitly that you haven't confirmed whether
+  this source supports CLI/MCP install, and ask before spending effort
+  trying to configure it, or offer to check its docs first.
+- If a single site has multiple sections with different installability
+  (e.g. Aceternity's copy-paste `/components` vs. its separately-flagged
+  `/blocks`), treat them as the separate `registries.json` entries they are.
+  Don't generalize "Aceternity is installable" from one section to the
+  other.
+
+# Non-namespace registries (e.g. 21st.dev)
+
+Most registries install with a short `@namespace/component` form once
+added to `components.json`. A few, like 21st.dev, don't work that way —
+components there are attributed per-author, so there's no single namespace
+that covers the whole catalog. For these, check `install_pattern` in
+`registries.json` instead of assuming the standard namespace flow, and
+construct the actual install command per-component from the specific URL,
+not a guessed shorthand.

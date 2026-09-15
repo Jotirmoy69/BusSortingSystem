@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+<<<<<<< HEAD
 @font-face {
   font-family: 'clash';
   src: url('./assets/fonts/ClashDisplay-Variable.ttf') format('truetype');
@@ -25,6 +26,17 @@
   --secondary: #a855f7;
   --background: #f8fafc;
   --foreground: #0f172a;
+=======
+:root {
+  --background: #f6f7f9; --foreground: #17181c; --card: #ffffff; --card-foreground: #17181c;
+  --popover: #ffffff; --popover-foreground: #17181c; --primary: #1d1e22; --primary-foreground: #ffffff;
+  --secondary: #eef0f3; --secondary-foreground: #292b31; --muted: #f1f2f5; --muted-foreground: #737781;
+  --accent: #e9edf8; --accent-foreground: #35477f; --destructive: #d94c5c; --border: #e3e5e9;
+  --input: #dfe2e8; --ring: #7b8ce2; --radius: 1.25rem; --primary-blue: #5969d9;
+  --shadow-soft: 0 20px 60px rgba(33, 37, 48, .07), 0 2px 8px rgba(33, 37, 48, .04);
+  --ease-smooth: cubic-bezier(.22, 1, .36, 1);
+  --ease-snap: cubic-bezier(.34, 1.56, .64, 1);
+>>>>>>> b29fe96 (feat(ui): add smooth framer-motion page transitions and layout animations)
 }
 
 * {
@@ -32,6 +44,7 @@
   scroll-behavior: smooth;
   box-sizing: border-box;
 }
+<<<<<<< HEAD
 
 html {
   scroll-behavior: smooth;
@@ -189,3 +202,52 @@ button, a {
   touch-action: manipulation;
 }
  
+=======
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; text-rendering: optimizeLegibility; }
+body { margin: 0; min-width: 320px; background: var(--background); color: var(--foreground); font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+*, *::before, *::after { font-family: inherit; }
+[class*="font-[gilroy]"] { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important; }
+button, input, textarea, select { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+button, a, input, select, textarea, [role="button"] {
+  transition: background-color .2s var(--ease-smooth), color .2s var(--ease-smooth), border-color .2s var(--ease-smooth),
+    box-shadow .25s var(--ease-smooth), transform .22s var(--ease-smooth), opacity .2s var(--ease-smooth);
+}
+button:not(:disabled):hover, [role="button"]:not(:disabled):hover { transform: translateY(-1px); }
+button:not(:disabled):active, [role="button"]:not(:disabled):active { transform: scale(.965) translateY(0); transition-duration: .12s; transition-timing-function: var(--ease-snap); }
+button:disabled, [role="button"][aria-disabled="true"] { transform: none; }
+.squircle, .premium-card { border-radius: 1.25rem; }
+.squircle { filter: url(#SkiperSquiCircleFilterLayout); }
+.squircle { overflow: clip; }
+/* Keep the display board scrollable; the squircle clipping rule must not
+   override the table's horizontal and vertical overflow behavior. */
+.squircle.scroll-camo { overflow-x: auto; overflow-y: auto; }
+.glass { background: color-mix(in srgb, var(--card) 78%, transparent); border-color: color-mix(in srgb, var(--border) 72%, transparent); backdrop-filter: blur(24px) saturate(145%); -webkit-backdrop-filter: blur(24px) saturate(145%); overflow: hidden; }
+.premium-card { background: var(--card); border: 1px solid color-mix(in srgb, var(--border) 80%, transparent); box-shadow: var(--shadow-soft); transition: transform .35s var(--ease-smooth), box-shadow .35s var(--ease-smooth), border-color .25s var(--ease-smooth); }
+.premium-card:hover { border-color: #d5d9e4; box-shadow: 0 24px 70px rgba(33,37,48,.1); transform: translateY(-2px); }
+.premium-input { width: 100%; border: 1px solid var(--input); background: var(--card); color: var(--foreground); border-radius: 1rem; padding: .72rem .9rem; outline: none; transition: border-color .2s var(--ease-smooth), box-shadow .25s var(--ease-smooth); }
+.premium-input:focus { border-color: var(--ring); box-shadow: 0 0 0 4px color-mix(in srgb, var(--ring) 16%, transparent); }
+.premium-button-primary { border: 0; border-radius: 1rem; background: var(--primary-blue); color: white; font-weight: 650; box-shadow: 0 10px 22px rgba(89,105,217,.2); transition: .2s ease; }
+.premium-button-primary:hover { background: #4e5ecb; transform: translateY(-1px); }
+.premium-button-secondary { border-radius: 1rem; border: 1px solid var(--border); background: var(--card); color: var(--foreground); transition: .2s ease; }
+.premium-button-secondary:hover { background: var(--muted); border-color: #cfd3db; }
+.import-action { min-height: 2.25rem; padding: .45rem .85rem; border-radius: 999px; border-color: #d7dbea !important; color: #6373dc !important; font-size: .95rem; font-weight: 500; letter-spacing: -.01em; box-shadow: none; white-space: nowrap; }
+.import-action:hover { background: #f4f5ff !important; border-color: #aeb8ee !important; }
+.settings-status-bar { min-height: 4.25rem; }
+[class*="bg-slate-50"], [class*="bg-gray-50"] { background-color: var(--background) !important; }
+[class*="bg-white"] { background-color: var(--card) !important; }
+[class*="border-slate-200"], [class*="border-gray-200"], [class*="border-gray-100"] { border-color: var(--border) !important; }
+[class*="text-slate-900"], [class*="text-gray-900"] { color: var(--foreground) !important; }
+[class*="text-slate-500"], [class*="text-gray-500"] { color: var(--muted-foreground) !important; }
+[class*="bg-indigo-600"] { background-color: var(--primary-blue) !important; }
+[class*="text-indigo-600"] { color: var(--primary-blue) !important; }
+::-webkit-scrollbar { width: 7px; height: 7px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: #cfd3dc; border-radius: 99px; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; } .no-scrollbar::-webkit-scrollbar { display: none; }
+.scroll-camo { scrollbar-width: thin; scrollbar-color: #cfd3dc transparent; }
+.scroll-camo::-webkit-scrollbar { width: 8px; height: 8px; }
+.scroll-camo::-webkit-scrollbar-track { background: transparent; }
+.scroll-camo::-webkit-scrollbar-thumb { background: #cfd3dc; border: 2px solid transparent; background-clip: padding-box; border-radius: 99px; }
+::selection { background: #dfe4ff; color: #28336e; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+>>>>>>> b29fe96 (feat(ui): add smooth framer-motion page transitions and layout animations)

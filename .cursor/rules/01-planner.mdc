@@ -1,0 +1,35 @@
+---
+description: AUIES planning step — decompose UI requests before building
+globs:
+alwaysApply: true
+---
+
+# Plan before building
+
+Before writing or installing any code for a UI request, produce a short
+explicit checklist in your response (not hidden reasoning) listing the
+distinct UI pieces involved. This is intentionally visible to the user so
+the process is auditable.
+
+Example, for "build a dashboard":
+
+```
+Plan:
+- [ ] Sidebar navigation
+- [ ] Top bar / user menu
+- [ ] Stat cards (x3)
+- [ ] Data table
+- [ ] Empty/loading states
+```
+
+Rules for the plan:
+
+- Break requests into the smallest reasonable named UI pieces (sidebar,
+  navbar, cards, table, form, modal, etc.), not "the page" as one item.
+- Order matters: layout-defining pieces (sidebar, navbar, page shell)
+  before content pieces (cards, tables) before polish (empty states,
+  loading states).
+- If the request is a single small component ("add a button"), a
+  one-line plan is fine — don't pad it.
+- After the plan, proceed piece by piece through `02-registry-search.mdc`
+  for each item before writing final code.
