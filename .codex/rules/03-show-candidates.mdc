@@ -1,0 +1,49 @@
+---
+description: AUIES — show real component links for human choice, never fabricate a ranking score
+globs:
+alwaysApply: true
+---
+
+# When more than one registry has a candidate
+
+If registry search (per `02-registry-search.mdc`) turns up a plausible match
+in more than one configured registry for the same plan item, do NOT invent a
+score, percentage, or "best pick" to decide automatically. You cannot
+measure animation quality, accessibility, or code quality by pattern-matching
+component names — a number presented as if it were measured is misleading.
+
+Instead:
+
+1. List each candidate by name and registry.
+2. Include its `docs_url` (or `demo_url` if present) from
+   `registries/registries.json`, with `{name}` substituted for the actual
+   component slug, so the user can open the real page and look at it.
+3. Ask the user which one to install, or offer a one-line *factual*
+   distinguishing note if you actually know one (e.g. "this one requires a
+   Pro license key", "this one has no keyboard nav documented") — never a
+   quality score.
+4. Wait for the user's choice before installing. Do not default to the
+   first result.
+
+Example of correct behavior:
+
+```
+Found sidebar candidates:
+- shadcn/ui — https://ui.shadcn.com/docs/components/sidebar
+- @unlumen-ui — https://ui.unlumen.com/docs/components/sidebar (free tier)
+
+Which would you like me to install?
+```
+
+# When only one registry has a candidate
+
+Skip the link-comparison step — just say which registry it came from (per
+`02-registry-search.mdc`) and install it. Don't manufacture a comparison
+when there's nothing to compare.
+
+# If a docs_url pattern looks wrong
+
+`registries/registries.json` flags its `docs_url` values as unverified
+placeholders. If a constructed link 404s or looks structurally wrong, say so
+instead of presenting it as reliable, and fall back to naming the registry
+and component without a broken link.
